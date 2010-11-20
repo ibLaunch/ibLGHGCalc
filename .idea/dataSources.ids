@@ -1,0 +1,35 @@
+<?xml version="1.0"?><component name="dataSourceStorage">
+  <data-source source="LOCAL" name="DataSource-ibLGHGCalc" product="MySQL" version="5.1.40-community" uuid="d999e247-b582-4608-aa57-2c9714264ae1">
+    <extra-name-characters>#@</extra-name-characters>
+    <identifier-quote-string>`</identifier-quote-string>
+    <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
+    <jdbc-url>jdbc:mysql://localhost:3306/ibLGHGCalc</jdbc-url>
+    <user-name>root</user-name>
+    <user-password>dfd8dfc5dfc5dfde</user-password>
+    <libraries>
+      <library>
+        <url>jar://$PROJECT_DIR$/lib/mysql-connector-java-5.1.13-bin.jar!/</url>
+      </library>
+    </libraries>
+    <table name="ef_stationary_combustion_epa" schema="" catalog="ibLGHGCalc" type="TABLE">
+      <column name="id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" />
+      <column name="version" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" />
+      <column name="ch4multiplier_in_gram" sqlType="DOUBLE" length="22" precision="0" nullable="false" jdbcType="8" />
+      <column name="co2multiplier_in_kg" sqlType="DOUBLE" length="22" precision="0" nullable="false" jdbcType="8" />
+      <column name="fuel_type" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
+      <column name="fuel_unit" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
+      <column name="n20multiplier_in_gram" sqlType="DOUBLE" length="22" precision="0" nullable="false" jdbcType="8" />
+      <primary-key name="PRIMARY" columns="id" />
+    </table>
+    <table name="stationary_combustion_info" schema="" catalog="ibLGHGCalc" type="TABLE">
+      <column name="id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" />
+      <column name="version" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" />
+      <column name="fuel_quantity" sqlType="FLOAT" length="12" precision="0" nullable="false" jdbcType="7" />
+      <column name="fuel_source_description" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
+      <column name="fuel_type" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
+      <column name="fuel_unit" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
+      <column name="is_public" sqlType="BIT" length="1" precision="0" nullable="false" jdbcType="-7" />
+      <primary-key name="PRIMARY" columns="id" />
+    </table>
+  </data-source>
+</component>

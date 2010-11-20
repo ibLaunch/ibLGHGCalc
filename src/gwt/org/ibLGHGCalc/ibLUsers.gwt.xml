@@ -1,0 +1,10 @@
+<module>
+    <!-- Inherit the core Web Toolkit stuff.                  -->
+    <inherits name="com.google.gwt.user.User"/>
+
+    <inherits name="com.smartgwt.SmartGwt"/>
+    <inherits name="com.smartgwt.tools.SmartGwtTools"/>
+
+    <!-- Specify the module entry point class.                   -->
+    <entry-point class="org.ibLGHGCalc.client.ibLUsers"/>
+</module>
