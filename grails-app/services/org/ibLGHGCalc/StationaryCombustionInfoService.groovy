@@ -4,6 +4,7 @@ class StationaryCombustionInfoService {
 
     static transactional = true
 
+  
     StationaryCombustionInfo findStationaryCombustionInfo(Long id) {
       StationaryCombustionInfo.get(id)
     }

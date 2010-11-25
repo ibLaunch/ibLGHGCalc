@@ -3,7 +3,8 @@ package org.ibLGHGCalc
 class EF_StationaryCombustion_EPAService {
 
     static transactional = true
-
+    static expose = ["gwt:org.ibLGHGCalc.client"]
+  
     EF_StationaryCombustion_EPA findEF_StationaryCombustion_EPA(Long id) {
       EF_StationaryCombustion_EPA.get(id)
     }

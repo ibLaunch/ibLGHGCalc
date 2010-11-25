@@ -9,6 +9,7 @@ import com.smartgwt.client.data.fields.DataSourceTextField;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
+import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
 
 /**
@@ -43,30 +44,30 @@ public class StationaryCombustionInfoDS extends RestDataSource {
     //versionField.setCanEdit(false);
 
     DataSourceTextField fuelSourceDescriptionField =
-        new DataSourceTextField("fuelSourceDescription", "Fuel Source Description", 50, true);
+        new DataSourceTextField("fuelSourceDescription", "Fuel Source Description");
     TextItem fuelSourceDescriptionItem = new TextItem();
     fuelSourceDescriptionItem.setWidth("100%");
     fuelSourceDescriptionField.setEditorType(fuelSourceDescriptionItem);
 
     DataSourceTextField fuelTypeField =
-        new DataSourceTextField("fuelType", "Fuel Type", 50, true);
+        new DataSourceTextField("fuelType", "Fuel Type");
     TextItem fuelTypeItem = new TextItem();
     fuelTypeItem.setWidth("100%");
     fuelTypeField.setEditorType(fuelTypeItem);
 
     DataSourceFloatField fuelQuantityField =
-        new DataSourceFloatField("fuelQuantity", "Fuel Quantity", 15, true);
+        new DataSourceFloatField("fuelQuantity", "Fuel Quantity");
     FloatItem fuelQuantityItem = new FloatItem();
     fuelQuantityField.setEditorType(fuelQuantityItem);
 
     DataSourceTextField fuelUnitField =
-        new DataSourceTextField("fuelUnit", "Fuel Unit", 20, true);
+        new DataSourceTextField("fuelUnit", "Fuel Unit");
     TextItem fuelUnitItem = new TextItem();
     fuelUnitItem.setWidth("100%");
     fuelUnitField.setEditorType(fuelUnitItem);
 
     DataSourceBooleanField isPublicField =
-        new DataSourceBooleanField("isPublic", "Public", 0, false);
+        new DataSourceBooleanField("isPublic", "Public");
     setFields(idField, fuelSourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, isPublicField);
     //setup operations
     //1. fetch

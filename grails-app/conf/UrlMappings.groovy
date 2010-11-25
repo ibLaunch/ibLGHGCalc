@@ -13,6 +13,5 @@ class UrlMappings {
         "/EF_StationaryCombustion_EPA"(controller:"EF_StationaryCombustion_EPA", parseRequest:true){
                 action = [POST:"uploadEmissionFactorFile"]
         }
-
 	}
 }

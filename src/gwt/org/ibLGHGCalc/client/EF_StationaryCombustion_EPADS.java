@@ -75,7 +75,7 @@ public class EF_StationaryCombustion_EPADS extends RestDataSource {
     //setup operations
     //1. fetch
     OperationBinding fetch =
-        new OperationBinding(DSOperationType.FETCH, "/ibLGHGCalc/EF_StationaryCombustion_EPA/list");
+            new OperationBinding(DSOperationType.FETCH, "/ibLGHGCalc/EF_StationaryCombustion_EPA/list");
     fetch.setDataProtocol(DSProtocol.POSTPARAMS);
     //2. update
     OperationBinding update =

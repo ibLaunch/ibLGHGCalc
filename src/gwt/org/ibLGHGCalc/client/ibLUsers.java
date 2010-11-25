@@ -8,11 +8,9 @@ import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.Encoding;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.Side;
+import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
-import com.smartgwt.client.widgets.Button;
-import com.smartgwt.client.widgets.IButton;
-import com.smartgwt.client.widgets.Label;
-import com.smartgwt.client.widgets.Window;
+import com.smartgwt.client.widgets.*;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
@@ -21,6 +19,7 @@ import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
+import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.layout.VStack;
@@ -48,10 +47,60 @@ public class ibLUsers implements EntryPoint {
     private final IButton saveButton = new IButton();
     private final StationaryCombustionInfoDS stationaryCombustionInfoDS = StationaryCombustionInfoDS.getInstance();
     private final EF_StationaryCombustion_EPADS eF_StationaryCombustion_EPADS = EF_StationaryCombustion_EPADS.getInstance();
-    private final ListGrid stationaryCombustionDataGrid = new ListGrid();
     private final TabSet topTabSet = new TabSet();
     private final DynamicForm uploadForm = new DynamicForm();
     private final VLayout topLayout = new VLayout();
+
+
+    private final ListGrid stationaryCombustionDataGrid = new ListGrid(){
+            @Override
+            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
+
+                String fieldName = this.getFieldName(colNum);
+
+                if (fieldName.equals("editButtonField")) {
+                    ImgButton editImg = new ImgButton();
+                    editImg.setShowDown(false);
+                    editImg.setShowRollOver(false);
+                    editImg.setLayoutAlign(Alignment.CENTER);
+                    editImg.setSrc("/ibLGHGCalc/images/editIcon.gif");
+                    editImg.setPrompt("Edit Comments");
+                    editImg.setHeight100();
+                    editImg.setWidth100();
+
+                    editImg.addClickHandler(new ClickHandler() {
+                        public void onClick(ClickEvent event) {
+                            stationaryCombustionForm.editSelectedData(stationaryCombustionDataGrid);
+                            stationaryCombustionFormWindow.show();
+                        }
+                    });
+
+                    return editImg;
+                } else if (fieldName.equals("removeButtonField")) {
+                    IButton button = new IButton();
+                    //button.setHeight(18);
+                    //button.setWidth(65);
+                    button.setIcon("/ibLGHGCalc/images/deleteIcon.png");
+                    button.setTitle("Remove");
+                    button.setPrompt("Remove this source");
+                    button.addClickHandler(new ClickHandler() {
+                        public void onClick(ClickEvent event) {
+                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
+				                            public void execute(Boolean value) {
+					                                    if (value)
+						                                    stationaryCombustionDataGrid.removeSelectedData();
+				                            }
+			                    });
+
+                        }
+                    });
+                    return button;
+                } else {
+                    return null;
+                }
+
+            }
+    };
 
 public void onModuleLoad() {
 
@@ -76,14 +125,20 @@ public void onModuleLoad() {
 }
 
 private void stationaryCombustionTab() {
+
         VLayout layout = new VLayout(15);
 
         Label stationaryCombustionDataLabel = new Label("Current stationary combustion sources");
-        stationaryCombustionDataLabel.setWidth("100%");
+        //stationaryCombustionDataLabel.setWidth("100%");
         layout.addMember(stationaryCombustionDataLabel);
 
+//--ListGrid setup
         stationaryCombustionDataGrid.setWidth("100%");
         stationaryCombustionDataGrid.setHeight(200);
+        stationaryCombustionDataGrid.setShowRecordComponents(true);
+        stationaryCombustionDataGrid.setShowRecordComponentsByCell(true);
+        //stationaryCombustionDataGrid.setCanRemoveRecords(true);
+        stationaryCombustionDataGrid.setShowAllRecords(true);
         stationaryCombustionDataGrid.setDataSource(stationaryCombustionInfoDS);
         stationaryCombustionDataGrid.fetchData();
 
@@ -99,12 +154,20 @@ private void stationaryCombustionTab() {
         ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
         sourceDescriptionField.setType(ListGridFieldType.TEXT);
 
-        stationaryCombustionDataGrid.setFields(sourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField);
+        ListGridField editButtonField = new ListGridField("editButtonField", "Edit this source");
+        editButtonField.setAlign(Alignment.CENTER);
+
+        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove this source");
+        removeButtonField.setWidth(100);
+
+        stationaryCombustionDataGrid.setFields(sourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, removeButtonField);
 
         layout.addMember(stationaryCombustionDataGrid);
 
         IButton newStationaryCombustionButton = new IButton("Add new stationary combustion source");
-        newStationaryCombustionButton.setWidth(225);
+        //newStationaryCombustionButton.setWidth(225);
+        newStationaryCombustionButton.setIcon("/ibLGHGCalc/images/addIcon.jpg");
+
         newStationaryCombustionButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
                 stationaryCombustionForm.editNewRecord();
@@ -113,7 +176,9 @@ private void stationaryCombustionTab() {
         });
 
         IButton editStationaryCombustionButton = new IButton("Edit selected stationary combustion source");
-        editStationaryCombustionButton.setWidth(225);
+        //editStationaryCombustionButton.setWidth(225);
+        editStationaryCombustionButton.setIcon("/ibLGHGCalc/images/editIcon.gif");
+
         editStationaryCombustionButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
                 stationaryCombustionForm.editSelectedData(stationaryCombustionDataGrid);
@@ -124,9 +189,13 @@ private void stationaryCombustionTab() {
         removeStationaryCombustionButton.setWidth(225);
         removeStationaryCombustionButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
-                stationaryCombustionDataGrid.removeSelectedData();
-                //stationaryCombustionForm.editSelectedData(stationaryCombustionDataGrid);
-                //stationaryCombustionFormWindow.show();
+                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
+				      public void execute(Boolean value) {
+					    if (value)
+						    stationaryCombustionDataGrid.removeSelectedData();
+				      }
+			});
+
             }
         });
 
