@@ -1,6 +1,7 @@
 package org.ibLGHGCalc
 
 class StationaryCombustionInfo {
+
     String fuelSourceDescription
     String fuelType
     Float fuelQuantity
@@ -8,10 +9,20 @@ class StationaryCombustionInfo {
 
     Boolean isPublic = Boolean.TRUE
 
+    String  fuelUsedBeginDate
+    String  fuelUsedEndDate
+
+    Date dateCreated
+    Date lastUpdated
+
     static constraints = {
             fuelSourceDescription(blank:false, maxsize:255)
             fuelType(blank:false)
             fuelQuantity(blank:false)
             fuelUnit(blank:false)
+            fuelUsedBeginDate(blank:false)
+            fuelUsedEndDate(blank:false)
+            dateCreated(nullable:true)     
+            lastUpdated(nullable:true)
     }
 }

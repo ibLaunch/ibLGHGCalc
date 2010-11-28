@@ -85,7 +85,7 @@ log4j = {
         file name:'file', file:'c:/GHG/ibLGHGCalc/logs/mylog.log'
     }
     root {
-        debug 'stdout', 'file'
+        debug 'stdout'
         additivity = true
     }
 

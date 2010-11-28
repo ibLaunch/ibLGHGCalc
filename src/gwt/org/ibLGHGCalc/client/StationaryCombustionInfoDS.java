@@ -2,14 +2,11 @@ package org.ibLGHGCalc.client;
 
 import com.smartgwt.client.data.OperationBinding;
 import com.smartgwt.client.data.RestDataSource;
-import com.smartgwt.client.data.fields.DataSourceBooleanField;
-import com.smartgwt.client.data.fields.DataSourceFloatField;
-import com.smartgwt.client.data.fields.DataSourceIntegerField;
-import com.smartgwt.client.data.fields.DataSourceTextField;
+import com.smartgwt.client.data.fields.*;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
+import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
-import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
 
 /**
@@ -66,9 +63,22 @@ public class StationaryCombustionInfoDS extends RestDataSource {
     fuelUnitItem.setWidth("100%");
     fuelUnitField.setEditorType(fuelUnitItem);
 
+    DataSourceDateField fuelUsedBeginDateField =
+        new DataSourceDateField("fuelUsedBeginDate", "Begin Date");
+    DateItem fuelUsedBeginDateItem = new DateItem();
+    fuelUsedBeginDateItem.setWidth("100%");
+    fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+
+    DataSourceDateField fuelUsedEndDateField =
+        new DataSourceDateField("fuelUsedEndDate", "End Date");
+    DateItem fuelUsedEndDateItem = new DateItem();
+    fuelUsedEndDateItem.setWidth("100%");
+    fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+
+
     DataSourceBooleanField isPublicField =
         new DataSourceBooleanField("isPublic", "Public");
-    setFields(idField, fuelSourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, isPublicField);
+    setFields(idField, fuelSourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField, isPublicField);
     //setup operations
     //1. fetch
     OperationBinding fetch =

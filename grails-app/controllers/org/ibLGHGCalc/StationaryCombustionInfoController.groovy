@@ -52,6 +52,8 @@ class StationaryCombustionInfoController {
         fuelType: stationaryCombustionInfo.fuelType,
         fuelQuantity: stationaryCombustionInfo.fuelQuantity,
         fuelUnit: stationaryCombustionInfo.fuelUnit,
+        fuelUsedBeginDate:stationaryCombustionInfo.fuelUsedBeginDate,
+        fuelUsedEndDate:stationaryCombustionInfo.fuelUsedEndDate,
         isPublic: stationaryCombustionInfo.isPublic
     )
   }

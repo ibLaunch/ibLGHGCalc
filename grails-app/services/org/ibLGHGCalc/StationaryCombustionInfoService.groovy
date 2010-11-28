@@ -15,6 +15,8 @@ class StationaryCombustionInfoService {
 
     def StationaryCombustionInfo save(Map<String, String> parameters) {
       log.info "save( ${parameters} )"
+      println parameters
+
       def theStationaryCombustionInfo = StationaryCombustionInfo.get(parameters.id)
       if (!theStationaryCombustionInfo) {
         theStationaryCombustionInfo = new StationaryCombustionInfo()

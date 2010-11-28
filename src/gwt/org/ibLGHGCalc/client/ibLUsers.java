@@ -26,6 +26,7 @@ import com.smartgwt.client.widgets.layout.VStack;
 import com.smartgwt.client.widgets.tab.Tab;
 import com.smartgwt.client.widgets.tab.TabSet;
 
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -154,13 +155,19 @@ private void stationaryCombustionTab() {
         ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
         sourceDescriptionField.setType(ListGridFieldType.TEXT);
 
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+
         ListGridField editButtonField = new ListGridField("editButtonField", "Edit this source");
         editButtonField.setAlign(Alignment.CENTER);
 
         ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove this source");
         removeButtonField.setWidth(100);
 
-        stationaryCombustionDataGrid.setFields(sourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, removeButtonField);
+        stationaryCombustionDataGrid.setFields(sourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField, removeButtonField);
 
         layout.addMember(stationaryCombustionDataGrid);
 
@@ -260,13 +267,23 @@ private void initStationaryCombustionEditForm() {
     FloatItem fuelQuantityItem = new FloatItem();
     fuelQuantityItem.setName("fuelQuantity");
 
-    stationaryCombustionForm.setItems(fuelSourceDescription,fuelTypeItem, fuelQuantityItem, fuelUnitItem);
+    DateItem fuelUsedBeginDateItem = new DateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+
+    DateItem fuelUsedEndDateItem = new DateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+
+    stationaryCombustionForm.setItems(fuelSourceDescription,fuelTypeItem, fuelQuantityItem, fuelUnitItem,fuelUsedBeginDateItem,fuelUsedEndDateItem);
 
     saveButton.setTitle("SAVE");
     saveButton.setTooltip("Save this Project instance");
     saveButton.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent clickEvent) {
         Record stationaryCombustionFormRecord = stationaryCombustionForm.getValuesAsRecord();
+        //Date beginDate = (Date)fuelUsedBeginDateItem.getValue();
+        //Date endDate = (Date)fuelUsedEndDateItem.getValue();
+        //stationaryCombustionFormRecord.setAttribute("fuelUsedBeginDate", beginDate);
+        //stationaryCombustionFormRecord.setAttribute("fuelUsedEndDate", endDate);
         stationaryCombustionDataGrid.updateData(stationaryCombustionFormRecord);
         //stationaryCombustionForm.submitForm();
         stationaryCombustionFormWindow.hide();
