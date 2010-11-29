@@ -6,15 +6,15 @@ class EF_StationaryCombustion_EPA {
     String fuelUnit
     Double CO2MultiplierInKg
     Double CH4MultiplierInGram
-    Double N20MultiplierInGram
+    Double N2OMultiplierInGram
 
     Boolean isPublic = Boolean.TRUE
   
     static constraints = {
             fuelType(blank:false)
             fuelUnit(blank:false)
-            CO2MultiplierInKg(blank:false)
-            CH4MultiplierInGram(blank:false)
-            N20MultiplierInGram(blank:false)
+            CO2MultiplierInKg(nullable:false)
+            CH4MultiplierInGram(nullable:false)
+            N2OMultiplierInGram(nullable:false)
     }
 }

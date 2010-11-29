@@ -28,14 +28,14 @@ class LoadEmissionFactorsService {
               def fuelUnit = sheet.getCell(1, r).contents
               def CO2MultiplierInKg = sheet.getCell(2, r).contents
               def CH4MultiplierInGram = sheet.getCell(3, r).contents
-              def N20MultiplierInGram = sheet.getCell(4, r).contents
+              def N2OMultiplierInGram = sheet.getCell(4, r).contents
 
               def eF_StationaryCombustion_EPA = new EF_StationaryCombustion_EPA(
               "fuelType": fuelType,
               "fuelUnit": fuelUnit,
               "CO2MultiplierInKg": CO2MultiplierInKg.toDouble(),
               "CH4MultiplierInGram": CH4MultiplierInGram.toDouble(),
-              "N20MultiplierInGram": N20MultiplierInGram.toDouble() )
+              "N2OMultiplierInGram": N2OMultiplierInGram.toDouble() )
               eF_StationaryCombustion_EPA.save()
       }
       returnString = "Emission Factors uploaded"

@@ -57,7 +57,7 @@ class EF_StationaryCombustion_EPAController {
         fuelUnit: eF_StationaryCombustion_EPA.fuelUnit,
         CO2MultiplierInKg: eF_StationaryCombustion_EPA.CO2MultiplierInKg,
         CH4MultiplierInGram: eF_StationaryCombustion_EPA.CH4MultiplierInGram,
-        N20MultiplierInGram: eF_StationaryCombustion_EPA.N20MultiplierInGram,
+        N2OMultiplierInGram: eF_StationaryCombustion_EPA.N2OMultiplierInGram,
         isPublic: eF_StationaryCombustion_EPA.isPublic
     )
   }
