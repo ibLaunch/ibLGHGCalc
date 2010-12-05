@@ -2,7 +2,6 @@
 <head>
   <!-- Integrate with Sitemesh layouts           -->
   <meta name="layout" content="main" />
-
   <!--                                           -->
   <!-- Any title is fine                         -->
   <!--                                           -->

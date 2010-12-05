@@ -4,10 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.Record;
-import com.smartgwt.client.types.Alignment;
-import com.smartgwt.client.types.Encoding;
-import com.smartgwt.client.types.ListGridFieldType;
-import com.smartgwt.client.types.Side;
+import com.smartgwt.client.types.*;
 import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.*;
@@ -20,13 +17,10 @@ import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
-import com.smartgwt.client.widgets.layout.HLayout;
-import com.smartgwt.client.widgets.layout.VLayout;
-import com.smartgwt.client.widgets.layout.VStack;
+import com.smartgwt.client.widgets.layout.*;
 import com.smartgwt.client.widgets.tab.Tab;
 import com.smartgwt.client.widgets.tab.TabSet;
 
-import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,8 +44,7 @@ public class ibLUsers implements EntryPoint {
     private final EF_StationaryCombustion_EPADS eF_StationaryCombustion_EPADS = EF_StationaryCombustion_EPADS.getInstance();
     private final TabSet topTabSet = new TabSet();
     private final DynamicForm uploadForm = new DynamicForm();
-    private final VLayout topLayout = new VLayout();
-
+    private final HLayout mainLayout = new HLayout();
 
     private final ListGrid stationaryCombustionDataGrid = new ListGrid(){
             @Override
@@ -105,11 +98,97 @@ public class ibLUsers implements EntryPoint {
 
 public void onModuleLoad() {
 
-//Defining tab set
-        topTabSet.setTabBarPosition(Side.TOP);
-        topTabSet.setTabBarAlign(Side.LEFT);
-        topTabSet.setWidth(1000);
-        topTabSet.setHeight(500);
+   mainLayout.setWidth100();
+   mainLayout.setHeight100();
+
+//-Header
+
+    //final HLayout headerLayout = new HLayout();
+    //Img launchImg = new Img("/ibLGHGCalc/images/launch_yourself.png");
+    Img logoImg = new Img("/ibLGHGCalc/images/logo.gif");
+/*
+    VLayout launchImgLayout = new VLayout();
+    launchImgLayout.addMember(launchImg);
+
+    VLayout logoImgLayout = new VLayout();
+    logoImgLayout.addMember(launchImg);
+
+    headerLayout.addMember(launchImgLayout);
+    headerLayout.addMember(logoImgLayout);
+
+    topLayout.addMember(headerLayout);
+*/
+
+//--Defining sections
+
+//    HLayout sectionHLayout = new HLayout();
+
+//-Layout for Mid top mid section
+    final VLayout topVLayout = new VLayout();
+    final Label testLable = new Label("I am testing you");
+
+    topVLayout.addChild(testLable);
+
+//--- Left Sections...
+    final SectionStack leftSectionStack = new SectionStack();
+    leftSectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);
+    leftSectionStack.setWidth(300);
+    leftSectionStack.setHeight(600);
+
+    SectionStackSection emissionsSection = new SectionStackSection("Emission Sources");
+    emissionsSection.setID("emissionSources");
+    emissionsSection.setExpanded(true);
+
+    IButton stationaryCombustionButton = new IButton("Stationary combustion source");
+    //newStationaryCombustionButton.setWidth(225);
+    stationaryCombustionButton.setIcon("/ibLGHGCalc/images/addIcon.jpg");
+
+    stationaryCombustionButton.addClickHandler(new ClickHandler() {
+        public void onClick(ClickEvent event) {
+            topVLayout.removeChild(testLable);
+            topVLayout.addChild(topTabSet);
+        }
+    });
+
+
+    emissionsSection.addItem(stationaryCombustionButton);
+    leftSectionStack.addSection(emissionsSection);
+
+    SectionStackSection reportSection = new SectionStackSection("Overall Emissions");
+    reportSection.setID("mobileCombustion");
+    reportSection.setExpanded(true);
+    //reportSection.addItem(logoImg);
+    leftSectionStack.addSection(reportSection);
+
+    mainLayout.addMember(leftSectionStack);
+
+
+//--- Mid Sections...
+/*
+    final SectionStack midSectionStack = new SectionStack();
+    midSectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);
+    midSectionStack.setWidth(800);
+    midSectionStack.setHeight(600);
+
+    SectionStackSection detailSection = new SectionStackSection("Stationary Combustion Details");
+    detailSection.setID("stationaryCombustionD");
+    detailSection.setExpanded(true);
+    detailSection.addItem(topTabSet);
+    midSectionStack.addSection(detailSection);
+
+    SectionStackSection midLowSection = new SectionStackSection("Mid Low");
+    midLowSection.setID("midLow");
+    midLowSection.setExpanded(true);
+    midLowSection.addItem(logoImg);
+    midSectionStack.addSection(midLowSection);
+*/
+    mainLayout.addMember(topVLayout);
+
+//-Defining tab set
+    //topTabSet.setTabBarPosition(Side.TOP);
+    topTabSet.setTabBarAlign(Side.LEFT);
+    topTabSet.setWidth(500);
+    topTabSet.setHeight(600);
 
 //--Defining Stationary Combustion tab layout
     stationaryCombustionTab();
@@ -120,8 +199,14 @@ public void onModuleLoad() {
 //--Defining File Upload  tab
     fileUploadTab();
 
+//--add tab set to top Layout
+    //topLayout.setMembersMargin(15);
+    //topLayout.addMember(sectionHLayout);
+    //topLayout.setHeight("auto");
+
 //--Add topLayout to "main"
-    RootPanel.get("main").add(topLayout);
+    RootPanel.get("main").add(mainLayout);
+
     //topLayout.draw();
 }
 
@@ -219,9 +304,7 @@ private void stationaryCombustionTab() {
 
 //---Adding Stationary Combustion tab to topTab
         topTabSet.addTab(stationaryCombustionTab);
-        topLayout.setMembersMargin(15);
-        topLayout.addMember(topTabSet);
-        topLayout.setHeight("auto");
+
 }
 
 

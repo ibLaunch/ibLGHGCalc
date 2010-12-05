@@ -29,6 +29,4 @@ class StationaryCombustionInfo {
             lastUpdated(nullable:true)
             emissionsByProgramTypes(nullable:true)
     }
-
-
 }

@@ -17,8 +17,6 @@ class StationaryCombustionInfoService {
       log.info "save( ${parameters} )"
       println parameters
 
-      def theStationaryCombustionInfo = StationaryCombustionInfo.get(parameters.id)
-
       //- Getting the emission Factors
       def theEF_StationaryCombustion_EPA =  EF_StationaryCombustion_EPA.findByFuelType(parameters.fuelType)
       //-Convert parameters  fuelQuantity to Double
@@ -26,9 +24,11 @@ class StationaryCombustionInfoService {
       //-Define emissions object
       def theStationaryCombustionEmissions
 
+      def theStationaryCombustionInfo = StationaryCombustionInfo.get(parameters.id)
       if (!theStationaryCombustionInfo) {
-        //--Implement proper code for programType-??
+
         theStationaryCombustionInfo = new StationaryCombustionInfo()
+        //--Implement proper code for programType-??
         theStationaryCombustionEmissions = new StationaryCombustionEmissions(
               CO2Emissions: fuelQty*theEF_StationaryCombustion_EPA.CO2MultiplierInKg,
               CH4Emissions: fuelQty*theEF_StationaryCombustion_EPA.CH4MultiplierInGram,
@@ -44,6 +44,7 @@ class StationaryCombustionInfoService {
       {
         theStationaryCombustionInfo.emissionsByProgramTypes.each{
           theStationaryCombustionEmissions = it
+          //--Implement proper code for programType-??
           if (theStationaryCombustionEmissions.programType.equals("EPA Climate Leaders")){
                 theStationaryCombustionEmissions.CO2Emissions = fuelQty*theEF_StationaryCombustion_EPA.CO2MultiplierInKg
                 theStationaryCombustionEmissions.CH4Emissions = fuelQty*theEF_StationaryCombustion_EPA.CH4MultiplierInGram

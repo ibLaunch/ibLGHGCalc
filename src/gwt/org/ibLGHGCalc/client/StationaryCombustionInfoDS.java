@@ -8,7 +8,7 @@ import com.smartgwt.client.types.DSProtocol;
 import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
-
+                                                                                  
 /**
  * Created by IntelliJ IDEA.
  * User: ibL
