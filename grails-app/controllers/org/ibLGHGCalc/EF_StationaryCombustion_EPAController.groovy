@@ -67,6 +67,7 @@ class EF_StationaryCombustion_EPAController {
 
         String fileLoaded = loadEmissionFactorsService.emissionFactorFileUpload()
         println fileLoaded
+        render(view:"/stationaryCombustion")
 /*
         sendMail {
            to "Hemant.Bundele@gmail.com"

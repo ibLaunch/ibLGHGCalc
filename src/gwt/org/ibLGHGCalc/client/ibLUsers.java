@@ -45,6 +45,9 @@ public class ibLUsers implements EntryPoint {
     private final TabSet topTabSet = new TabSet();
     private final DynamicForm uploadForm = new DynamicForm();
     private final HLayout mainLayout = new HLayout();
+    private final OrganizationDS organizationDS = OrganizationDS.getInstance();
+    private final DynamicForm organizationForm = new DynamicForm();
+    private final DynamicForm selectOrganizationForm = new DynamicForm();
 
     private final ListGrid stationaryCombustionDataGrid = new ListGrid(){
             @Override
@@ -59,8 +62,8 @@ public class ibLUsers implements EntryPoint {
                     editImg.setLayoutAlign(Alignment.CENTER);
                     editImg.setSrc("/ibLGHGCalc/images/editIcon.gif");
                     editImg.setPrompt("Edit Comments");
-                    editImg.setHeight100();
-                    editImg.setWidth100();
+                    //editImg.setHeight100();
+                    //editImg.setWidth100();
 
                     editImg.addClickHandler(new ClickHandler() {
                         public void onClick(ClickEvent event) {
@@ -75,8 +78,8 @@ public class ibLUsers implements EntryPoint {
                     //button.setHeight(18);
                     //button.setWidth(65);
                     button.setIcon("/ibLGHGCalc/images/deleteIcon.png");
-                    button.setTitle("Remove");
-                    button.setPrompt("Remove this source");
+                    //button.setTitle("Remove");
+                    button.setPrompt("Remove");
                     button.addClickHandler(new ClickHandler() {
                         public void onClick(ClickEvent event) {
                                 SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
@@ -132,8 +135,74 @@ public void onModuleLoad() {
 //--- Left Sections...
     final SectionStack leftSectionStack = new SectionStack();
     leftSectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);
-    leftSectionStack.setWidth(300);
+    leftSectionStack.setWidth(225);
     leftSectionStack.setHeight(600);
+
+    SectionStackSection reportSection = new SectionStackSection("Organization");
+    reportSection.setID("organization");
+    reportSection.setExpanded(true);
+    //reportSection.addItem(logoImg);
+//-temporry place for selecting adding organization
+
+     organizationForm.setDataSource(organizationDS);
+
+
+     final TextItem organizatioName = new TextItem("organizationName");
+     organizatioName.setTitle("Organization Name");
+     organizatioName.setSelectOnFocus(true);
+     //organizationForm.setItems(organizatioName);
+
+     IntegerItem organizationId = new IntegerItem();
+     organizationId.setTitle("Organization Id");
+     organizationId.setName("id");
+
+     organizationForm.setFields(organizatioName,organizationId);
+     reportSection.addItem(organizationForm);
+     
+     Button saveOrganiztionButton = new Button("Save");
+     reportSection.addItem(saveOrganiztionButton);
+     saveOrganiztionButton.addClickHandler(new ClickHandler(){
+        public void onClick(ClickEvent event) {
+		organizationForm.saveData();
+            }
+         });
+
+//-- Org SelectItem
+     final SelectItem organizationSelectItem = new SelectItem("id");
+     organizationSelectItem.setTitle("Select Organization id");
+     organizationSelectItem.setOptionDataSource(organizationDS);
+
+     selectOrganizationForm.setFields(organizationSelectItem);
+     reportSection.addItem(selectOrganizationForm);
+
+     organizationSelectItem.addChangedHandler(new ChangedHandler() {
+        public void onChanged(ChangedEvent event) {
+            //String orgNameString = (String) organizationSelectItem.getValue();
+            //String orgNameString = (String) event.getValue();
+            Integer orgId = (Integer) event.getValue();
+            //Integer orgId = (Integer) event.();
+            //organizationForm.getField("organizationName").setValueMap(organizationSelectItem.get(orgNameString));
+            //Criteria populateOrganizationFormCriteria = selectOrganizationForm.getValuesAsCriteria();
+            //SC.say("Organization Id + : "+ orgId);
+            //organizationForm.setValue("organizatioName", orgNameString);
+            //organizationForm.fetchData(populateOrganizationFormCriteria);
+
+            //organizationForm.getField("id").setValue(orgId);
+
+            Criteria fetchStationaryCombustionCriteria = new Criteria();
+            //Integer organizationIdInteger =  (Integer) organizationForm.getField("id").getValue();
+            fetchStationaryCombustionCriteria.addCriteria("organizationId", orgId);
+
+            //stationaryCombustionDataGrid.fetchData(fetchStationaryCombustionCriteria);
+            stationaryCombustionDataGrid.filterData(fetchStationaryCombustionCriteria);
+            topVLayout.addChild(topTabSet);
+        }
+     });
+
+
+// - end of temporary organization place.
+
+    leftSectionStack.addSection(reportSection);
 
     SectionStackSection emissionsSection = new SectionStackSection("Emission Sources");
     emissionsSection.setID("emissionSources");
@@ -145,7 +214,29 @@ public void onModuleLoad() {
 
     stationaryCombustionButton.addClickHandler(new ClickHandler() {
         public void onClick(ClickEvent event) {
-            topVLayout.removeChild(testLable);
+            //topVLayout.removeChild(testLable);
+           
+           //Record organizationRecord = organizationForm.getValuesAsRecord();
+           //stationaryCombustionDataGrid.fetchRelatedData(organizationRecord, organizationDS);
+           
+            //Criteria fetchStationaryCombustionCriteria = organizationForm.getValuesAsCriteria();
+
+            
+            Criteria fetchStationaryCombustionCriteria = new Criteria();
+            Integer organizationIdInteger =  (Integer) organizationForm.getField("id").getValue();
+            fetchStationaryCombustionCriteria.addCriteria("organizationId", organizationIdInteger);
+            
+            //stationaryCombustionDataGrid.fetchData(fetchStationaryCombustionCriteria);
+            stationaryCombustionDataGrid.filterData(fetchStationaryCombustionCriteria);
+            //SC.say("Organization Record  : " + organizationRecord);
+            
+            /*
+            organizationForm.fetchData(organizationForm.getValuesAsCriteria(), new DSCallback() {
+                @Override
+                public void execute(DSResponse response, Object rawData,DSRequest request) {
+                    stationaryCombustionDataGrid.fetchData(organizationForm.getValuesAsCriteria());
+                }});
+            */
             topVLayout.addChild(topTabSet);
         }
     });
@@ -154,14 +245,7 @@ public void onModuleLoad() {
     emissionsSection.addItem(stationaryCombustionButton);
     leftSectionStack.addSection(emissionsSection);
 
-    SectionStackSection reportSection = new SectionStackSection("Overall Emissions");
-    reportSection.setID("mobileCombustion");
-    reportSection.setExpanded(true);
-    //reportSection.addItem(logoImg);
-    leftSectionStack.addSection(reportSection);
-
     mainLayout.addMember(leftSectionStack);
-
 
 //--- Mid Sections...
 /*
@@ -187,7 +271,7 @@ public void onModuleLoad() {
 //-Defining tab set
     //topTabSet.setTabBarPosition(Side.TOP);
     topTabSet.setTabBarAlign(Side.LEFT);
-    topTabSet.setWidth(500);
+    topTabSet.setWidth100();
     topTabSet.setHeight(600);
 
 //--Defining Stationary Combustion tab layout
@@ -212,21 +296,33 @@ public void onModuleLoad() {
 
 private void stationaryCombustionTab() {
 
-        VLayout layout = new VLayout(15);
+     VLayout layout = new VLayout(15);
 
         Label stationaryCombustionDataLabel = new Label("Current stationary combustion sources");
-        //stationaryCombustionDataLabel.setWidth("100%");
+        stationaryCombustionDataLabel.setHeight(20);
         layout.addMember(stationaryCombustionDataLabel);
 
 //--ListGrid setup
         stationaryCombustionDataGrid.setWidth("100%");
-        stationaryCombustionDataGrid.setHeight(200);
+        stationaryCombustionDataGrid.setHeight(300);
         stationaryCombustionDataGrid.setShowRecordComponents(true);
         stationaryCombustionDataGrid.setShowRecordComponentsByCell(true);
         //stationaryCombustionDataGrid.setCanRemoveRecords(true);
-        stationaryCombustionDataGrid.setShowAllRecords(true);
+        //stationaryCombustionDataGrid.setShowAllRecords(true);
+        stationaryCombustionDataGrid.setAutoFetchData(Boolean.FALSE);
         stationaryCombustionDataGrid.setDataSource(stationaryCombustionInfoDS);
-        stationaryCombustionDataGrid.fetchData();
+
+//--Only fetch data that is related to THE organization
+        //Record organizationRecord= organizationForm.getValuesAsRecord();
+        //stationaryCombustionDataGrid.fetchRelatedData(organizationRecord,organizationDS);
+
+        //stationaryCombustionDataGrid.fetchData();
+
+//        ListGridField organizationNameField = new ListGridField("name", "Organization Name");
+//        organizationNameField.setType(ListGridFieldType.TEXT);
+
+        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
+        organizationIdField.setType(ListGridFieldType.INTEGER);
 
         ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
         sourceDescriptionField.setType(ListGridFieldType.TEXT);
@@ -246,18 +342,18 @@ private void stationaryCombustionTab() {
         ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
         fuelUsedEndDateField.setType(ListGridFieldType.DATE);
 
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit this source");
+        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
         editButtonField.setAlign(Alignment.CENTER);
 
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove this source");
+        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
         removeButtonField.setWidth(100);
 
-        stationaryCombustionDataGrid.setFields(sourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField, removeButtonField);
+        stationaryCombustionDataGrid.setFields(sourceDescriptionField, organizationIdField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField,editButtonField, removeButtonField);
 
         layout.addMember(stationaryCombustionDataGrid);
 
         IButton newStationaryCombustionButton = new IButton("Add new stationary combustion source");
-        //newStationaryCombustionButton.setWidth(225);
+        newStationaryCombustionButton.setWidth100();
         newStationaryCombustionButton.setIcon("/ibLGHGCalc/images/addIcon.jpg");
 
         newStationaryCombustionButton.addClickHandler(new ClickHandler() {
@@ -267,6 +363,7 @@ private void stationaryCombustionTab() {
             }
         });
 
+/*
         IButton editStationaryCombustionButton = new IButton("Edit selected stationary combustion source");
         //editStationaryCombustionButton.setWidth(225);
         editStationaryCombustionButton.setIcon("/ibLGHGCalc/images/editIcon.gif");
@@ -290,12 +387,12 @@ private void stationaryCombustionTab() {
 
             }
         });
-
+*/
         HLayout gridButtonLayout = new HLayout(15);
 
         gridButtonLayout.addMember(newStationaryCombustionButton);
-        gridButtonLayout.addMember(editStationaryCombustionButton);
-        gridButtonLayout.addMember(removeStationaryCombustionButton);
+//        gridButtonLayout.addMember(editStationaryCombustionButton);
+//        gridButtonLayout.addMember(removeStationaryCombustionButton);
         layout.addMember(gridButtonLayout);
 
 //--Defining Stationary Combustion tab
@@ -306,8 +403,6 @@ private void stationaryCombustionTab() {
         topTabSet.addTab(stationaryCombustionTab);
 
 }
-
-
 
 private void initStationaryCombustionEditForm() {
 
@@ -356,7 +451,12 @@ private void initStationaryCombustionEditForm() {
     DateItem fuelUsedEndDateItem = new DateItem();
     fuelUsedEndDateItem.setName("fuelUsedEndDate");
 
-    stationaryCombustionForm.setItems(fuelSourceDescription,fuelTypeItem, fuelQuantityItem, fuelUnitItem,fuelUsedBeginDateItem,fuelUsedEndDateItem);
+    TextItem organizationName = new TextItem();
+//    Integer currentOrganizationId = (Integer)organizationForm.getItem("id").getValue();
+    organizationName.setName("organizationName");
+//    organizationId.setValue(currentOrganizationId);
+
+    stationaryCombustionForm.setItems(organizationName, fuelSourceDescription,fuelTypeItem, fuelQuantityItem, fuelUnitItem,fuelUsedBeginDateItem,fuelUsedEndDateItem);
 
     saveButton.setTitle("SAVE");
     saveButton.setTooltip("Save this Project instance");

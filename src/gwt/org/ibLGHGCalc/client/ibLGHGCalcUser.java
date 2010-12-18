@@ -1,6 +1,7 @@
 package org.ibLGHGCalc.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.user.client.ui.RootPanel;
 
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Button;
@@ -9,8 +10,7 @@ import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.form.DynamicForm;
-
-
+import com.smartgwt.client.widgets.layout.HLayout;
                       
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -20,25 +20,25 @@ public class ibLGHGCalcUser implements EntryPoint {
      * This is the entry point method.
      */
     public void onModuleLoad() {
-        VLayout main = new VLayout();
-        main.setWidth100();
-        main.setHeight100();
-        main.setLayoutMargin(5);
+        HLayout mainLayout = new HLayout();
+        mainLayout.setWidth100();
+        mainLayout.setHeight100();
+        mainLayout.setLayoutMargin(5);
 
         final DynamicForm form = new DynamicForm();
-        form.setWidth(1000);
+        //form.setWidth(500);
 
-        StationaryCombustionInfoDS stationaryCombustionInfoDS = StationaryCombustionInfoDS.getInstance();
+        EF_StationaryCombustion_EPADS eF_StationaryCombustion_EPADS = EF_StationaryCombustion_EPADS.getInstance();
 
         final SelectItem fuelTypeItem = new SelectItem();
         fuelTypeItem.setName("fuelType");
         fuelTypeItem.setPickListWidth(310);
         fuelTypeItem.setTitle("Fuel Type");
-        fuelTypeItem.setOptionDataSource(stationaryCombustionInfoDS);
+        fuelTypeItem.setOptionDataSource(eF_StationaryCombustion_EPADS);
 
-        form.setItems(fuelTypeItem);
+        //form.setItems(fuelTypeItem);
 
-        main.addMember(form);
+        mainLayout.addMember(form);
 
         Button button = new Button("You can do it!");
         button.setAutoFit(true);
@@ -48,8 +48,10 @@ public class ibLGHGCalcUser implements EntryPoint {
                 SC.say("by Dec 7, 2010");
             }
         });
-        main.addMember(button);
+        mainLayout.addMember(button);
 
-        main.draw();
+        RootPanel.get("main").add(mainLayout);
+
+        //main.draw();
     }
 }

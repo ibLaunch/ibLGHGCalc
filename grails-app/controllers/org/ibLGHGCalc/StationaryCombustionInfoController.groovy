@@ -7,7 +7,7 @@ class StationaryCombustionInfoController {
 
   def list = {
     log.info "StationaryCombustionInfoController.list( ${params} )"
-    def stationaryCombustionInfos = stationaryCombustionInfoService.findStationaryCombustionInfos();
+    def stationaryCombustionInfos = stationaryCombustionInfoService.findStationaryCombustionInfos(params);
     def xml = new MarkupBuilder(response.writer)
     xml.response() {
       status(0)
@@ -48,13 +48,14 @@ class StationaryCombustionInfoController {
   private def flushStationaryCombustionInfo = { xml, stationaryCombustionInfo ->
     xml.record(
         id: stationaryCombustionInfo.id,
+        organizationId: stationaryCombustionInfo.organizationId,
         fuelSourceDescription: stationaryCombustionInfo.fuelSourceDescription,
         fuelType: stationaryCombustionInfo.fuelType,
         fuelQuantity: stationaryCombustionInfo.fuelQuantity,
         fuelUnit: stationaryCombustionInfo.fuelUnit,
         fuelUsedBeginDate:stationaryCombustionInfo.fuelUsedBeginDate,
-        fuelUsedEndDate:stationaryCombustionInfo.fuelUsedEndDate,
-        isPublic: stationaryCombustionInfo.isPublic
+        fuelUsedEndDate:stationaryCombustionInfo.fuelUsedEndDate
+        //isPublic: stationaryCombustionInfo.isPublic
     )
   }
 }

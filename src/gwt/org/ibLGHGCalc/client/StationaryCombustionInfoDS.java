@@ -7,6 +7,7 @@ import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
 import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
+import com.smartgwt.client.widgets.form.fields.IntegerItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
                                                                                   
 /**
@@ -35,7 +36,20 @@ public class StationaryCombustionInfoDS extends RestDataSource {
         new DataSourceIntegerField("id", "ID");
     idField.setCanEdit(false);
     idField.setPrimaryKey(true);
+/*
+    DataSourceIntegerField organizationNameField =
+        new DataSourceIntegerField("organizationName", "Organization Name");
+    organizationNameField.setCanEdit(false);
+    //organizationNameField.setPrimaryKey(true);
+*/
 
+    DataSourceIntegerField organizationIdField =
+        new DataSourceIntegerField("organizationId", "Organization Id");
+    IntegerItem organizationIdItem = new IntegerItem();
+    organizationIdField.setCanEdit(false);
+    organizationIdField.setForeignKey("organizationDS.id");
+    organizationIdField.setEditorType(organizationIdItem);
+    
     //DataSourceIntegerField versionField =
     //    new DataSourceIntegerField("version", "Version");
     //versionField.setCanEdit(false);
@@ -78,7 +92,7 @@ public class StationaryCombustionInfoDS extends RestDataSource {
 
     DataSourceBooleanField isPublicField =
         new DataSourceBooleanField("isPublic", "Public");
-    setFields(idField, fuelSourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField, isPublicField);
+    setFields(idField, organizationIdField, fuelSourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField, isPublicField);
     //setup operations
     //1. fetch
     OperationBinding fetch =
@@ -97,6 +111,7 @@ public class StationaryCombustionInfoDS extends RestDataSource {
         new OperationBinding(DSOperationType.REMOVE, "/ibLGHGCalc/stationaryCombustionInfo/remove");
     remove.setDataProtocol(DSProtocol.POSTPARAMS);
     setOperationBindings(fetch, update, add, remove);
+    //setClientOnly(true);
   }
 
 }

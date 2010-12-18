@@ -82,11 +82,11 @@ log4j = {
     warn   'org.mortbay.log'
 
     appenders {
-        //file name:'file', file:'c:/GHG/ibLGHGCalc/logs/mylog.log'
+        file name:'file', file:'c:/GHG/ibLGHGCalc/logs/mylog.log'
     }
     root {
         debug 'stdout'
-        additivity = true
+        //additivity = true
     }
 
 }

@@ -1,7 +1,10 @@
 package org.ibLGHGCalc
 
 class StationaryCombustionInfo {
-    List emissionsByProgramTypes
+
+    //static belongsTo = Organization
+    static belongsTo = [organization:Organization]
+    //List emissionsByProgramTypes
    
     String fuelSourceDescription
     String fuelType
@@ -19,6 +22,7 @@ class StationaryCombustionInfo {
     static hasMany = [emissionsByProgramTypes:StationaryCombustionEmissions]
 
     static constraints = {
+            //organization(nullable:false)
             fuelSourceDescription(blank:false, maxsize:255)
             fuelType(blank:false)
             fuelQuantity(blank:false)
@@ -28,5 +32,8 @@ class StationaryCombustionInfo {
             dateCreated(nullable:true)     
             lastUpdated(nullable:true)
             emissionsByProgramTypes(nullable:true)
+    }
+    static mapping = {
+        emissionsByProgramTypes cascade: "all-delete-orphan"
     }
 }
