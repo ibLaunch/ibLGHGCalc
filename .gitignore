@@ -1,0 +1,31 @@
+# .gitignore for Grails
+
+
+# IDE support files that are overwritten by "grails upgrade"
+#  cf. GRAILS_HOME/scripts/CreateApp.groovy, target( createIDESupportFiles )
+# to be specific, you could replace "/*" below with your project name,
+#  e.g. "foobar.launch" (no slash)
+.classpath
+.project
+.settings
+.idea
+*.iml
+/*.launch
+/*.tmproj
+
+
+# logs
+stacktrace.log
+
+# project release file
+*.war
+
+#Other directories
+/target
+/out
+/logs
+/test.uy-09
+/web-app/WEB-INF
+/test/reports
+
+

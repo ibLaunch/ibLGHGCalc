@@ -1,5 +1,6 @@
 package org.ibLGHGCalc.client;
 
+import com.google.gwt.core.client.GWT;
 import com.smartgwt.client.data.OperationBinding;
 import com.smartgwt.client.data.RestDataSource;
 import com.smartgwt.client.data.fields.*;
@@ -77,14 +78,14 @@ public class StationaryCombustionInfoDS extends RestDataSource {
     fuelUnitItem.setWidth("100%");
     fuelUnitField.setEditorType(fuelUnitItem);
 
-    DataSourceDateField fuelUsedBeginDateField =
-        new DataSourceDateField("fuelUsedBeginDate", "Begin Date");
+    DataSourceDateTimeField fuelUsedBeginDateField =
+        new DataSourceDateTimeField("fuelUsedBeginDate", "Begin Date");
     DateItem fuelUsedBeginDateItem = new DateItem();
     fuelUsedBeginDateItem.setWidth("100%");
     fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
 
-    DataSourceDateField fuelUsedEndDateField =
-        new DataSourceDateField("fuelUsedEndDate", "End Date");
+    DataSourceDateTimeField fuelUsedEndDateField =
+        new DataSourceDateTimeField("fuelUsedEndDate", "End Date");
     DateItem fuelUsedEndDateItem = new DateItem();
     fuelUsedEndDateItem.setWidth("100%");
     fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
@@ -96,19 +97,19 @@ public class StationaryCombustionInfoDS extends RestDataSource {
     //setup operations
     //1. fetch
     OperationBinding fetch =
-        new OperationBinding(DSOperationType.FETCH, "/ibLGHGCalc/stationaryCombustionInfo/list");
+        new OperationBinding(DSOperationType.FETCH,"stationaryCombustionInfo/list");
     fetch.setDataProtocol(DSProtocol.POSTPARAMS);
     //2. update
     OperationBinding update =
-        new OperationBinding(DSOperationType.UPDATE, "/ibLGHGCalc/stationaryCombustionInfo/save");
+        new OperationBinding(DSOperationType.UPDATE,"stationaryCombustionInfo/save");
     update.setDataProtocol(DSProtocol.POSTPARAMS);
     //3. add
     OperationBinding add =
-        new OperationBinding(DSOperationType.ADD, "/ibLGHGCalc/stationaryCombustionInfo/save");
+        new OperationBinding(DSOperationType.ADD,"stationaryCombustionInfo/save");
     add.setDataProtocol(DSProtocol.POSTPARAMS);
     //4. remove
     OperationBinding remove =
-        new OperationBinding(DSOperationType.REMOVE, "/ibLGHGCalc/stationaryCombustionInfo/remove");
+        new OperationBinding(DSOperationType.REMOVE,"stationaryCombustionInfo/remove");
     remove.setDataProtocol(DSProtocol.POSTPARAMS);
     setOperationBindings(fetch, update, add, remove);
     //setClientOnly(true);

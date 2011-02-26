@@ -2,7 +2,7 @@ package org.ibLGHGCalc
 
 class StationaryCombustionEmissions {
 
-    static belongsTo = [stationaryCombustionInfo: StationaryCombustionInfo]
+    static belongsTo = [stationaryCombustionInfo: StationaryCombustionInfo, mobileCombustionInfo: MobileCombustionInfo ]
 
     Double CO2Emissions
     String CO2EMissionsUnit
@@ -14,6 +14,7 @@ class StationaryCombustionEmissions {
     String N2OEMissionsUnit
 
     String programType
+    String emissionsType
 
     static constraints = {
         stationaryCombustionInfo (nullable:true)
@@ -23,6 +24,7 @@ class StationaryCombustionEmissions {
         CO2EMissionsUnit(nullable:true)
         CH4EMissionsUnit(nullable:true)
 	N2OEMissionsUnit(nullable:true)
-	programType(nullable:true)
+	programType(blank:true)
+        emissionsType(blank:true)
     }
 }

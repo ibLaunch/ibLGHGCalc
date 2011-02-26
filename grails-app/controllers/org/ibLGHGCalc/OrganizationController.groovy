@@ -7,7 +7,14 @@ class OrganizationController {
 
   def list = {
     log.info "OrganizationController.list( ${params} )"
-    def organizations = organizationService.findOrganizations();
+    //def organizations = organizationService.findOrganizations();
+    //def organizations = organizationService.findOrganization(params);
+    def organizations
+    if (params.organizationName){
+        organizations = organizationService.findOrganization(params);
+    } else {
+        organizations = organizationService.findOrganizations();
+    }
     def xml = new MarkupBuilder(response.writer)
     xml.response() {
       status(0)
@@ -48,7 +55,21 @@ class OrganizationController {
   private def flushOrganization = { xml, organization ->
     xml.record(
         id: organization.id,
-        organizationName: organization.organizationName
+        organizationName: organization.organizationName,
+	organizationStreetAddress1: organization.organizationStreetAddress1,
+	organizationStreetAddress2: organization.organizationStreetAddress2,
+	organizationCity: organization.organizationCity,
+	organizationState: organization.organizationState,
+	organizationZipCode: organization.organizationZipCode,
+	organizationCountry: organization.organizationCountry,
+	organizationWebsite: organization.organizationWebsite,
+	organizationHQ: organization.organizationHQ,
+	pointOfContact: organization.pointOfContact,
+        currentInventoryBeginDate:organization.currentInventoryBeginDate,
+        currentInventoryEndDate:organization.currentInventoryEndDate,
+	dateCreated: organization.dateCreated,
+	lastUpdated: organization.lastUpdated
+
         //stationaryCombustionInfos: organization.stationaryCombustionInfos
     )
   }

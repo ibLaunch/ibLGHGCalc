@@ -65,7 +65,7 @@ class EF_StationaryCombustion_EPAController {
 //-- This service is the loas emission factors files
     def uploadEmissionFactorFile = {
 
-        String fileLoaded = loadEmissionFactorsService.emissionFactorFileUpload()
+        String fileLoaded = loadEmissionFactorsService.emissionFactorFileUpload(params)
         println fileLoaded
         render(view:"/stationaryCombustion")
 /*

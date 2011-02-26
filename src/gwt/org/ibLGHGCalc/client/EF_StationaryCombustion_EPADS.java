@@ -1,5 +1,6 @@
 package org.ibLGHGCalc.client;
 
+import com.google.gwt.core.client.GWT;
 import com.smartgwt.client.data.OperationBinding;
 import com.smartgwt.client.data.RestDataSource;
 import com.smartgwt.client.data.fields.DataSourceBooleanField;
@@ -75,19 +76,19 @@ public class EF_StationaryCombustion_EPADS extends RestDataSource {
     //setup operations
     //1. fetch
     OperationBinding fetch =
-            new OperationBinding(DSOperationType.FETCH, "/ibLGHGCalc/EF_StationaryCombustion_EPA/list");
+            new OperationBinding(DSOperationType.FETCH,"EF_StationaryCombustion_EPA/list");
     fetch.setDataProtocol(DSProtocol.POSTPARAMS);
     //2. update
     OperationBinding update =
-        new OperationBinding(DSOperationType.UPDATE, "/ibLGHGCalc/EF_StationaryCombustion_EPA/save");
+        new OperationBinding(DSOperationType.UPDATE,"EF_StationaryCombustion_EPA/save");
     update.setDataProtocol(DSProtocol.POSTPARAMS);
     //3. add
     OperationBinding add =
-        new OperationBinding(DSOperationType.ADD, "/ibLGHGCalc/EF_StationaryCombustion_EPA/save");
+        new OperationBinding(DSOperationType.ADD,"EF_StationaryCombustion_EPA/save");
     add.setDataProtocol(DSProtocol.POSTPARAMS);
     //4. remove
     OperationBinding remove =
-        new OperationBinding(DSOperationType.REMOVE, "/ibLGHGCalc/EF_StationaryCombustion_EPA/remove");
+        new OperationBinding(DSOperationType.REMOVE,"EF_StationaryCombustion_EPA/remove");
     remove.setDataProtocol(DSProtocol.POSTPARAMS);
     setOperationBindings(fetch, update, add, remove);
   }

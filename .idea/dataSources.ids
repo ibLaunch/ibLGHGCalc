@@ -18,17 +18,22 @@
       <column name="co2multiplier_in_kg" sqlType="DOUBLE" length="22" precision="0" nullable="false" jdbcType="8" />
       <column name="fuel_type" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
       <column name="fuel_unit" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
+      <column name="is_public" sqlType="BIT" length="1" precision="0" nullable="false" jdbcType="-7" />
       <column name="n20multiplier_in_gram" sqlType="DOUBLE" length="22" precision="0" nullable="false" jdbcType="8" />
       <primary-key name="PRIMARY" columns="id" />
     </table>
     <table name="stationary_combustion_info" schema="" catalog="ibLGHGCalc" type="TABLE">
       <column name="id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" />
       <column name="version" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" />
+      <column name="date_created" sqlType="DATETIME" length="19" precision="0" nullable="false" jdbcType="93" />
       <column name="fuel_quantity" sqlType="FLOAT" length="12" precision="0" nullable="false" jdbcType="7" />
       <column name="fuel_source_description" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
       <column name="fuel_type" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
       <column name="fuel_unit" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12" />
+      <column name="fuel_used_begin_date" sqlType="DATETIME" length="19" precision="0" nullable="false" jdbcType="93" />
+      <column name="fuel_used_end_date" sqlType="DATETIME" length="19" precision="0" nullable="false" jdbcType="93" />
       <column name="is_public" sqlType="BIT" length="1" precision="0" nullable="false" jdbcType="-7" />
+      <column name="last_updated" sqlType="DATETIME" length="19" precision="0" nullable="true" jdbcType="93" />
       <primary-key name="PRIMARY" columns="id" />
     </table>
   </data-source>

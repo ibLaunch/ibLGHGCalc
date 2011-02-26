@@ -10,6 +10,23 @@
 //    grails.config.locations << "file:" + System.properties["${appName}.config.location"]
 // }
 
+//--For securing application
+
+import grails.plugins.springsecurity.SecurityConfigType
+
+//grails.plugins.springsecurity.securityConfigType = 'Requestmap'
+//grails.plugins.springsecurity.securityConfigType=SecurityConfigType.Requestmap
+grails.plugins.springsecurity.securityConfigType=SecurityConfigType.InterceptUrlMap
+
+grails.plugins.springsecurity.interceptUrlMap = [
+    '/stationaryCombustion.gsp':         ['ROLE_USER','ROLE_ADMIN'],
+    '/'                        :         ['ROLE_USER','ROLE_ADMIN']
+    //'/**'                    :         ['IS_AUTHENTICATED_ANONYMOUSLY']
+]
+
+//-- Fail on error if validation fails while saving
+grails.gorm.failOnError = true
+
 grails.project.groupId = appName // change this to alter the default package name and Maven publishing destination
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
 grails.mime.use.accept.header = false
@@ -47,10 +64,11 @@ grails.spring.bean.packages = []
 // set per-environment serverURL stem for creating absolute links
 environments {
     production {
-        grails.serverURL = "http://www.changeme.com"
+        grails.serverURL = "http://localhost:8080/${appName}"
     }
     development {
-        grails.serverURL = "http://localhost:8080/${appName}"
+        //grails.serverURL = "http://localhost:8080/${appName}"
+        grails.serverURL = "http://localhost:8080/"
     }
     test {
         grails.serverURL = "http://localhost:8080/${appName}"
@@ -82,11 +100,35 @@ log4j = {
     warn   'org.mortbay.log'
 
     appenders {
-        file name:'file', file:'c:/GHG/ibLGHGCalc/logs/mylog.log'
+        //file name:'file'
+        console name: "stdout", threshold: org.apache.log4j.Level.INFO
     }
     root {
-        debug 'stdout'
-        //additivity = true
+        //debug 'stdout'
+        additivity = true
     }
 
 }
+
+// Added by the Spring Security Core plugin:
+grails.plugins.springsecurity.userLookup.userDomainClassName = 'org.ibLGHGCalc.SecUser'
+grails.plugins.springsecurity.userLookup.authorityJoinClassName = 'org.ibLGHGCalc.SecUserSecRole'
+grails.plugins.springsecurity.authority.className = 'org.ibLGHGCalc.SecRole'
+//SpringSecurityUtils.securityConfig.successHandler.defaultTargetUrl = '/stationaryCombustion.gsp'
+
+
+grails {
+   mail {
+     host = "smtp.gmail.com"
+     port = 465
+     //username = "Hemant.Bundele@gmail.com"
+     //password = "cherry123"
+     username = "Hemant@ibLaunchEnergy.com"
+     password = "hemant123"
+     props = ["mail.smtp.auth":"true",
+              "mail.smtp.socketFactory.port":465,
+              "mail.smtp.socketFactory.class":"javax.net.ssl.SSLSocketFactory",
+              "mail.smtp.socketFactory.fallback":"false"]
+   }
+}
+

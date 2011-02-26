@@ -2,9 +2,18 @@ package org.ibLGHGCalc
 
 import groovy.xml.MarkupBuilder
 
-class StationaryCombustionInfoController {
-  def stationaryCombustionInfoService
+//import org.springframework.security.access.prepost.PostFilter
+//import org.springframework.security.access.prepost.PreAuthorize
+//import org.springframework.transaction.annotation.Transactional
 
+import org.springframework.security.acls.domain.BasePermission
+
+class StationaryCombustionInfoController {
+
+  def stationaryCombustionInfoService
+  def aclUtilService
+  def springSecurityService
+  
   def list = {
     log.info "StationaryCombustionInfoController.list( ${params} )"
     def stationaryCombustionInfos = stationaryCombustionInfoService.findStationaryCombustionInfos(params);
@@ -19,9 +28,24 @@ class StationaryCombustionInfoController {
     }
   }
 
+  //@Transactional
+  //@PreAuthorize("hasRole('ROLE_USER')")
   def save = {
     log.info "StationaryCombustionInfoController.add( ${params} )"
-    def theStationaryCombustionInfo = stationaryCombustionInfoService.save(params)
+    def theStationaryCombustionInfo
+    try {
+        theStationaryCombustionInfo = stationaryCombustionInfoService.save(params)
+        //-- temporary approach below for now, need more better approach??
+        aclUtilService.addPermission(theStationaryCombustionInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+        println "springSecurityService.authentication.name: " + springSecurityService.authentication.name
+    }
+    catch (Exception e) {
+        log.error e
+        println "theStationaryCombustionInfo not Saved"
+    }
+
+    println "theStationaryCombustionInfo from Controller is: " + theStationaryCombustionInfo
+
     def xml = new MarkupBuilder(response.writer)
     xml.response() {
       status(0)
