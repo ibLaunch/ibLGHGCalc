@@ -42,8 +42,8 @@ class OrganizationService {
       //theOrganization.properties = parameters;
 
       //-convert the Date to proper format and re-assign it to theOrganization
-      Date currentInventoryBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.currentInventoryBeginDate)
-      Date currentInventoryEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.currentInventoryEndDate)
+      Date currentInventoryBeginDate = new Date().parse('yyyy-MM-dd', parameters.currentInventoryBeginDate)
+      Date currentInventoryEndDate = new Date().parse('yyyy-MM-dd', parameters.currentInventoryEndDate)
       println "currentInventoryBeginDate : " + currentInventoryBeginDate
       println "currentInventoryEndDate : " + currentInventoryEndDate
       theOrganization.currentInventoryBeginDate = currentInventoryBeginDate

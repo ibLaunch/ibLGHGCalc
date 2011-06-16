@@ -40,6 +40,7 @@ public class EmissionsSummaryDS extends RestDataSource {
         new DataSourceIntegerField("id", "ID");
     idField.setCanEdit(false);
     idField.setPrimaryKey(true);
+    idField.setHidden(Boolean.TRUE);
 
     DataSourceIntegerField organizationIdField =
         new DataSourceIntegerField("organizationId", "Organization Id");
@@ -47,6 +48,7 @@ public class EmissionsSummaryDS extends RestDataSource {
     organizationIdField.setCanEdit(false);
     organizationIdField.setForeignKey("organizationDS.id");
     organizationIdField.setEditorType(organizationIdItem);
+    organizationIdField.setHidden(Boolean.TRUE);
 
     DataSourceFloatField directEmissionsField =
         new DataSourceFloatField("directEmissions", "Direct Emissions");
@@ -134,7 +136,7 @@ public class EmissionsSummaryDS extends RestDataSource {
     employeeCommutingByVehicleEmissionsField.setCanEdit(false);
 
     DataSourceFloatField employeeCommutingByRailEmissionsField =
-        new DataSourceFloatField("employeeCommutingByVehicleEmissions", "Employee Commuting By Rail Emissions");
+        new DataSourceFloatField("employeeCommutingByRailEmissions", "Employee Commuting By Rail Emissions");
     FloatItem employeeCommutingByRailEmissionsItem = new FloatItem();
     employeeCommutingByRailEmissionsField.setEditorType(employeeCommutingByRailEmissionsItem);
     employeeCommutingByRailEmissionsField.setCanEdit(false);
@@ -181,10 +183,22 @@ public class EmissionsSummaryDS extends RestDataSource {
     totalEmissionsField.setEditorType(totalEmissionsItem);
     totalEmissionsField.setCanEdit(false);
 
+    DataSourceFloatField totalOptionalEmissionsField =
+        new DataSourceFloatField("totalOptionalEmissions", "Total Optional Emissions");
+    FloatItem totalOptionalEmissionsItem = new FloatItem();
+    totalOptionalEmissionsField.setEditorType(totalOptionalEmissionsItem);
+    totalOptionalEmissionsField.setCanEdit(false);
+
+    DataSourceIntegerField totalNumberOfSourcesField =
+        new DataSourceIntegerField("totalNumberOfSources", "Number of Sources");
+    IntegerItem totalNumberOfSourcesItem = new IntegerItem();
+    totalNumberOfSourcesField.setEditorType(totalNumberOfSourcesItem);
+    totalNumberOfSourcesField.setCanEdit(false);
+
     DataSourceTextField programTypeField = new DataSourceTextField("programType", "Program Type");
     TextItem programTypeItem = new TextItem();
     programTypeField.setEditorType(programTypeItem);
-    totalEmissionsField.setCanEdit(false);
+    programTypeField.setCanEdit(false);
 
     DataSourceDateField emissionsBeginDateField = new DataSourceDateField("emissionsBeginDate", "Emissions Begin Date");
     DateItem emissionsBeginDateItem = new DateItem();
@@ -196,6 +210,17 @@ public class EmissionsSummaryDS extends RestDataSource {
     emissionsEndDateField.setEditorType(emissionsEndDateItem);
     emissionsEndDateField.setCanEdit(false);
 
+    DataSourceTextField reportFileNameField = new DataSourceTextField("reportFileName", "Report File Name");
+    TextItem reportFileNameItem = new TextItem();
+    programTypeField.setEditorType(reportFileNameItem);
+    reportFileNameField.setCanEdit(false);
+    reportFileNameField.setHidden(Boolean.TRUE);
+
+    DataSourceDateField reportGeneratedDateField = new DataSourceDateField("lastUpdated", "Report Generation Date");
+    DateItem reportGeneratedDateItem = new DateItem();
+    reportGeneratedDateField.setEditorType(reportGeneratedDateItem);
+    reportGeneratedDateField.setCanEdit(false);
+
     setFields(idField, organizationIdField, directEmissionsField, stationaryCombustionEmissionsField, mobileCombustionEmissionsField,
             refridgerationAirConditioningEmissionsField, fireSuppressantEmissionsField, wasteStreamCombustionEmissionsField,
             purchasedElectricityEmissionsField, purchasedSteamEmissionsField,employeeBusinessTravelByVehicleEmissionsField,
@@ -205,7 +230,7 @@ public class EmissionsSummaryDS extends RestDataSource {
             productTransportByHeavyDutyTrucksEmissionsField,productTransportByRailEmissionsField,
             productTransportByWaterAirEmissionsField,
             biomassStationaryCombustionEmissionsField,
-            biomassMobileCombustionEmissionsField, totalEmissionsField, programTypeField, emissionsBeginDateField, emissionsEndDateField);
+            biomassMobileCombustionEmissionsField, totalEmissionsField,totalOptionalEmissionsField, totalNumberOfSourcesField, programTypeField, emissionsBeginDateField, emissionsEndDateField, reportFileNameField,reportGeneratedDateField);
     //setup operations
     //1. fetch
     OperationBinding fetch =
@@ -217,7 +242,7 @@ public class EmissionsSummaryDS extends RestDataSource {
     update.setDataProtocol(DSProtocol.POSTPARAMS);
     //3. add
     OperationBinding add =
-        new OperationBinding(DSOperationType.ADD,"emissionsSummary/save");
+        new OperationBinding(DSOperationType.ADD,"emissionsSummary/calculateEmissionsSummary");
     add.setDataProtocol(DSProtocol.POSTPARAMS);
     //4. remove
     OperationBinding remove =

@@ -29,7 +29,7 @@ class RefridgerationAirConditioningInfoController {
     try {
         theRefridgerationAirConditioningInfo = refridgerationAirConditioningInfoService.save(params)
         //-- temporary approach below for now, need more better approach??
-        aclUtilService.addPermission(theRefridgerationAirConditioningInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+        //aclUtilService.addPermission(theRefridgerationAirConditioningInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
         println "springSecurityService.authentication.name: " + springSecurityService.authentication.name
     }
     catch (Exception e) {
@@ -84,8 +84,8 @@ class RefridgerationAirConditioningInfoController {
         timeInYearsUsed:refridgerationAirConditioningInfo.timeInYearsUsed,
 
 	methodType:refridgerationAirConditioningInfo.methodType,
-	fuelUsedBeginDate:refridgerationAirConditioningInfo.fuelUsedBeginDate,
-	fuelUsedEndDate:refridgerationAirConditioningInfo.fuelUsedEndDate
+	fuelUsedBeginDate:refridgerationAirConditioningInfo.fuelUsedBeginDate?.format("yyyy-MM-dd"),
+	fuelUsedEndDate:refridgerationAirConditioningInfo.fuelUsedEndDate?.format("yyyy-MM-dd")
     )
   }
 }

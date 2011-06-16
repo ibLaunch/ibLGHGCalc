@@ -43,6 +43,15 @@ class RegisterController extends grails.plugins.springsecurity.ui.RegisterContro
                      }
                 }
                 aclUtilService.addPermission(theOrganization, user.username, BasePermission.ADMINISTRATION)
+
+                println "theOrganization----------"+ theOrganization
+
+                //if the organization already exists then get all the related objects and give admin permission to new user                
+                theOrganization.stationaryCombustionInfoList.each {
+                    //aclUtilService.addPermission(it, user.username, BasePermission.ADMINISTRATION)
+                    println "it-------------" + it
+                }
+                
 //--end of temporary code
 
 		def registrationCode = new RegistrationCode(username: user.username).save()

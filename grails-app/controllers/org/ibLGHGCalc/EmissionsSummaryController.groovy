@@ -11,6 +11,7 @@ class EmissionsSummaryController {
 
   def list = {
     log.info "EmissionsSummaryController.list( ${params} )"
+    println "params: -----"+ params
     def emissionsSummarys = emissionsSummaryService.findEmissionsSummarys(params);
     def xml = new MarkupBuilder(response.writer)
     xml.response() {
@@ -97,23 +98,50 @@ class EmissionsSummaryController {
         biomassMobileCombustionEmissions: emissionsSummary.biomassMobileCombustionEmissions,
 
     	totalEmissions: emissionsSummary.totalEmissions,
+        totalOptionalEmissions: emissionsSummary.totalOptionalEmissions,
+        totalNumberOfSources: emissionsSummary.totalNumberOfSources,
         programType: emissionsSummary.programType,        
-    	emissionsBeginDate: emissionsSummary.emissionsBeginDate,
-    	emissionsEndDate: emissionsSummary.emissionsEndDate
+    	emissionsBeginDate: emissionsSummary.emissionsBeginDate?.format("yyyy-MM-dd"),
+    	emissionsEndDate: emissionsSummary.emissionsEndDate?.format("yyyy-MM-dd"),
+        reportFileName: emissionsSummary?.reportFileName,
+        lastUpdated: emissionsSummary.lastUpdated.format("yyyy-MM-dd")
     )
   }
 
   def calculateEmissionsSummary = {
     log.info "EmissionsSummaryController.calculateEmissionsSummary( ${params} )"
-    emissionsSummaryService.calculateEmissionsSummary(params)
+    def theEmissionsSummary = emissionsSummaryService.calculateEmissionsSummary(params)
     def xml = new MarkupBuilder(response.writer)
     xml.response() {
+      status(0)
       data {
-        status(0)
-        record {
-          id(params.id)
-        }
+        flushEmissionsSummary xml, theEmissionsSummary
       }
     }
   }
+
+def serveReportFile = {
+
+    println "params:======"+params
+    def  emissionsSummaryReportId = Long.decode(params.emissionsSummaryReportId)
+    //def  emissionsSummaryReportId = params.emissionsSummaryReportId
+    def theEmissionsSummary = emissionsSummaryService.findEmissionsSummary(emissionsSummaryReportId);
+
+    if (theEmissionsSummary) {
+        println "params:---"+params
+        String fileName = theEmissionsSummary?.reportFileName        
+        if (fileName){
+            def rFile = new File(System.properties['base.dir']+"/reports/"+params.organizationId+"/"+fileName);
+            //response.setContentType("application/x-download");
+            response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+            response.outputStream << rFile.readBytes()
+        } else {
+            response.outputStream << " No report found!!!!!"
+        }
+    } else {
+        println " No report found ---------------"
+        response.outputStream << " Either report not generated or you don't have access to this report, contact support if needed"
+    }
+ }
+
 }

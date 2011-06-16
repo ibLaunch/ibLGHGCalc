@@ -2,6 +2,8 @@ package org.ibLGHGCalc
 
 class Organization {
 
+    //static searchable = true
+
     String organizationName
     String organizationStreetAddress1
     String organizationStreetAddress2
@@ -14,6 +16,7 @@ class Organization {
     String pointOfContact
     Date currentInventoryBeginDate
     Date currentInventoryEndDate
+    String programType
     Date dateCreated
     Date lastUpdated
     
@@ -25,6 +28,7 @@ class Organization {
                       purchasedSteamInfoList:PurchasedSteamInfo,
                       optionalSourceInfoList:OptionalSourceInfo,
                       wasteStreamCombustionInfoList:WasteStreamCombustionInfo
+                      //userList:SecUser
                      ]
 
     static constraints = {
@@ -32,6 +36,7 @@ class Organization {
 
         currentInventoryBeginDate(nullable:true)
         currentInventoryEndDate(nullable:true)
+        programType(nullable:true, default:"EPA Climate Leaders")
         organizationStreetAddress1(nullable:true)
         organizationStreetAddress2(nullable:true)
         organizationCity(nullable:true)
@@ -42,6 +47,7 @@ class Organization {
         organizationHQ(nullable:true)
         pointOfContact(nullable:true)
 
+
         stationaryCombustionInfoList(nullable:true)
         emissionsSummaryList(nullable:true)
         mobileCombustionInfoList (nullable:true)
@@ -49,6 +55,7 @@ class Organization {
         purchasedSteamInfoList (nullable:true)
         optionalSourceInfoList (nullable:true)
         wasteStreamCombustionInfoList (nullable:true)
+        //userList (nullable:true)
     }
 
     static mapping = {
@@ -60,6 +67,7 @@ class Organization {
         purchasedSteamInfoList cascade: "all-delete-orphan"
         optionalSourceInfoList cascade: "all-delete-orphan"
         wasteStreamCombustionInfoList cascade: "all-delete-orphan"
+        //userList cascade: "all-delete-orphan"
         //tablePerHierarchy false
     }
 }

@@ -1,6 +1,7 @@
 package org.ibLGHGCalc
 
 class EF_CH4N2O_MobileCombustion_EPA {
+    //static searchable = true
     String vehicleType
     String vehicleYear
     Double CH4MultiplierInGram

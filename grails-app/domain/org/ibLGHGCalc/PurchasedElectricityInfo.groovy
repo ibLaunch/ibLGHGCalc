@@ -15,6 +15,9 @@ class PurchasedElectricityInfo {
     Date dateCreated
     Date lastUpdated
 
+    SecUser lastUpdatedByUserReference
+    String dataOrigin //"sourceFileName" or 'UI'
+
     static hasMany = [emissionsDetailsList: EmissionsDetails]
 
     static constraints = {
@@ -28,6 +31,8 @@ class PurchasedElectricityInfo {
         fuelUsedEndDate(nullable:false)
         dateCreated(nullable:true)
         lastUpdated(nullable:true)
+        lastUpdatedByUserReference(nullable:true)
+        dataOrigin(nullable:true)
 
         emissionsDetailsList(nullable:true)
     }

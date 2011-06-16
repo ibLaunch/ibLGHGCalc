@@ -1,6 +1,14 @@
 package org.ibLGHGCalc
 
 class SecUser {
+/*
+        static searchable = {
+            mapping {
+                boost 2.0
+                spellCheck "include"
+            }
+        }
+*/
         String firstName
         String lastName
         String phoneNumber

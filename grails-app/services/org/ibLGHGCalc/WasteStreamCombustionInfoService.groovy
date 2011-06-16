@@ -29,6 +29,9 @@ class WasteStreamCombustionInfoService {
           theOrganization = Organization.get(parameters.organizationId)
       } else if (parameters.organizationName){
           theOrganization = Organization.findByOrganizationName(parameters.organizationName)
+      } else if (parameters.id) {
+           // User has provided the id of the mobile comubstion source, so just provide that and return from here.
+           return WasteStreamCombustionInfo.get(parameters.id)
       } else {
           println "-----I don't know organization in wasteStreamCombustionInfoService.findWasteStreamCombustionInfos()"
       }
@@ -164,8 +167,11 @@ class WasteStreamCombustionInfoService {
         }
       }
 
-      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
-      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      //Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
+      //Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedBeginDate)
+      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedEndDate)
+
       println "fuelUsedBeginDate : " + fuelUsedBeginDate
       println "fuelUsedEndDate : " + fuelUsedEndDate
 
@@ -254,38 +260,38 @@ class WasteStreamCombustionInfoService {
              //Fix the calculations below
              theEF_WasteStreamCombustion_EPAList.each{
                     if (it.wasteStreamComponent.equals("Carbon Monoxide")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Carbon Dioxide")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                         CO2MolecularWeight=it.molecularWeight
                     } else if (it.wasteStreamComponent.equals("Methane")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Acetylene")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Ethylene")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Ethane")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Propylene")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Propane")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("n-Butane")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Benzene")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Hexane")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Toluene")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                     } else if (it.wasteStreamComponent.equals("Octane")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                      } else if (it.wasteStreamComponent.equals("Ethanol")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                      } else if (it.wasteStreamComponent.equals("Acetone")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                      } else if (it.wasteStreamComponent.equals("Tetrahydrofuran")){
-                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon/100)
+                        CO2Emissions += (parameters.carbonMonoxideMolarFractionPercent/100) * parameters.totalNumberOfMolesPerUnitVolument * it.molecularWeight * (it.percentCarbon)
                      } else {
                         println "Can't find the waste Stream Component in the EF_WasteStreamCombustion_EPA"
                     }
@@ -298,9 +304,9 @@ class WasteStreamCombustionInfoService {
              emissions.put("CH4Emissions", CH4Emissions)
              emissions.put("N2OEmissions", N2OEmissions)
              emissions.put("CO2EmissionsUnit", "lb")
-             emissions.put("biomassCO2EmissionsUnit", "?")
-             emissions.put("CH4EmissionsUnit", "?")
-             emissions.put("N2OEmissionsUnit", "?")
+             emissions.put("biomassCO2EmissionsUnit", "lb")
+             emissions.put("CH4EmissionsUnit", "lb")
+             emissions.put("N2OEmissionsUnit", "lb")
              emissions.put("emissionsType", emissionsType)
              emissions.put("programType", programType)
 

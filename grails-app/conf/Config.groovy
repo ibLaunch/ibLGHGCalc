@@ -14,6 +14,7 @@
 
 import grails.plugins.springsecurity.SecurityConfigType
 
+//grails.plugins.springsecurity.securityConfigType = grails.plugins.springsecurity.SecurityConfigType.Requestmap
 //grails.plugins.springsecurity.securityConfigType = 'Requestmap'
 //grails.plugins.springsecurity.securityConfigType=SecurityConfigType.Requestmap
 grails.plugins.springsecurity.securityConfigType=SecurityConfigType.InterceptUrlMap
@@ -132,3 +133,24 @@ grails {
    }
 }
 
+//grails.plugins.springsecurity.ui.register.emailBody = 'This is a test body'
+grails.plugins.springsecurity.ui.register.emailFrom = 'Hemant@ibLaunchEnergy.com'
+grails.plugins.springsecurity.ui.register.emailSubject = 'Registration'
+
+def requestContextPath = request.contextPath
+def registrationToken = registrationCode.token
+def url = "<link>${requestContextPath}/register/verifyRegistration?t=${registrationToken}</link>"
+//def username = registrationCode.username
+
+//grails.plugins.springsecurity.ui.register.emailBody = 'Hi $user.firstName \\n You (or someone pretending to be you) created an account with this email address. \\nIf you made the request, please <a href="$url">Click here</a> to finish the registration'
+grails.plugins.springsecurity.ui.register.emailBody =
+'''\
+Hi $user.firstName,<br/>
+<br/>
+Welcome to yourGHGEmissionsReport.com
+<br/>
+You (or someone pretending to be you) created an account with this email address.<br/>
+<br/>
+If you made the request, please click <a href="$url">here</a> to finish the registration.
+'''
+spring.security.ui.login.signin = "Hello My Friend"

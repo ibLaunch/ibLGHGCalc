@@ -16,9 +16,10 @@ class OrganizationController {
         organizations = organizationService.findOrganizations();
     }
     def xml = new MarkupBuilder(response.writer)
+
     xml.response() {
       status(0)
-      data {
+      data{
         organizations.each { theOrganization ->
           flushOrganization xml, theOrganization
         }
@@ -65,10 +66,11 @@ class OrganizationController {
 	organizationWebsite: organization.organizationWebsite,
 	organizationHQ: organization.organizationHQ,
 	pointOfContact: organization.pointOfContact,
-        currentInventoryBeginDate:organization.currentInventoryBeginDate,
-        currentInventoryEndDate:organization.currentInventoryEndDate,
-	dateCreated: organization.dateCreated,
-	lastUpdated: organization.lastUpdated
+        currentInventoryBeginDate:organization.currentInventoryBeginDate?.format("yyyy-MM-dd"),
+        currentInventoryEndDate:organization.currentInventoryEndDate?.format("yyyy-MM-dd"),
+        programType: organization.programType,
+	dateCreated: organization.dateCreated?.format("yyyy-MM-dd"),
+	lastUpdated: organization.lastUpdated?.format("yyyy-MM-dd")
 
         //stationaryCombustionInfos: organization.stationaryCombustionInfos
     )

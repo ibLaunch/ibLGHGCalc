@@ -2,8 +2,12 @@ package org.ibLGHGCalc
 import org.springframework.security.access.prepost.PostFilter
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
+import org.codehaus.groovy.grails.plugins.jasper.JasperExportFormat
+import org.codehaus.groovy.grails.plugins.jasper.JasperReportDef
+import org.apache.commons.io.FileUtils
 
 import org.springframework.security.acls.domain.BasePermission
+
 
 
 class EmissionsSummaryService {
@@ -11,10 +15,12 @@ class EmissionsSummaryService {
     static transactional = true
     def aclUtilService
     def springSecurityService
-
-    @PreAuthorize("hasRole('ROLE_USER')")
-    @PostFilter("hasPermission(filterObject, read) or hasPermission(filterObject, admin)")
-    EmissionsSummary findEmissionsSummary(Long id) {
+    def jasperService
+    
+    //@PreAuthorize("hasRole('ROLE_USER')")
+    //@PostFilter("hasPermission(filterObject, read) or hasPermission(filterObject, admin)")
+    @PreAuthorize("hasPermission(#id, 'org.ibLGHGCalc.EmissionsSummary', read) or hasPermission(#id, 'org.ibLGHGCalc.EmissionsSummary', admin)")
+    EmissionsSummary findEmissionsSummary(long id) {
       EmissionsSummary.get(id)
     }
     
@@ -23,7 +29,20 @@ class EmissionsSummaryService {
     def EmissionsSummary[] findEmissionsSummarys(Map<String, String> parameters) {
       //EmissionsSummary.list()
       //def theOrganization = Organization.get(parameters.organizationId)
-      def theOrganization = Organization.findByOrganizationName(parameters.organizationName)
+      def theOrganization
+
+      if (parameters.organizationId) {
+          theOrganization = Organization.get(parameters.organizationId)
+      } else if (parameters.organizationName){
+          theOrganization = Organization.findByOrganizationName(parameters.organizationName)
+      } else if (parameters.id) {
+           // User has provided the id of the Stationary comubstion source, so just provide that and return from here.
+           return EmissionsSummary.get(parameters.id)
+      } else {
+          println "-----I don't know organization in emissionsSummaryService.findEmissionsSummarys"
+      }
+
+
       //EmissionsSummary.findAllByOrganization(theOrganization)
       //def theOrganization = Organization.get(1)
       return theOrganization.emissionsSummaryList      
@@ -68,7 +87,7 @@ class EmissionsSummaryService {
 
     @Transactional
     @PreAuthorize("hasRole('ROLE_USER')")
-    def calculateEmissionsSummary(Map<String, String> parameters) {
+    def EmissionsSummary calculateEmissionsSummary(Map<String, String> parameters) {
       log.info "Calculate Emissions Sumary( ${parameters} )"
       println "parameters" + parameters
       println "parameters.emissionsBeginDate : " + parameters.emissionsBeginDate
@@ -107,7 +126,10 @@ class EmissionsSummaryService {
           theEmissionsSummary.emissionsEndDate = endDate
       }
 
-      def Double totalEmissions = 0
+      Double totalEmissions = 0
+      Double totalOptionalEmissions = 0
+      Integer totalNumberOfSources = 0
+
 // ------------------- Calculate stationaryCombustionEmissions
 //-- Temporary initialization of theEmissionsSummary.stationaryCombustionEmissions- remove this in futre ??
       theEmissionsSummary.stationaryCombustionEmissions = 0
@@ -125,6 +147,7 @@ class EmissionsSummaryService {
       theStationaryCombustionInfoList.each{          
           if((  it.fuelUsedBeginDate >= beginDate) && ( it.fuelUsedEndDate <= endDate ))
           {
+            totalNumberOfSources++
             theEmissionsDetailsList = it.emissionsDetailsList
             println "I am in theStationaryCombustionInfoList"
             theEmissionsDetailsList.each{
@@ -132,10 +155,15 @@ class EmissionsSummaryService {
                 //--Implement proper code for programType-??
                 println "I am in theEmissionsDetailsList for Stationary Combustion Info"
                 if (it.programType.equals(programType)){
-                   theEmissionsSummary.stationaryCombustionEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                   //--Make sure all the emissions are in appropriate units if not convert them to proper units and Get emissions in MT
+                   def emissionsInMT = [:]
+                   emissionsInMT = getEmissionsInMT(it);
+                   theEmissionsSummary.stationaryCombustionEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT                   
+
+                   //theEmissionsSummary.stationaryCombustionEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    //--check if biomass emissions is not null
                    if (it.biomassCO2Emissions) {
-                       theEmissionsSummary.biomassStationaryCombustionEmissions += it.biomassCO2Emissions
+                       theEmissionsSummary.biomassStationaryCombustionEmissions += emissionsInMT.biomassCO2EmissionsMT
                    }                   
                    theEmissionsSummary.programType=programType
                 }
@@ -156,6 +184,7 @@ class EmissionsSummaryService {
       theMobileCombustionInfoList.each{
           if((  it.fuelUsedBeginDate >= beginDate) && ( it.fuelUsedEndDate <= endDate ))
           {
+            totalNumberOfSources++
             theEmissionsDetailsList = it.emissionsDetailsList
             println "I am in theMobileCombustionInfoList"
             theEmissionsDetailsList.each{
@@ -163,12 +192,19 @@ class EmissionsSummaryService {
                 //--Implement proper code for programType-??
                 println "I am in theEmissionsDetailsList for Mobile Combustion Info"
                 if (it.programType.equals(programType)){
-                   theEmissionsSummary.mobileCombustionEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+
+                   //--Make sure all the emissions are in appropriate units if not convert them to proper units and Get emissions in MT
+                   def emissionsInMT = [:]
+                   emissionsInMT = getEmissionsInMT(it);
+                   theEmissionsSummary.mobileCombustionEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT                   
+                   //theEmissionsSummary.mobileCombustionEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    //--check if biomass emissions is not null
                    if (it.biomassCO2Emissions) {
-                        theEmissionsSummary.biomassMobileCombustionEmissions += it.biomassCO2Emissions
+                        //theEmissionsSummary.biomassMobileCombustionEmissions += it.biomassCO2Emissions
+                        theEmissionsSummary.biomassMobileCombustionEmissions += emissionsInMT.biomassCO2EmissionsMT
                    }
                    theEmissionsSummary.programType=programType
+
                 }
             }
           }
@@ -189,6 +225,7 @@ class EmissionsSummaryService {
       theRefridgerationAirConditioningInfoList.each{
           if((  it.fuelUsedBeginDate >= beginDate) && ( it.fuelUsedEndDate <= endDate ))
           {
+            totalNumberOfSources++
             theEmissionsDetailsList = it.emissionsDetailsList
             println "I am in theRefridgerationAirConditioningInfoList"
             theEmissionsDetailsList.each{
@@ -196,14 +233,20 @@ class EmissionsSummaryService {
                 //--Implement proper code for programType-??
                 println "I am in theEmissionsDetailsList for the Refridgeration Air Conditioning Info"
                 if (it.programType.equals(programType)){
+                   //--Make sure all the emissions are in appropriate units if not convert them to proper units and Get emissions in MT
+                   def emissionsInMT = [:]
+                   emissionsInMT = getEmissionsInMT(it);
                    if (it.emissionsType.contains("Refridgeration")){
-                       theEmissionsSummary.refridgerationAirConditioningEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       //theEmissionsSummary.refridgerationAirConditioningEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.refridgerationAirConditioningEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
                    } else if (it.emissionsType.contains("Fire")){
-                       theEmissionsSummary.fireSuppressantEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       //theEmissionsSummary.fireSuppressantEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.fireSuppressantEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
                    }
                    //--check if biomass emissions is not null -- Below is not required since emissions related to refridgeration and AC
                    if (it.biomassCO2Emissions) {
-                        theEmissionsSummary.biomassMobileCombustionEmissions += it.biomassCO2Emissions                   
+                        //theEmissionsSummary.biomassMobileCombustionEmissions += it.biomassCO2Emissions
+                        theEmissionsSummary.biomassMobileCombustionEmissions += emissionsInMT.biomassCO2EmissionsMT
                    }
                    theEmissionsSummary.programType=programType
                 }
@@ -226,6 +269,7 @@ class EmissionsSummaryService {
       thePurchasedElectricityInfoList.each{
           if((  it.fuelUsedBeginDate >= beginDate) && ( it.fuelUsedEndDate <= endDate ))
           {
+            totalNumberOfSources++
             theEmissionsDetailsList = it.emissionsDetailsList
             println "I am in thePurchasedElectricityInfoList"
             theEmissionsDetailsList.each{
@@ -233,10 +277,15 @@ class EmissionsSummaryService {
                 //--Implement proper code for programType-??
                 println "I am in theEmissionsDetailsList for Purchased Electricity Info"
                 if (it.programType.equals(programType)){
-                   theEmissionsSummary.purchasedElectricityEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                   //--Make sure all the emissions are in appropriate units if not convert them to proper units and Get emissions in MT
+                   def emissionsInMT = [:]
+                   emissionsInMT = getEmissionsInMT(it);
+                   theEmissionsSummary.purchasedElectricityEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                   //theEmissionsSummary.purchasedElectricityEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    //--check if biomass emissions is not null - Below is not required since it is about purchased electricity
                    if (it.biomassCO2Emissions) {
-                       theEmissionsSummary.biomassStationaryCombustionEmissions += it.biomassCO2Emissions
+                       theEmissionsSummary.biomassStationaryCombustionEmissions += emissionsInMT.biomassCO2EmissionsMT
+                       //theEmissionsSummary.biomassStationaryCombustionEmissions += it.biomassCO2Emissions
                    }
                    theEmissionsSummary.programType=programType
                 }
@@ -259,6 +308,7 @@ class EmissionsSummaryService {
       thePurchasedSteamInfoList.each{
           if((  it.fuelUsedBeginDate >= beginDate) && ( it.fuelUsedEndDate <= endDate ))
           {
+            totalNumberOfSources++
             theEmissionsDetailsList = it.emissionsDetailsList
             println "I am in thePurchasedSteamInfoList"
             theEmissionsDetailsList.each{
@@ -266,10 +316,14 @@ class EmissionsSummaryService {
                 //--Implement proper code for programType-??
                 println "I am in theEmissionsDetailsList for Purchased Steam Info"
                 if (it.programType.equals(programType)){
-                   theEmissionsSummary.purchasedSteamEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                   def emissionsInMT = [:]
+                   emissionsInMT = getEmissionsInMT(it);
+                   theEmissionsSummary.purchasedSteamEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                   //theEmissionsSummary.purchasedSteamEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    //--check if biomass emissions is not null - Below is not required since it is about purchased Steam
                    if (it.biomassCO2Emissions) {
-                       theEmissionsSummary.biomassStationaryCombustionEmissions += it.biomassCO2Emissions
+                       theEmissionsSummary.biomassStationaryCombustionEmissions += emissionsInMT.biomassCO2EmissionsMT
+                       //theEmissionsSummary.biomassStationaryCombustionEmissions += it.biomassCO2Emissions
                    }
                    theEmissionsSummary.programType=programType
                 }
@@ -292,6 +346,7 @@ class EmissionsSummaryService {
       theWasteStreamCombustionInfoList.each{
           if((  it.fuelUsedBeginDate >= beginDate) && ( it.fuelUsedEndDate <= endDate ))
           {
+            totalNumberOfSources++
             theEmissionsDetailsList = it.emissionsDetailsList
             println "I am in theWasteStreamCombustionInfoList"
             theEmissionsDetailsList.each{
@@ -299,10 +354,14 @@ class EmissionsSummaryService {
                 //--Implement proper code for programType-??
                 println "I am in theEmissionsDetailsList for Waste Stream Combustion Info"
                 if (it.programType.equals(programType)){
-                   theEmissionsSummary.wasteStreamCombustionEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                   def emissionsInMT = [:]
+                   emissionsInMT = getEmissionsInMT(it);
+                   theEmissionsSummary.wasteStreamCombustionEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                   //theEmissionsSummary.wasteStreamCombustionEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    //--check if biomass emissions is not null - Below is not required since it is about WasteStreamCombustion
                    if (it.biomassCO2Emissions) {
-                       theEmissionsSummary.biomassStationaryCombustionEmissions += it.biomassCO2Emissions
+                       theEmissionsSummary.biomassStationaryCombustionEmissions += emissionsInMT.biomassCO2EmissionsMT
+                       //theEmissionsSummary.biomassStationaryCombustionEmissions += it.biomassCO2Emissions
                    }
                    theEmissionsSummary.programType=programType
                 }
@@ -335,6 +394,7 @@ class EmissionsSummaryService {
       theOptionalSourceInfoList.each{
           if((  it.fuelUsedBeginDate >= beginDate) && ( it.fuelUsedEndDate <= endDate ))
           {
+            totalNumberOfSources++
             theEmissionsDetailsList = it.emissionsDetailsList
             println "I am in theOptionalSourceInfoList"
             theEmissionsDetailsList.each{
@@ -342,34 +402,49 @@ class EmissionsSummaryService {
                 //--Implement proper code for programType-??
                 println "I am in theEmissionsDetailsList for the optional Source Info"
                 if (it.programType.equals(programType)){
+                   def emissionsInMT = [:]
+                   emissionsInMT = getEmissionsInMT(it);
+
                    if (it.emissionsType.equals("Employee Business Travel - By Vehicle")){
-                       theEmissionsSummary.employeeBusinessTravelByVehicleEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.employeeBusinessTravelByVehicleEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.employeeBusinessTravelByVehicleEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Employee Business Travel - By Rail")){
-                       theEmissionsSummary.employeeBusinessTravelByRailEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.employeeBusinessTravelByRailEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.employeeBusinessTravelByRailEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Employee Business Travel - By Bus")){
-                       theEmissionsSummary.employeeBusinessTravelByBusEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.employeeBusinessTravelByBusEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.employeeBusinessTravelByBusEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Employee Business Travel - By Air")){
-                       theEmissionsSummary.employeeBusinessTravelByAirEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.employeeBusinessTravelByAirEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.employeeBusinessTravelByAirEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Employee Commuting - By Vehicle")){
-                       theEmissionsSummary.employeeCommutingByVehicleEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.employeeCommutingByVehicleEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.employeeCommutingByVehicleEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Employee Commuting - By Rail")){
-                       theEmissionsSummary.employeeCommutingByRailEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.employeeCommutingByRailEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.employeeCommutingByRailEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Employee Commuting - By Bus")){
-                       theEmissionsSummary.employeeCommutingByBusEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.employeeCommutingByBusEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.employeeCommutingByBusEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Product Transport - By Vehicle")){
-                       theEmissionsSummary.productTransportByVehicleEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.productTransportByVehicleEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.productTransportByVehicleEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Product Transport - By Heavy Duty Trucks")){
-                       theEmissionsSummary.productTransportByHeavyDutyTrucksEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.productTransportByHeavyDutyTrucksEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.productTransportByHeavyDutyTrucksEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Product Transport - By Rail")){
-                       theEmissionsSummary.productTransportByRailEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.productTransportByRailEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.productTransportByRailEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    } else if (it.emissionsType.equals("Product Transport - By Water or Air")){
-                       theEmissionsSummary.productTransportByWaterAirEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
+                       theEmissionsSummary.productTransportByWaterAirEmissions += emissionsInMT.CO2EmissionsMT + emissionsInMT.CH4EmissionsMT + emissionsInMT.N2OEmissionsMT
+                       //theEmissionsSummary.productTransportByWaterAirEmissions += it.CO2Emissions + it.CH4Emissions + it.N2OEmissions
                    }
                    //--check if biomass emissions is not null --
                    else if (it.biomassCO2Emissions != 0) {
-                        theEmissionsSummary.biomassMobileCombustionEmissions += it.biomassCO2Emissions
+                        theEmissionsSummary.biomassMobileCombustionEmissions += emissionsInMT.biomassCO2EmissionsMT
+                        //theEmissionsSummary.biomassMobileCombustionEmissions += it.biomassCO2Emissions
                    }
-                   theEmissionsSummary.programType=programType
+                   theEmissionsSummary.programType=programType                   
                 }
              }
           }
@@ -397,12 +472,131 @@ class EmissionsSummaryService {
                                             theEmissionsSummary.productTransportByRailEmissions +
                                             theEmissionsSummary.productTransportByWaterAirEmissions                                            
 
+       theEmissionsSummary.totalOptionalEmissions = theEmissionsSummary.employeeBusinessTravelByVehicleEmissions+
+                                            theEmissionsSummary.employeeBusinessTravelByRailEmissions +
+                                            theEmissionsSummary.employeeBusinessTravelByBusEmissions +
+                                            theEmissionsSummary.employeeBusinessTravelByAirEmissions +
+                                            theEmissionsSummary.employeeCommutingByVehicleEmissions +
+                                            theEmissionsSummary.employeeCommutingByRailEmissions +
+                                            theEmissionsSummary.employeeCommutingByBusEmissions +
+                                            theEmissionsSummary.productTransportByVehicleEmissions +
+                                            theEmissionsSummary.productTransportByHeavyDutyTrucksEmissions +
+                                            theEmissionsSummary.productTransportByRailEmissions +
+                                            theEmissionsSummary.productTransportByWaterAirEmissions
+
+       theEmissionsSummary.totalNumberOfSources = totalNumberOfSources
         //-- Save that in the theEmissionsSummary
        println "theEmissionsSummary.totalEmissions : " + theEmissionsSummary.totalEmissions
        println "theEmissionsSummary.programType : " + theEmissionsSummary.programType
-       theEmissionsSummary.save()
+
+       //Generate Report
+       //--report parameters
+       def reportParameters = [:]
+       Integer orgId = theOrganization.id
+       reportParameters.put("report_organization_id",orgId)
+       reportParameters.put("report_begin_date",beginDate)
+       reportParameters.put("report_end_date",endDate)
+
+       //Jasper report definition object - PDF file
+       //def webRootDir = request.getSession().getServletContext().getRealPath("/")
+       println "----------Base Directory-----------"+System.properties['base.dir']
+       def reportDef = new JasperReportDef(name:'ghgReport.jasper',fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)      
+       //def reportFileName = theOrganization.organizationName+ "-"+ (new Date().format('yyyy-MM-dd-HH-mm-ssZ')).toString()+".pdf"
+       def reportFileName = "Report-"+theOrganization.id+ "-"+ (new Date().format('yyyy-MM-dd-HH-mm-ssZ')).toString()+".pdf"
+       //FileUtils.writeByteArrayToFile(new File("Reports/"+orgId+"/"+reportFileName), jasperService.generateReport(reportDef).toByteArray())
+       FileUtils.writeByteArrayToFile(new File(System.properties['base.dir']+"/reports/"+orgId+"/"+reportFileName), jasperService.generateReport(reportDef).toByteArray())
+       
+       /*
+       //Jasper report definition object - HTML file
+       def reportDef = new JasperReportDef(name:'ghgReport.jasper',fileFormat:JasperExportFormat.HTML_FORMAT, parameters:reportParameters)      
+       def reportFileName = theOrganization.organizationName+ "-"+ (new Date().format('yyyy-MM-dd-HH-mm-ssZ')).toString()+".html"
+       //FileUtils.writeByteArrayToFile(new File("Reports/"+orgId+"/"+reportFileName), jasperService.generateReport(reportDef).toByteArray())
+       FileUtils.writeByteArrayToFile(new File("Reports/"+reportFileName), jasperService.generateReport(reportDef).toByteArray())
+       */
+       println "Report Generated!!!!!!"
+       //--Save report filename
+       theEmissionsSummary.reportFileName=reportFileName
+       
+        //-Save the user reference who generated the summary
+       theEmissionsSummary.summaryGeneratedByUserReference = (SecUser) springSecurityService.currentUser
+
+       //--Save the emissions Summary
+       theEmissionsSummary.save(flush:true)
         //-- temporary approach below for now, need more better approach??
        aclUtilService.addPermission(theEmissionsSummary, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
        //println "springSecurityService.authentication.name: " + springSecurityService.authentication.name
+       /*
+       //-- Below to send the id of the theEmissionsSummary
+       Integer emissionsSummaryReportId = theEmissionsSummary.id
+       println "theEmissionsSummary.emissionsSummaryReportId======="+emissionsSummaryReportId
+       */
+       return theEmissionsSummary
+    }
+
+    //-- Following method calculate emissions in Metric Tonnes (?)
+    def Map<String,String> getEmissionsInMT(def emissionsInfoObject){
+
+        def emissionsInMT = [:]
+
+        //be careful with this initialization. May want to manage this differently
+        Double CO2EmissionsMT = 0
+        Double CH4EmissionsMT = 0
+        Double N2OEmissionsMT = 0
+        Double biomassCO2EmissionsMT = 0
+       
+        //--GWP for now hard coded, in future get it from DB based on the program type
+        def CH4GwpPotential = 21
+        def N2OGwpPotential = 310
+
+	if (emissionsInfoObject.CH4EmissionsUnit.equals("gram")|| emissionsInfoObject.CH4EmissionsUnit.equals("Gram")){
+		def CH4EmissionsKg = (emissionsInfoObject.CH4Emissions/1000)*CH4GwpPotential
+                //-Convert to MT
+                CH4EmissionsMT = CH4EmissionsKg/1000
+	} else if (emissionsInfoObject.CH4EmissionsUnit.equals("lb")){
+		def CH4EmissionsKg = (emissionsInfoObject.CH4Emissions)*0.4536*CH4GwpPotential
+                //-Convert to MT
+                CH4EmissionsMT = CH4EmissionsKg/1000
+	}
+
+
+	if (emissionsInfoObject.N2OEmissionsUnit.equals("gram")||emissionsInfoObject.N2OEmissionsUnit.equals("Gram") ){
+		def N2OEmissionsKg = (emissionsInfoObject.N2OEmissions/1000)*N2OGwpPotential
+                //-Convert to MT
+                N2OEmissionsMT = N2OEmissionsKg/1000
+	} else if (emissionsInfoObject.N2OEmissionsUnit.equals("lb")) {
+		def N2OEmissionsKg = (emissionsInfoObject.N2OEmissions)*0.4536*N2OGwpPotential
+                //-Convert to MT
+                N2OEmissionsMT = N2OEmissionsKg/1000
+        }
+
+	if (emissionsInfoObject.CO2EmissionsUnit.equals("Kg")){
+               //-Convert to MT
+               CO2EmissionsMT = (emissionsInfoObject.CO2Emissions)/1000
+	} else if (emissionsInfoObject.CO2EmissionsUnit.equals("lb")){
+                def CO2EmissionsKg = (emissionsInfoObject.CO2Emissions)*0.4536
+               //-Convert to MT
+               CO2EmissionsMT = CO2EmissionsKg/1000
+	}
+
+	if (emissionsInfoObject.biomassCO2EmissionsUnit.equals("Kg")){
+                //-Convert to MT
+               biomassCO2EmissionsMT = (emissionsInfoObject.biomassCO2Emissions)/1000
+	} else if (emissionsInfoObject.biomassCO2EmissionsUnit.equals("lb")){
+                //--Convert lb to Kg
+                def biomassCO2EmissionsKg = (emissionsInfoObject.biomassCO2Emissions)*0.4536
+                //-Convert to MT
+                biomassCO2EmissionsMT = biomassCO2EmissionsKg/1000
+        }
+
+	emissionsInMT.put("CH4EmissionsMT", CH4EmissionsMT)
+	//emissionsInProperUnits.put("CH4EmissionsUnit", CH4EmissionsUnit)
+	emissionsInMT.put("N2OEmissionsMT", N2OEmissionsMT)
+	//emissionsInProperUnits.put("N2OEmissionsUnit", N2OEmissionsUnit)
+	emissionsInMT.put("CO2EmissionsMT", CO2EmissionsMT)
+	//emissionsInProperUnits.put("CO2EmissionsUnit", CO2EmissionsUnit)
+	emissionsInMT.put("biomassCO2EmissionsMT", biomassCO2EmissionsMT)
+	//emissionsInProperUnits.put("biomassCO2EmissionsUnit", biomassCO2EmissionsUnit)
+        
+	return emissionsInMT
     }
 }

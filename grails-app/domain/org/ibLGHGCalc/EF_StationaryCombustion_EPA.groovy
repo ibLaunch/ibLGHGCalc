@@ -1,7 +1,7 @@
 package org.ibLGHGCalc
 
 class EF_StationaryCombustion_EPA {
-
+    //static searchable = true
     String fuelType
     String fuelUnit
     Double CO2MultiplierInKg

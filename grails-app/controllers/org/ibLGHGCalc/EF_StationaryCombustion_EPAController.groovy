@@ -64,10 +64,14 @@ class EF_StationaryCombustion_EPAController {
 
 //-- This service is the loas emission factors files
     def uploadEmissionFactorFile = {
-
+        def returnString
+        println "params are-------:" + params
         String fileLoaded = loadEmissionFactorsService.emissionFactorFileUpload(params)
         println fileLoaded
-        render(view:"/stationaryCombustion")
+        returnString = "Hello, I am done"
+        
+        //render(view:"/stationaryCombustion")
+        //render "File Uploaded :"
 /*
         sendMail {
            to "Hemant.Bundele@gmail.com"

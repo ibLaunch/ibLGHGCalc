@@ -8,7 +8,9 @@ class UrlMappings {
 				// apply constraints here
 			}
 		}
-
+                //"/reports/$id/$fileName" (controller:"/displayFile")
+                "/reports" (controller:"emissionsSummary", action:"serveReportFile")
+                "/*.pdf" (controller:"emissionsSummary", action:"serveReportFile")
 		//  "/"(view:"/index")
                 "/"(view:"/stationaryCombustion.gsp")
                 //"/"(view:"/login/auth.gsp")

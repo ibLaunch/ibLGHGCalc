@@ -36,8 +36,9 @@ class StationaryCombustionInfoController {
     try {
         theStationaryCombustionInfo = stationaryCombustionInfoService.save(params)
         //-- temporary approach below for now, need more better approach??
-        aclUtilService.addPermission(theStationaryCombustionInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+        //aclUtilService.addPermission(theStationaryCombustionInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
         println "springSecurityService.authentication.name: " + springSecurityService.authentication.name
+        println "theStationaryCombustionInfo from Controller is: --------??" + theStationaryCombustionInfo
     }
     catch (Exception e) {
         log.error e
@@ -45,7 +46,7 @@ class StationaryCombustionInfoController {
     }
 
     println "theStationaryCombustionInfo from Controller is: " + theStationaryCombustionInfo
-
+    
     def xml = new MarkupBuilder(response.writer)
     xml.response() {
       status(0)
@@ -53,6 +54,7 @@ class StationaryCombustionInfoController {
         flushStationaryCombustionInfo xml, theStationaryCombustionInfo
       }
     }
+    
   }
 
   def remove = {
@@ -77,8 +79,8 @@ class StationaryCombustionInfoController {
         fuelType: stationaryCombustionInfo.fuelType,
         fuelQuantity: stationaryCombustionInfo.fuelQuantity,
         fuelUnit: stationaryCombustionInfo.fuelUnit,
-        fuelUsedBeginDate:stationaryCombustionInfo.fuelUsedBeginDate,
-        fuelUsedEndDate:stationaryCombustionInfo.fuelUsedEndDate
+        fuelUsedBeginDate:stationaryCombustionInfo.fuelUsedBeginDate?.format("yyyy-MM-dd"),
+        fuelUsedEndDate:stationaryCombustionInfo.fuelUsedEndDate?.format("yyyy-MM-dd")
         //isPublic: stationaryCombustionInfo.isPublic
     )
   }

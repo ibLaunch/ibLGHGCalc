@@ -3,11 +3,14 @@ import org.springframework.security.access.prepost.PostFilter
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 
+import org.springframework.security.acls.domain.BasePermission
 
 class RefridgerationAirConditioningInfoService {
 
     static transactional = true
     def aclUtilService
+    def springSecurityService
+
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostFilter("hasPermission(filterObject, read) or hasPermission(filterObject, admin)")
@@ -31,6 +34,9 @@ class RefridgerationAirConditioningInfoService {
           theOrganization = Organization.get(parameters.organizationId)
       } else if (parameters.organizationName){
           theOrganization = Organization.findByOrganizationName(parameters.organizationName)
+      } else if (parameters.id) {
+           // User has provided the id of the mobile comubstion source, so just provide that and return from here.           
+           return RefridgerationAirConditioningInfo.get(parameters.id)
       } else {
           println "-----I don't know organization in refridgerationAirConditioningInfoService.findRefridgerationAirConditioningInfos()"
       }
@@ -68,9 +74,9 @@ class RefridgerationAirConditioningInfoService {
       String programType = "EPA Climate Leaders"
       String emissionsType
 
-      if (parameters.methodType.contains("Refridgeration Air Conditioning")){
+      if (parameters.methodType?.contains("Refridgeration Air Conditioning")){
             emissionsType = "Refridgeration And Air Conditioning"
-      } else if (parameters.methodType.contains("Fire Suppression")){
+      } else if (parameters.methodType?.contains("Fire Suppression")){
             emissionsType = "Fire Suppression"
       } else {
           emissionsType = "I don't know"
@@ -88,10 +94,10 @@ class RefridgerationAirConditioningInfoService {
         emissions = calculateEmissions(parameters, programType, emissionsType)
 
         //set the emissions details
-        theEmissionsDetails.CO2Emissions = emissions.get("CO2Emissions").toDouble()
-        theEmissionsDetails.biomassCO2Emissions = emissions.get("biomassCO2Emissions").toDouble()
-        theEmissionsDetails.CH4Emissions = emissions.get("CH4Emissions").toDouble()
-        theEmissionsDetails.N2OEmissions = emissions.get("N2OEmissions").toDouble()
+        theEmissionsDetails.CO2Emissions = emissions.get("CO2Emissions")?.toDouble()
+        theEmissionsDetails.biomassCO2Emissions = emissions.get("biomassCO2Emissions")?.toDouble()
+        theEmissionsDetails.CH4Emissions = emissions.get("CH4Emissions")?.toDouble()
+        theEmissionsDetails.N2OEmissions = emissions.get("N2OEmissions")?.toDouble()
         theEmissionsDetails.CO2EmissionsUnit = emissions.get("CO2EmissionsUnit")
         theEmissionsDetails.biomassCO2EmissionsUnit = emissions.get("biomassCO2EmissionsUnit")
         theEmissionsDetails.CH4EmissionsUnit = emissions.get("CH4EmissionsUnit")
@@ -111,10 +117,10 @@ class RefridgerationAirConditioningInfoService {
             emissions = calculateEmissions(parameters, theEmissionsDetails.programType, theEmissionsDetails.emissionsType)
             println "called calculateEmissions"
               //--update the emissionsDetails
-            theEmissionsDetails.CO2Emissions = emissions.get("CO2Emissions").toDouble()
-            theEmissionsDetails.CH4Emissions = emissions.get("CH4Emissions").toDouble()
-            theEmissionsDetails.N2OEmissions = emissions.get("N2OEmissions").toDouble()
-            theEmissionsDetails.biomassCO2Emissions = emissions.get("biomassCO2Emissions").toDouble()
+            theEmissionsDetails.CO2Emissions = emissions.get("CO2Emissions")?.toDouble()
+            theEmissionsDetails.CH4Emissions = emissions.get("CH4Emissions")?.toDouble()
+            theEmissionsDetails.N2OEmissions = emissions.get("N2OEmissions")?.toDouble()
+            theEmissionsDetails.biomassCO2Emissions = emissions.get("biomassCO2Emissions")?.toDouble()
             theEmissionsDetails.CO2EmissionsUnit = emissions.get("CO2EmissionsUnit")
             theEmissionsDetails.biomassCO2EmissionsUnit = emissions.get("biomassCO2EmissionsUnit")
             theEmissionsDetails.CH4EmissionsUnit = emissions.get("CH4EmissionsUnit")
@@ -124,8 +130,11 @@ class RefridgerationAirConditioningInfoService {
             }
       }
 
-      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
-      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      //Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
+      //Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedBeginDate)
+      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedEndDate)
+
       println "fuelUsedBeginDate : " + fuelUsedBeginDate
       println "fuelUsedEndDate : " + fuelUsedEndDate
 
@@ -199,11 +208,19 @@ class RefridgerationAirConditioningInfoService {
 
       println "theRefridgerationAirConditioningInfo :----:  " +   theRefridgerationAirConditioningInfo
 
+      //--Save the user reference
+      theRefridgerationAirConditioningInfo.lastUpdatedByUserReference = (SecUser) springSecurityService.currentUser
+      //--Save the data origin
+      theRefridgerationAirConditioningInfo.dataOrigin =  parameters.dataOrigin ? parameters.dataOrigin : "UI"
+
       def theOrganization =  Organization.get(parameters.organizationId)
       println "The Organization : " + theOrganization
 
       theRefridgerationAirConditioningInfo.organization = theOrganization
       theRefridgerationAirConditioningInfo.save(flush:true)
+      aclUtilService.addPermission(theRefridgerationAirConditioningInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+
+      return theRefridgerationAirConditioningInfo
     }
 
     @Transactional
@@ -234,11 +251,15 @@ class RefridgerationAirConditioningInfoService {
         def emissions = [:]
         def Double CO2Emissions
         def String CO2EmissionsUnit
+        def String biomassCO2EmissionsUnit
+        def String CH4EmissionsUnit
+        def String N2OEmissionsUnit
 
         if ( (programType.equals("EPA Climate Leaders")) &&
              ((emissionsType.equals("Refridgeration And Air Conditioning"))|| (emissionsType.equals("Fire Suppression")))) {
              //- Get the emission factor object
              def theGWP_RefridgerationAirConditioning_EPA =  GWP_RefridgerationAirConditioning_EPA.findByGasType(parameters.gasType)
+
 
 //--the big switch statement....
           switch (parameters.methodType){
@@ -250,6 +271,10 @@ class RefridgerationAirConditioningInfoService {
 
                     CO2Emissions = (inventoryChange + transferredAmount + capacityChange) * theGWP_RefridgerationAirConditioning_EPA.gasTypeGWP
                     CO2EmissionsUnit = "lb"
+                    biomassCO2EmissionsUnit = "lb"
+                    CH4EmissionsUnit = "gram"
+                    N2OEmissionsUnit = "gram"
+
                     println " I am Material Balance - Service"
                     break
 
@@ -263,7 +288,12 @@ class RefridgerationAirConditioningInfoService {
                     if (parameters.disposedUnitsRecovered) {disposedUnitsRecovered = parameters.disposedUnitsRecovered.toDouble()} else {disposedUnitsRecovered = 0}
 
                     CO2Emissions = (newUnitsCharge - newUnitsCapacity +existingUnitsRecharge + disposedUnitsCapacity - disposedUnitsRecovered) * theGWP_RefridgerationAirConditioning_EPA.gasTypeGWP
+
                     CO2EmissionsUnit = "lb"
+                    biomassCO2EmissionsUnit = "lb"
+                    CH4EmissionsUnit = "gram"
+                    N2OEmissionsUnit = "gram"
+
                     println " I am in the Simplified.. Service"
                     break
 
@@ -284,7 +314,10 @@ class RefridgerationAirConditioningInfoService {
                                     +
                                     (sourceDisposedUnitsCapacity * (theEquipmentCapacityRange_EPA.yFactor/100) * (1-theEquipmentCapacityRange_EPA.zFactor/100))
                                     )*theGWP_RefridgerationAirConditioning_EPA.gasTypeGWP
-                    CO2EmissionsUnit = "kg"
+                    CO2EmissionsUnit = "Kg"
+                    biomassCO2EmissionsUnit = "Kg"
+                    CH4EmissionsUnit = "gram"
+                    N2OEmissionsUnit = "gram"
                     break
                     
                 case "Fire Suppression - Source Level Screening Method":
@@ -300,7 +333,10 @@ class RefridgerationAirConditioningInfoService {
                         CO2Emissions = operatingUnitsCapacity * theGWP_RefridgerationAirConditioning_EPA.gasTypeGWP * 0.02
                     }
                     //variables to get values from EquipmentCapacityRange_EPA
-                    CO2EmissionsUnit = "kg"
+                    CO2EmissionsUnit = "Kg"
+                    biomassCO2EmissionsUnit = "Kg"
+                    CH4EmissionsUnit = "gram"
+                    N2OEmissionsUnit = "gram"
                     println " I am in Fire Suppression - Source Level Screening Method - Service"
                     break
 
@@ -314,9 +350,9 @@ class RefridgerationAirConditioningInfoService {
              emissions.put("CH4Emissions", 0)
              emissions.put("N2OEmissions", 0)
              emissions.put("CO2EmissionsUnit", CO2EmissionsUnit)
-             emissions.put("biomassCO2EmissionsUnit", '')
-             emissions.put("CH4EmissionsUnit", '')
-             emissions.put("N2OEmissionsUnit", '')
+             emissions.put("biomassCO2EmissionsUnit", biomassCO2EmissionsUnit)
+             emissions.put("CH4EmissionsUnit", CH4EmissionsUnit)
+             emissions.put("N2OEmissionsUnit", N2OEmissionsUnit)
              emissions.put("emissionsType", emissionsType)
              emissions.put("programType", programType)
 

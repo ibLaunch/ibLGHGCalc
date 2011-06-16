@@ -2,8 +2,12 @@ package org.ibLGHGCalc
 
 class EmissionsSummary {
 
-    static belongsTo = [organization:Organization]
+    //static searchable = true
     
+    static belongsTo = [organization:Organization]
+
+
+
     Double directEmissions
     Double stationaryCombustionEmissions
     Double mobileCombustionEmissions
@@ -33,13 +37,19 @@ class EmissionsSummary {
     Double biomassMobileCombustionEmissions
     
     Double totalEmissions
-    
+    Double totalOptionalEmissions
+    Integer totalNumberOfSources
+
     String programType
     Date emissionsBeginDate
     Date emissionsEndDate
 
+    String reportFileName
+
     Date dateCreated
     Date lastUpdated
+
+    SecUser summaryGeneratedByUserReference
 
     static constraints = {
             directEmissions(nullable:true)
@@ -70,8 +80,15 @@ class EmissionsSummary {
             biomassMobileCombustionEmissions(nullable:true)
 
 	    totalEmissions(nullable:true)
+            totalOptionalEmissions(nullable:true)
+            totalNumberOfSources(nullable:true)
 	    emissionsBeginDate(blank:false)
 	    emissionsEndDate(blank:false)
             programType(nullable:true)
+
+            reportFileName(nullable:true)
+
+            summaryGeneratedByUserReference(nullable:true)
+        
      }
 }

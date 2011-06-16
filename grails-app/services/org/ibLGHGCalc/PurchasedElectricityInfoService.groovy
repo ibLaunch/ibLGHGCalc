@@ -3,10 +3,13 @@ import org.springframework.security.access.prepost.PostFilter
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 
+import org.springframework.security.acls.domain.BasePermission
+
 class PurchasedElectricityInfoService {
     
     static transactional = true
     def aclUtilService
+    def springSecurityService
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostFilter("hasPermission(filterObject, read) or hasPermission(filterObject, admin)")
@@ -28,6 +31,9 @@ class PurchasedElectricityInfoService {
           theOrganization = Organization.get(parameters.organizationId)
       } else if (parameters.organizationName){
           theOrganization = Organization.findByOrganizationName(parameters.organizationName)
+      }  else if (parameters.id) {
+           // User has provided the id of the mobile comubstion source, so just provide that and return from here.
+           return PurchasedElectricityInfo.get(parameters.id)
       } else {
           println "-----I don't know organization in purchasedElectricityInfoListService.findpurchasedElectricityInfos()"
       }
@@ -78,7 +84,7 @@ class PurchasedElectricityInfoService {
         thePurchasedElectricityInfo = new PurchasedElectricityInfo()
         def theEmissionsDetails = new EmissionsDetails()
 
-        emissions = calculateEmissions(parameters.eGRIDSubregion, parameters.purchasedElectricity.toDouble(), programType, emissionsType)
+        emissions = calculateEmissions(parameters.eGRIDSubregion, parameters.purchasedElectricity.toDouble(), parameters.purchasedElectricityUnit, programType, emissionsType)
 
         //set the emissions details
         theEmissionsDetails.CO2Emissions = emissions.get("CO2Emissions").toDouble()
@@ -118,8 +124,11 @@ class PurchasedElectricityInfoService {
         }
       }
 
-      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
-      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      //Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
+      //Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedBeginDate)
+      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedEndDate)
+
       println "fuelUsedBeginDate : " + fuelUsedBeginDate
       println "fuelUsedEndDate : " + fuelUsedEndDate
 
@@ -139,7 +148,17 @@ class PurchasedElectricityInfoService {
       println "The Organization : " + theOrganization
 
       thePurchasedElectricityInfo.organization = theOrganization
+
+      //--Save the user reference
+      thePurchasedElectricityInfo.lastUpdatedByUserReference = (SecUser) springSecurityService.currentUser
+      //--Save the data origin
+      thePurchasedElectricityInfo.dataOrigin =  parameters.dataOrigin ? parameters.dataOrigin : "UI"
+
       thePurchasedElectricityInfo.save(flush:true)
+      //--Save the permissions on this object
+      aclUtilService.addPermission(thePurchasedElectricityInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+
+      return thePurchasedElectricityInfo
       //theOrganization.save()
     }
 
@@ -166,7 +185,7 @@ class PurchasedElectricityInfoService {
       aclUtilService.deleteAcl thePurchasedElectricityInfo
    }
 
-    def Map<String,String> calculateEmissions(String eGRIDSubregion, Double purchasedElectricity, String programType, String emissionsType){
+    def Map<String,String> calculateEmissions(String eGRIDSubregion, Double purchasedElectricity, String purchasedElectricityUnit, String programType, String emissionsType){
         def emissions = [:]
         def Double CO2Emissions
         def Double biomassCO2Emissions
@@ -178,19 +197,37 @@ class PurchasedElectricityInfoService {
              //- Get the emission factor object
              def theEF_PurchasedElectricity_EPA = EF_PurchasedElectricity_EPA.findByEGRIDSubregion(eGRIDSubregion)
 
-             CO2Emissions = purchasedElectricity*theEF_PurchasedElectricity_EPA.CO2Multiplier
-             biomassCO2Emissions = 0
-             CH4Emissions= purchasedElectricity*theEF_PurchasedElectricity_EPA.CH4Multiplier
-             N2OEmissions= purchasedElectricity*theEF_PurchasedElectricity_EPA.N2OMultiplier
+             if (purchasedElectricityUnit.equals("kWh")){
+                 biomassCO2Emissions = 0
+                 if (theEF_PurchasedElectricity_EPA.CO2MultiplierUnit.contains("MWh")){
+                        //Convert electricity to MWh by dividing with 1000
+                        CO2Emissions = (purchasedElectricity/1000)*theEF_PurchasedElectricity_EPA.CO2Multiplier
+                 }                  
+                 if(theEF_PurchasedElectricity_EPA.CH4MultiplierUnit.contains("MWh")){
+                        //Convert electricity to MWh by dividing with 1000
+                        CH4Emissions= (purchasedElectricity/1000)*theEF_PurchasedElectricity_EPA.CH4Multiplier
+                 }
+                 if(theEF_PurchasedElectricity_EPA.N2OMultiplierUnit.contains("MWh")){
+                        //Convert electricity to MWh by dividing with 1000
+                        N2OEmissions= (purchasedElectricity/1000)*theEF_PurchasedElectricity_EPA.N2OMultiplier
+                 }
+             } else if (purchasedElectricityUnit.equals("MWh")){
+                 CO2Emissions = purchasedElectricity*theEF_PurchasedElectricity_EPA.CO2Multiplier
+                 biomassCO2Emissions = 0
+                 CH4Emissions= purchasedElectricity*theEF_PurchasedElectricity_EPA.CH4Multiplier
+                 N2OEmissions= purchasedElectricity*theEF_PurchasedElectricity_EPA.N2OMultiplier
+             } else {
+                 //println "Error Message: Can't determine the purchased electricity Unit"
+             }
 
              emissions.put("CO2Emissions", CO2Emissions)
              emissions.put("biomassCO2Emissions", biomassCO2Emissions)
              emissions.put("CH4Emissions", CH4Emissions)
              emissions.put("N2OEmissions", N2OEmissions)
-             emissions.put("CO2EmissionsUnit", "lb/MWh")
-             emissions.put("biomassCO2EmissionsUnit", "lb/MWh")
-             emissions.put("CH4EmissionsUnit", "lb/MWh")
-             emissions.put("N2OEmissionsUnit", "lb/MWh")
+             emissions.put("CO2EmissionsUnit", "lb")
+             emissions.put("biomassCO2EmissionsUnit", "lb")
+             emissions.put("CH4EmissionsUnit", "lb")
+             emissions.put("N2OEmissionsUnit", "lb")
              emissions.put("emissionsType", emissionsType)
              emissions.put("programType", programType)
 

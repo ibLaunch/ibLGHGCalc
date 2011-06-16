@@ -91,8 +91,8 @@ class WasteStreamCombustionInfoController {
 
         oxidationFactorPercent: wasteStreamCombustionInfo.oxidationFactorPercent,
 
-        fuelUsedBeginDate:wasteStreamCombustionInfo.fuelUsedBeginDate,
-        fuelUsedEndDate:wasteStreamCombustionInfo.fuelUsedEndDate
+        fuelUsedBeginDate:wasteStreamCombustionInfo.fuelUsedBeginDate?.format("yyyy-MM-dd"),
+        fuelUsedEndDate:wasteStreamCombustionInfo.fuelUsedEndDate?.format("yyyy-MM-dd")
     )
   }
 }

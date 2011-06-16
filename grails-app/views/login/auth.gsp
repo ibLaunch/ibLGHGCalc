@@ -14,7 +14,7 @@
 	<form action='${postUrl}' method='POST' id="loginForm" name="loginForm" autocomplete='off'>
 	<div class="sign-in">
 
-	<h1><g:message code='spring.security.ui.login.signin'/></h1>
+	<!--<h1><g:message code='spring.security.ui.login.signin'/></h1>-->
 
 	<table>
 		<tr>

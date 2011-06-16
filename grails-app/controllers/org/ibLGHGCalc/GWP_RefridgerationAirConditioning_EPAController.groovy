@@ -11,15 +11,34 @@ class GWP_RefridgerationAirConditioning_EPAController {
 
   def list = {
     log.info "GWP_RefridgerationAirConditioning_EPAController.list( ${params} )"
+    println "---params---" + params
+    
     //-- No serice is working hence directly calling list() method here ?? in future look at why non of the services are working.
     //def gWP_RefridgerationAirConditioning_EPAs = gWP_RefridgerationAirConditioning_EPAService.findGWP_RefridgerationAirConditioning_EPAs();
     def gWP_RefridgerationAirConditioning_EPAs = GWP_RefridgerationAirConditioning_EPA.list();
     def xml = new MarkupBuilder(response.writer)
+
+        
+    /*
+    def typeOfData
+    if (params.fetchType.equals("RefridgerationAirConditioning")) {typeOfData = 1 }
+    else if (params.fetchType.equals("FireSuppression")) {typeOfData = 2}
+    */
+
     xml.response() {
       status(0)
       data {
         gWP_RefridgerationAirConditioning_EPAs.each { theGWP_RefridgerationAirConditioning_EPA ->
-          flushGWP_RefridgerationAirConditioning_EPA xml, theGWP_RefridgerationAirConditioning_EPA
+          if (params.fetchType.equals("RefridgerationAirConditioning")){
+              if (theGWP_RefridgerationAirConditioning_EPA.isUsedInRefridgeration){
+                  flushGWP_RefridgerationAirConditioning_EPA xml, theGWP_RefridgerationAirConditioning_EPA
+              }
+          } else if (params.fetchType.equals("FireSuppression")){
+              if (theGWP_RefridgerationAirConditioning_EPA.isUsedInFireSuppression){
+                  flushGWP_RefridgerationAirConditioning_EPA xml, theGWP_RefridgerationAirConditioning_EPA
+              }
+          }
+          //flushGWP_RefridgerationAirConditioning_EPA xml, theGWP_RefridgerationAirConditioning_EPA
         }
       }
     }

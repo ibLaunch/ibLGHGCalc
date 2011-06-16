@@ -29,7 +29,7 @@ class OptionalSourceInfoController {
     try {
         theOptionalSourceInfo = optionalSourceInfoService.save(params)
 	//-- temporary approach below for now, need more better approach??
-	aclUtilService.addPermission(theOptionalSourceInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+	///aclUtilService.addPermission(theOptionalSourceInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
 	println "springSecurityService.authentication.name: " + springSecurityService.authentication.name
     }
     catch (Exception e) {
@@ -76,8 +76,8 @@ class OptionalSourceInfoController {
         passengerMiles: optionalSourceInfo.passengerMiles,
         tonMiles: optionalSourceInfo.tonMiles,
 
-        fuelUsedBeginDate:optionalSourceInfo.fuelUsedBeginDate,
-        fuelUsedEndDate:optionalSourceInfo.fuelUsedEndDate
+        fuelUsedBeginDate:optionalSourceInfo.fuelUsedBeginDate?.format("yyyy-MM-dd"),
+        fuelUsedEndDate:optionalSourceInfo.fuelUsedEndDate?.format("yyyy-MM-dd")
     )
   }
 }

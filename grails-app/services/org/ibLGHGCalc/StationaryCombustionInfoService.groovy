@@ -4,14 +4,14 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.access.prepost.PostAuthorize
 import org.springframework.transaction.annotation.Transactional
 
-//import org.springframework.security.acls.domain.BasePermission
+import org.springframework.security.acls.domain.BasePermission
 
 class StationaryCombustionInfoService {
 
     static transactional = true
     //def stationaryCombustionInfoService
     def aclUtilService
-    //def springSecurityService
+    def springSecurityService
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostFilter("hasPermission(filterObject, read) or hasPermission(filterObject, admin)")
@@ -32,6 +32,9 @@ class StationaryCombustionInfoService {
           theOrganization = Organization.get(parameters.organizationId)
       } else if (parameters.organizationName){
           theOrganization = Organization.findByOrganizationName(parameters.organizationName)
+      } else if (parameters.id) {
+           // User has provided the id of the Stationary comubstion source, so just provide that and return from here.
+           return StationaryCombustionInfo.get(parameters.id)
       } else {
           println "-----I don't know organization in StationaryCombustionInfoService.findStationaryCombustionInfos()"
       }
@@ -144,8 +147,15 @@ class StationaryCombustionInfoService {
         }
       }
 
-      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
-      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      //Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
+      //Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedBeginDate)
+      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedEndDate)
+      //Date fuelUsedBeginDate = fuelUsedBeginDateTemp.format("yyyy-MM-dd")
+      //Date fuelUsedEndDate = fuelUsedEndDateTemp.format("yyyy-MM-dd")
+      //Date fuelUsedBeginDate = new Date( new Date().parse("yyyy-MM-dd", parameters.fuelUsedBeginDate).format("yyyy-MM-dd"))
+      //Date fuelUsedEndDate = new Date( new Date().parse("yyyy-MM-dd", parameters.fuelUsedEndDate).format("yyyy-MM-dd"))
+
       println "fuelUsedBeginDate : " + fuelUsedBeginDate
       println "fuelUsedEndDate : " + fuelUsedEndDate
 
@@ -158,6 +168,7 @@ class StationaryCombustionInfoService {
       theStationaryCombustionInfo.fuelUsedEndDate = fuelUsedEndDate
       //theStationaryCombustionInfo.isPublic = parameters.isPublic
 
+
       theStationaryCombustionInfo.isPublic =
          "true".equals(parameters.isPublic) ? true : false
 
@@ -169,14 +180,25 @@ class StationaryCombustionInfoService {
       println "The Organization : " + theOrganization
 
       theStationaryCombustionInfo.organization = theOrganization
+
+      //--Save the user reference
+      theStationaryCombustionInfo.lastUpdatedByUserReference = (SecUser) springSecurityService.currentUser
+      //--Save the data origin
+      theStationaryCombustionInfo.dataOrigin =  parameters.dataOrigin ? parameters.dataOrigin : "UI"
+
       theStationaryCombustionInfo.save(flush:true)
+
+      //--Save the permissions on this object
+      aclUtilService.addPermission(theStationaryCombustionInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+
+      return theStationaryCombustionInfo
       //theOrganization.save()
     }
 
     @Transactional
     @PreAuthorize("hasRole('ROLE_USER')")
     def remove(Map<String, String> parameters) {
-      log.info "remove( ${params} )"
+      log.info "remove( ${parameters} )"
       def theStationaryCombustionInfo = StationaryCombustionInfo.get(parameters.id)
 
       if (theStationaryCombustionInfo){

@@ -3,10 +3,13 @@ import org.springframework.security.access.prepost.PostFilter
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 
+import org.springframework.security.acls.domain.BasePermission
+
 class OptionalSourceInfoService {
 
     static transactional = true
     def aclUtilService
+    def springSecurityService
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostFilter("hasPermission(filterObject, read) or hasPermission(filterObject, admin)")
@@ -32,6 +35,9 @@ class OptionalSourceInfoService {
           theOrganization = Organization.get(parameters.organizationId)
       } else if (parameters.organizationName){
           theOrganization = Organization.findByOrganizationName(parameters.organizationName)
+      } else if (parameters.id) {
+           // User has provided the id of the mobile comubstion source, so just provide that and return from here.
+           return OptionalSourceInfo.get(parameters.id)
       } else {
           println "-----I don't know organization in optionalSourceInfoService.findOptionalSourceInfos()"
       }
@@ -139,8 +145,11 @@ class OptionalSourceInfoService {
         }
       }
 
-      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
-      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      //Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
+      //Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedBeginDate)
+      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedEndDate)
+
       println "fuelUsedBeginDate : " + fuelUsedBeginDate
       println "fuelUsedEndDate : " + fuelUsedEndDate
 
@@ -152,7 +161,6 @@ class OptionalSourceInfoService {
       theOptionalSourceInfo.busType = parameters.busType
       theOptionalSourceInfo.airTravelType = parameters.airTravelType
       theOptionalSourceInfo.transportType = parameters.transportType
-
 
       if(parameters.passengerMiles) { theOptionalSourceInfo.passengerMiles = parameters.passengerMiles.toDouble() }
       if(parameters.tonMiles) { theOptionalSourceInfo.tonMiles = parameters.tonMiles.toDouble() }
@@ -166,7 +174,18 @@ class OptionalSourceInfoService {
       println "The Organization : " + theOrganization
 
       theOptionalSourceInfo.organization = theOrganization
+
+      //--Save the user reference
+      theOptionalSourceInfo.lastUpdatedByUserReference = (SecUser) springSecurityService.currentUser
+      //--Save the data origin
+      theOptionalSourceInfo.dataOrigin =  parameters.dataOrigin ? parameters.dataOrigin : "UI"
+
       theOptionalSourceInfo.save(flush:true)
+      //--Save the permissions on this object
+      aclUtilService.addPermission(theOptionalSourceInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+
+      return theOptionalSourceInfo
+
       //theOrganization.save()
     }
 
@@ -280,8 +299,8 @@ class OptionalSourceInfoService {
              emissions.put("CO2EmissionsUnit", 'Kg')
              //emissions.put("biomassCO2EmissionsUnit", theEF_OptionalSource_EPA.CO2MultiplierUnit)
              emissions.put("biomassCO2EmissionsUnit", '')
-             emissions.put("CH4EmissionsUnit", 'Gram')
-             emissions.put("N2OEmissionsUnit", 'Gram')
+             emissions.put("CH4EmissionsUnit", 'gram')
+             emissions.put("N2OEmissionsUnit", 'gram')
              emissions.put("emissionsType", emissionsType)
              emissions.put("programType", programType)
 

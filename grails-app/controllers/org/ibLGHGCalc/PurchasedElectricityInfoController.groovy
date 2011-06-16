@@ -29,7 +29,7 @@ class PurchasedElectricityInfoController {
     try {
         thePurchasedElectricityInfo = purchasedElectricityInfoService.save(params)
         //-- temporary approach below for now, need more better approach??
-        aclUtilService.addPermission(thePurchasedElectricityInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+        //aclUtilService.addPermission(thePurchasedElectricityInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
         println "springSecurityService.authentication.name: " + springSecurityService.authentication.name
     }
     catch (Exception e) {
@@ -67,8 +67,8 @@ class PurchasedElectricityInfoController {
         eGRIDSubregion: purchasedElectricityInfo.eGRIDSubregion,
         purchasedElectricity: purchasedElectricityInfo.purchasedElectricity,
         purchasedElectricityUnit: purchasedElectricityInfo.purchasedElectricityUnit,
-        fuelUsedBeginDate:purchasedElectricityInfo.fuelUsedBeginDate,
-        fuelUsedEndDate:purchasedElectricityInfo.fuelUsedEndDate
+        fuelUsedBeginDate:purchasedElectricityInfo.fuelUsedBeginDate?.format("yyyy-MM-dd"),
+        fuelUsedEndDate:purchasedElectricityInfo.fuelUsedEndDate?.format("yyyy-MM-dd")
     )
   }
 }

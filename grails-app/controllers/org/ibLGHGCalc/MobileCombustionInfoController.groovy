@@ -24,11 +24,12 @@ class MobileCombustionInfoController {
 
   def save = {
     log.info "MobileCombustionInfoController.add( ${params} )"
+    println "MobileCombustionInfoController.add( ${params} )"
     def theMobileCombustionInfo
     try {
         theMobileCombustionInfo = mobileCombustionInfoService.save(params)
         //-- temporary approach below for now, need more better approach??
-        aclUtilService.addPermission(theMobileCombustionInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+        //aclUtilService.addPermission(theMobileCombustionInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
         println "springSecurityService.authentication.name: " + springSecurityService.authentication.name
     }
     catch (Exception e) {
@@ -71,8 +72,8 @@ class MobileCombustionInfoController {
         milesTravelled: mobileCombustionInfo.milesTravelled,
         bioFuelPercent: mobileCombustionInfo.bioFuelPercent,
         ethanolPercent: mobileCombustionInfo.ethanolPercent,
-        fuelUsedBeginDate:mobileCombustionInfo.fuelUsedBeginDate,
-        fuelUsedEndDate:mobileCombustionInfo.fuelUsedEndDate
+        fuelUsedBeginDate:mobileCombustionInfo.fuelUsedBeginDate?.format("yyyy-MM-dd"),
+        fuelUsedEndDate:mobileCombustionInfo.fuelUsedEndDate?.format("yyyy-MM-dd")
         //isPublic: mobileCombustionInfo.isPublic
     )
   }

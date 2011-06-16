@@ -3,9 +3,12 @@ import org.springframework.security.access.prepost.PostFilter
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 
+import org.springframework.security.acls.domain.BasePermission
+
 class PurchasedSteamInfoService {
     static transactional = true
     def aclUtilService
+    def springSecurityService
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostFilter("hasPermission(filterObject, read) or hasPermission(filterObject, admin)")
@@ -27,6 +30,9 @@ class PurchasedSteamInfoService {
           theOrganization = Organization.get(parameters.organizationId)
       } else if (parameters.organizationName){
           theOrganization = Organization.findByOrganizationName(parameters.organizationName)
+      }  else if (parameters.id) {
+           // User has provided the id of the mobile comubstion source, so just provide that and return from here.
+           return PurchasedSteamInfo.get(parameters.id)
       } else {
           println "-----I don't know organization in purchasedSteamInfoListService.findpurchasedSteamInfos()"
       }
@@ -106,7 +112,7 @@ class PurchasedSteamInfoService {
         theEmissionsDetails.N2OEmissionsUnit = emissions.get("N2OEmissionsUnit")
         theEmissionsDetails.emissionsType = emissions.get("emissionsType")
         theEmissionsDetails.programType = emissions.get("programType")
-
+        println "----CH4EMissionUnit------" + emissions.get("CH4EmissionsUnit")
         if (theEmissionsDetails) println "EMissions Details is Not Empty"
         thePurchasedSteamInfo.addToEmissionsDetailsList(theEmissionsDetails)
       }
@@ -129,12 +135,14 @@ class PurchasedSteamInfoService {
           theEmissionsDetails.N2OEmissionsUnit = emissions.get("N2OEmissionsUnit")
           theEmissionsDetails.emissionsType = emissions.get("emissionsType")
           theEmissionsDetails.programType = emissions.get("programType")
-
         }
       }
 
-      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
-      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      //Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
+      //Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedBeginDate)
+      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedEndDate)
+
       println "fuelUsedBeginDate : " + fuelUsedBeginDate
       println "fuelUsedEndDate : " + fuelUsedEndDate
 
@@ -177,7 +185,17 @@ class PurchasedSteamInfoService {
       println "The Organization : " + theOrganization
 
       thePurchasedSteamInfo.organization = theOrganization
+      //--Save the user reference
+      thePurchasedSteamInfo.lastUpdatedByUserReference = (SecUser) springSecurityService.currentUser
+      //--Save the data origin
+      thePurchasedSteamInfo.dataOrigin =  parameters.dataOrigin ? parameters.dataOrigin : "UI"
+
       thePurchasedSteamInfo.save(flush:true)
+      //--Save the permissions on this object
+      aclUtilService.addPermission(thePurchasedSteamInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+
+      return thePurchasedSteamInfo
+
       //theOrganization.save()
     }
 
@@ -218,26 +236,26 @@ class PurchasedSteamInfoService {
 
              if (parameters.supplierCO2Multiplier > 0) {
              	CO2Emissions = parameters.purchasedSteam*parameters.supplierCO2Multiplier/(parameters.boilerEfficiencyPercent/100)
-             	emissions.put("CO2EmissionsUnit", parameters.supplierCO2MultiplierUnit)
+             	//emissions.put("CO2EmissionsUnit", parameters.supplierCO2MultiplierUnit)
              } else {
              	CO2Emissions = parameters.purchasedSteam*theEF_PurchasedSteam_EPA.CO2Multiplier/(parameters.boilerEfficiencyPercent/100)
-             	emissions.put("CO2EmissionsUnit", theEF_PurchasedSteam_EPA.CO2MultiplierUnit)
+             	//emissions.put("CO2EmissionsUnit", theEF_PurchasedSteam_EPA.CO2MultiplierUnit)
              }
 
              if (parameters.supplierCH4Multiplier > 0) {
              	CH4Emissions = parameters.purchasedSteam*parameters.supplierCH4Multiplier/(parameters.boilerEfficiencyPercent/100)
-             	emissions.put("CH4EmissionsUnit", parameters.supplierCH4MultiplierUnit)
+             	//emissions.put("CH4EmissionsUnit", parameters.supplierCH4MultiplierUnit)
              } else {
              	CH4Emissions = parameters.purchasedSteam*theEF_PurchasedSteam_EPA.CH4Multiplier/(parameters.boilerEfficiencyPercent/100)
-             	emissions.put("CH4EmissionsUnit", parameters.CH4MultiplierUnit)
+             	//emissions.put("CH4EmissionsUnit", parameters.CH4MultiplierUnit)
              }
 
              if (parameters.supplierN2OMultiplier > 0) {
              	N2OEmissions = parameters.purchasedSteam*parameters.supplierN2OMultiplier/(parameters.boilerEfficiencyPercent/100)
-             	emissions.put("N2OEmissionsUnit",  parameters.supplierN2OMultiplierUnit)
+             	//emissions.put("N2OEmissionsUnit",  parameters.supplierN2OMultiplierUnit)
              } else {
              	N2OEmissions = parameters.purchasedSteam*theEF_PurchasedSteam_EPA.N2OMultiplier/(parameters.boilerEfficiencyPercent/100)
-             	emissions.put("N2OEmissionsUnit", parameters.N2OMultiplierUnit)
+             	//emissions.put("N2OEmissionsUnit", parameters.N2OMultiplierUnit)
              }
 
 	     //--biomass CO2 is zero by default
@@ -246,13 +264,13 @@ class PurchasedSteamInfoService {
              emissions.put("biomassCO2Emissions", biomassCO2Emissions)
              emissions.put("CH4Emissions", CH4Emissions)
              emissions.put("N2OEmissions", N2OEmissions)
-             //emissions.put("CO2EmissionsUnit", "lb/MWh")
-             emissions.put("biomassCO2EmissionsUnit", "lb/MWh")
-             //emissions.put("CH4EmissionsUnit", "lb/MWh")
-             //emissions.put("N2OEmissionsUnit", "lb/MWh")
+             emissions.put("CO2EmissionsUnit", "Kg")
+             emissions.put("biomassCO2EmissionsUnit", "Kg")
+             emissions.put("CH4EmissionsUnit", "gram")
+             emissions.put("N2OEmissionsUnit", "gram")
              emissions.put("emissionsType", emissionsType)
              emissions.put("programType", programType)
-
+             println "I finished calculating emission details in purchased steam"
              return emissions
         }
     }

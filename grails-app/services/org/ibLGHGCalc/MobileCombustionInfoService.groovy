@@ -3,10 +3,13 @@ import org.springframework.security.access.prepost.PostFilter
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 
+import org.springframework.security.acls.domain.BasePermission
+
 class MobileCombustionInfoService {
 
     static transactional = true
     def aclUtilService
+    def springSecurityService
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostFilter("hasPermission(filterObject, read) or hasPermission(filterObject, admin)")
@@ -28,7 +31,10 @@ class MobileCombustionInfoService {
           theOrganization = Organization.get(parameters.organizationId)
       } else if (parameters.organizationName){
           theOrganization = Organization.findByOrganizationName(parameters.organizationName)
-      } else {
+      } else if (parameters.id) {
+           // User has provided the id of the mobile comubstion source, so just provide that and return from here.           
+           return MobileCombustionInfo.get(parameters.id)
+      }else {
           println "-----I don't know organization in MobileCombustionInfoService.findMobileCombustionInfos()"
       }
       //def inventoryYear = parameters.inventoryYear
@@ -127,8 +133,11 @@ class MobileCombustionInfoService {
         }
       }
 
-      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
-      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      //Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedBeginDate)
+      //Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd'T'hh:mm:ss", parameters.fuelUsedEndDate)
+      Date fuelUsedBeginDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedBeginDate)
+      Date fuelUsedEndDate = new Date().parse("yyyy-MM-dd", parameters.fuelUsedEndDate)
+
       println "fuelUsedBeginDate : " + fuelUsedBeginDate
       println "fuelUsedEndDate : " + fuelUsedEndDate
 
@@ -144,8 +153,20 @@ class MobileCombustionInfoService {
       theMobileCombustionInfo.fuelQuantity = fuelQty
       theMobileCombustionInfo.fuelUnit = parameters.fuelUnit
       theMobileCombustionInfo.milesTravelled = milesTravelled
-      theMobileCombustionInfo.bioFuelPercent = bioFuelPercent
-      theMobileCombustionInfo.ethanolPercent = ethanolPercent
+
+      //theMobileCombustionInfo.bioFuelPercent = bioFuelPercent
+      //theMobileCombustionInfo.ethanolPercent = ethanolPercent
+
+      if (parameters.fuelType.contains("Biodiesel")){
+          theMobileCombustionInfo.bioFuelPercent = bioFuelPercent
+          theMobileCombustionInfo.ethanolPercent = 0
+      } else if (parameters.fuelType.contains("Ethanol")){
+          theMobileCombustionInfo.ethanolPercent = ethanolPercent
+          theMobileCombustionInfo.bioFuelPercent = 0
+      } else {
+          theMobileCombustionInfo.ethanolPercent = 0
+          theMobileCombustionInfo.bioFuelPercent = 0
+      }
 
       theMobileCombustionInfo.fuelUsedBeginDate = fuelUsedBeginDate
       theMobileCombustionInfo.fuelUsedEndDate = fuelUsedEndDate
@@ -154,8 +175,15 @@ class MobileCombustionInfoService {
       //theOrganization.addToMobileCombustionInfoList(theMobileCombustionInfo)
       println "The Organization : " + theOrganization
 
+      //--Save the user reference
+      theMobileCombustionInfo.lastUpdatedByUserReference = (SecUser) springSecurityService.currentUser
+      //--Save the data origin
+      theMobileCombustionInfo.dataOrigin =  parameters.dataOrigin ? parameters.dataOrigin : "UI"
+
       theMobileCombustionInfo.organization = theOrganization
       theMobileCombustionInfo.save(flush:true)
+      aclUtilService.addPermission(theMobileCombustionInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+      return theMobileCombustionInfo
       //theOrganization.save()
     }
 
@@ -238,10 +266,14 @@ class MobileCombustionInfoService {
         def Double CH4Emissions
         def Double N2OEmissions
 
+        println "vehicleType: " + vehicleType
+
         if ( (programType.equals("EPA Climate Leaders")) &&
              (emissionsType.equals("Mobile Combustion")) ) {
             //-- Getting CO2 emissions
+
             def theEF_CO2_MobileCombustion_EPA = EF_CO2_MobileCombustion_EPA.findByFuelType(fuelType)
+            println "I am in first If"
   	    if ((!fuelType.contains("Biodiesel")) && (!fuelType.contains("Ethanol"))) {
             	//theEmissionsDetails.CO2Emissions = fuelQty*theEF_CO2_MobileCombustion_EPA.CO2MultiplierInKg
                 CO2Emissions = fuelQty*theEF_CO2_MobileCombustion_EPA.CO2MultiplierInKg
@@ -270,6 +302,7 @@ class MobileCombustionInfoService {
 
             if ((!vehicleYear) || (vehicleYear.equals(''))){
                theEF_CH4N2O_MobileCombustion_EPA = EF_CH4N2O_MobileCombustion_EPA.findByVehicleType(vehicleType)
+               println "I am in second If"
             }
             else {
                 /*Manually finding theEF_CH4N2O_MobileCombustion_EPA, rather than in DB
@@ -282,8 +315,14 @@ class MobileCombustionInfoService {
                 }
                 */
                 theEF_CH4N2O_MobileCombustion_EPA = EF_CH4N2O_MobileCombustion_EPA.findByVehicleTypeAndVehicleYear(vehicleType,vehicleYear)
+                println "I am in second If else"
             }
 
+            if (!theEF_CH4N2O_MobileCombustion_EPA) {
+                println "!!!!theEF_CH4N2O_MobileCombustion_EPA.CH4MultiplierInGram : " + theEF_CH4N2O_MobileCombustion_EPA
+            } else {
+                println "theEF_CH4N2O_MobileCombustion_EPA.CH4MultiplierInGram : " + theEF_CH4N2O_MobileCombustion_EPA
+            }
             println "vehicleType: "+ vehicleType + "vehicleYear : "+ vehicleYear
 
             if (theEF_CH4N2O_MobileCombustion_EPA) {

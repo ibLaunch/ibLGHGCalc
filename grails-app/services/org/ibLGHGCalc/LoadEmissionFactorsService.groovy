@@ -1,6 +1,8 @@
 package org.ibLGHGCalc
 
+
 import jxl.*
+import org.apache.commons.io.FileUtils
 
 class LoadEmissionFactorsService {
 
@@ -18,11 +20,42 @@ class LoadEmissionFactorsService {
       Workbook workbook
       String returnString = ""
 
-      File excelFile = new File('C:/GHG/uploadedFiles/NewfileName3.xls')
-      println "I am in service method"
-      def downloadedfile = request.getFile("fileUpload")
-      downloadedfile.transferTo(excelFile)
+      println "params from service---- "+parameters
+      
+      def fileToUpload = request.getFile("fileUpload")
+      //File excelFile = new File(System.properties['base.dir']+"/"+parameters.organizationId.toString+"/filesUploaded/"+fileToUpload.getName())
+      def directoryName = System.properties['base.dir']+"/"+parameters.organizationId+"/filesUploaded"
 
+      FileUtils.forceMkdir(new File(directoryName))
+      def fileToUploadName = (new Date().format('yyyy-MM-dd-HH-mm-ssZ--')).toString()+ fileToUpload.getOriginalFilename()
+      File excelFile = new File(directoryName+"/"+fileToUploadName)
+      //File excelFile = new File('C:/GHG/uploadedFiles/NewfileName3.xls')
+      fileToUpload.transferTo(excelFile)
+      /*
+      catch (Exception e) {
+        log.error e
+        println "Error: File Not loaded!"
+      }
+      */
+      
+
+      //def excelFile = request.getFile("fileUpload")
+      /*
+      File dir = new File(System.properties['base.dir']+"/"+parameters.organizationId+"/filesUploaded/");
+      boolean fileMoved = excelFile.renameTo(new File(dir, excelFile.getName()));
+
+      if (fileMoved) {
+          println "File Uploaded: " + excelFile.getName()
+      } else {
+          prinlnt "File Upload Error!!"
+      }
+      *
+      */
+
+     /*
+      //FileUtils.writeByteArrayToFile(new File(System.properties['base.dir']+"/"+parameters.organizationId+"/filesUploaded/"+excelFile.getOriginalFilename()), excelFile.toByteArray())
+      FileUtils.moveFileToDirectory((File)excelFile, new File(System.properties['base.dir']+"/"+parameters.organizationId+"/filesUploaded/"))
+      */
       workbookSettings = new WorkbookSettings()
       workbookSettings.setLocale(new Locale("en", "EN"))
       workbook = Workbook.getWorkbook(excelFile, workbookSettings)
@@ -132,6 +165,20 @@ class LoadEmissionFactorsService {
           
           case "Data - EPA Purchased Electricity":
                   for (int r=4; r< sheet.rows; r++) {
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+                      sourceParameters.put("eGRIDSubregion",sheet.getCell(1, r).contents)
+                      sourceParameters.put("purchasedElectricity",sheet.getCell(2, r).contents)
+                      sourceParameters.put("purchasedElectricityUnit",sheet.getCell(3, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate", sheet.getCell(4, r).contents)
+                      sourceParameters.put("fuelUsedEndDate", sheet.getCell(5, r).contents)
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+ 
+                      def purchasedElectricityInfo = purchasedElectricityInfoService.save(sourceParameters)
+
+
+                      /*
                       def sourceDescription = sheet.getCell(0, r).contents
                       def eGRIDSubregion = sheet.getCell(1, r).contents
                       def purchasedElectricity = sheet.getCell(2, r).contents
@@ -175,7 +222,7 @@ class LoadEmissionFactorsService {
                       //add the emisssions to purchasedElectricityInfo
                       purchasedElectricityInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       purchasedElectricityInfo.save(flush:true)
-
+                      */
                     }
                     returnString = parameters.fileType + " uploaded!"
                     break
@@ -201,6 +248,30 @@ class LoadEmissionFactorsService {
 
           case "Data - EPA Purchased Steam":
                   for (int r=4; r< sheet.rows; r++) {
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+                      sourceParameters.put("fuelType",sheet.getCell(1, r).contents)
+                      sourceParameters.put("boilerEfficiencyPercent",sheet.getCell(2, r).contents)
+                      sourceParameters.put("purchasedSteam",sheet.getCell(3, r).contents)
+                      sourceParameters.put("purchasedSteamUnit",sheet.getCell(4, r).contents)
+
+                      sourceParameters.put("supplierCO2Multiplier",sheet.getCell(5, r).contents)
+                      sourceParameters.put("supplierCO2MultiplierUnit",sheet.getCell(6, r).contents)
+                      sourceParameters.put("supplierCH4Multiplier",sheet.getCell(7, r).contents)
+                      sourceParameters.put("supplierCH4MultiplierUnit",sheet.getCell(8, r).contents)
+                      sourceParameters.put("supplierN2OMultiplier",sheet.getCell(9, r).contents)
+                      sourceParameters.put("supplierN2OMultiplierUnit",sheet.getCell(10, r).contents)
+
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(11, r).contents)
+                      sourceParameters.put("fuelUsedEndDate",sheet.getCell(12, r).contents)
+
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+
+                      def purchasedSteamInfo = purchasedSteamInfoService.save(sourceParameters)
+
+
+                      /*
                       def sourceDescription = sheet.getCell(0, r).contents
                       def fuelType = sheet.getCell(1, r).contents
                       def boilerEfficiencyPercent = sheet.getCell(2, r).contents
@@ -275,6 +346,7 @@ class LoadEmissionFactorsService {
                       //add the emisssions to purchasedSteamInfo
                       purchasedSteamInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       purchasedSteamInfo.save(flush:true)
+                      */
                     }
                     returnString = parameters.fileType + " uploaded!"
                     break
@@ -397,6 +469,19 @@ class LoadEmissionFactorsService {
                 "Data - EPA Employee Commuting - By Vehicle",
                 "Data - EPA Product Transport - By Vehicle"]:
                   for (int r=4; r< sheet.rows; r++) {
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+                      sourceParameters.put("vehicleType",sheet.getCell(1, r).contents)
+                      sourceParameters.put("passengerMiles",sheet.getCell(2, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(3, r).contents)
+                      sourceParameters.put("fuelUsedEndDate", sheet.getCell(4, r).contents)
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+                      sourceParameters.put("optionalSourceType", emissionsType)
+
+                      def theOptionalSourceInfo = optionalSourceInfoService.save(sourceParameters)
+
+                      /*
                       def sourceDescription = sheet.getCell(0, r).contents
                       def vehicleType = sheet.getCell(1, r).contents
                       def passengerMiles = sheet.getCell(2, r).contents
@@ -448,12 +533,26 @@ class LoadEmissionFactorsService {
                       //add the emisssions to theOptionalSourceInfo
                       theOptionalSourceInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theOptionalSourceInfo.save(flush:true)
+                      */
                     }
                     returnString = parameters.fileType + " uploaded!"
                     break
 
           case ["Data - EPA Employee Business Travel - By Rail","Data - EPA Employee Commuting - By Rail"]:
                   for (int r=4; r< sheet.rows; r++) {
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+                      sourceParameters.put("railType",sheet.getCell(1, r).contents)
+                      sourceParameters.put("passengerMiles",sheet.getCell(2, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(3, r).contents)
+                      sourceParameters.put("fuelUsedEndDate", sheet.getCell(4, r).contents)
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+                      sourceParameters.put("optionalSourceType", emissionsType)
+
+                      def theOptionalSourceInfo = optionalSourceInfoService.save(sourceParameters)
+
+                      /*
                       def sourceDescription = sheet.getCell(0, r).contents
                       def railType = sheet.getCell(1, r).contents
                       def passengerMiles = sheet.getCell(2, r).contents
@@ -505,12 +604,26 @@ class LoadEmissionFactorsService {
                       //add the emisssions to theOptionalSourceInfo
                       theOptionalSourceInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theOptionalSourceInfo.save(flush:true)
+                      */
                     }
                     returnString = parameters.fileType + " uploaded!"
                     break
 
           case ["Data - EPA Employee Business Travel - By Bus","Data - EPA Employee Commuting - By Bus"]:
                   for (int r=4; r< sheet.rows; r++) {
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+                      sourceParameters.put("busType",sheet.getCell(1, r).contents)
+                      sourceParameters.put("passengerMiles",sheet.getCell(2, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(3, r).contents)
+                      sourceParameters.put("fuelUsedEndDate", sheet.getCell(4, r).contents)
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+                      sourceParameters.put("optionalSourceType", emissionsType)
+
+                      def theOptionalSourceInfo = optionalSourceInfoService.save(sourceParameters)
+
+                      /*
                       def sourceDescription = sheet.getCell(0, r).contents
                       def busType = sheet.getCell(1, r).contents
                       def passengerMiles = sheet.getCell(2, r).contents
@@ -562,12 +675,25 @@ class LoadEmissionFactorsService {
                       //add the emisssions to theOptionalSourceInfo
                       theOptionalSourceInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theOptionalSourceInfo.save(flush:true)
+                      */
                     }
                     returnString = parameters.fileType + " uploaded!"
                     break
 
           case "Data - EPA Employee Business Travel - By Air":
                   for (int r=4; r< sheet.rows; r++) {
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+                      sourceParameters.put("airTravelType",sheet.getCell(1, r).contents)
+                      sourceParameters.put("passengerMiles",sheet.getCell(2, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(3, r).contents)
+                      sourceParameters.put("fuelUsedEndDate", sheet.getCell(4, r).contents)
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+                      sourceParameters.put("optionalSourceType", emissionsType)
+                      
+                      def theOptionalSourceInfo = optionalSourceInfoService.save(sourceParameters)
+                      /*
                       def sourceDescription = sheet.getCell(0, r).contents
                       def airTravelType = sheet.getCell(1, r).contents
                       def passengerMiles = sheet.getCell(2, r).contents
@@ -619,6 +745,7 @@ class LoadEmissionFactorsService {
                       //add the emisssions to theOptionalSourceInfo
                       theOptionalSourceInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theOptionalSourceInfo.save(flush:true)
+                      */
                     }
                     returnString = parameters.fileType + " uploaded!"
                     break
@@ -627,6 +754,20 @@ class LoadEmissionFactorsService {
                 "Data - EPA Product Transport - By Rail",
                 "Data - EPA Product Transport - By Water or Air"]:
                   for (int r=4; r< sheet.rows; r++) {
+
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+                      sourceParameters.put("transportType",sheet.getCell(1, r).contents)
+                      sourceParameters.put("tonMiles",sheet.getCell(2, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(3, r).contents)
+                      sourceParameters.put("fuelUsedEndDate", sheet.getCell(4, r).contents)
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+                      sourceParameters.put("optionalSourceType", emissionsType)
+
+                      def theOptionalSourceInfo = optionalSourceInfoService.save(sourceParameters)
+
+                      /*
                       def sourceDescription = sheet.getCell(0, r).contents
                       def transportType = sheet.getCell(1, r).contents
                       def tonMiles = sheet.getCell(2, r).contents
@@ -678,19 +819,22 @@ class LoadEmissionFactorsService {
                       //add the emisssions to theOptionalSourceInfo
                       theOptionalSourceInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theOptionalSourceInfo.save(flush:true)
+                      */
                     }
                     returnString = parameters.fileType + " uploaded!"
                     break
 
             case "Stationary Combustion Info":
                   for (int r=1; r< sheet.rows; r++) {
+                      /*
                       def fuelQuantity = sheet.getCell(0, r).contents
                       def fuelSourceDescription = sheet.getCell(1, r).contents
                       def fuelType = sheet.getCell(2, r).contents
                       def fuelUnit = sheet.getCell(3, r).contents
                       def tempDate1 = sheet.getCell(4, r).contents
                       def tempDate2 = sheet.getCell(5, r).contents
-
+                      */
+                      /*
                       Date fuelUsedBeginDate = new Date().parse("MM/dd/yyyy", sheet.getCell(4, r).contents)
                       Date fuelUsedEndDate =  new Date().parse("MM/dd/yyyy", sheet.getCell(5, r).contents)
 
@@ -699,11 +843,26 @@ class LoadEmissionFactorsService {
 
                       println "Formated Begin date: "+ fuelUsedBeginDate
                       println "Formated End date: "+ fuelUsedEndDate
-
+                      */
+                      /*
                       def isPublic = sheet.getCell(6, r).contents
                       def organizationId = sheet.getCell(7, r).contents
-                      Double fuelQty = fuelQuantity.toDouble()
+                      */
+                      //Double fuelQty = fuelQuantity.toDouble()
 
+                      def sourceParameters = [:]
+                      sourceParameters.put("fuelQuantity", sheet.getCell(0, r).contents)
+                      sourceParameters.put("fuelSourceDescription", sheet.getCell(1, r).contents)
+                      sourceParameters.put("fuelType", sheet.getCell(2, r).contents)
+                      sourceParameters.put("fuelUnit", sheet.getCell(3, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate", sheet.getCell(4, r).contents)
+                      sourceParameters.put("fuelUsedEndDate", sheet.getCell(5, r).contents)
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+
+                      def theStationaryCombustionInfo = stationaryCombustionInfoService.save(sourceParameters)
+
+                      /*
                       def stationaryCombustionInfo = new StationaryCombustionInfo()
                       stationaryCombustionInfo.fuelQuantity = fuelQty
                       stationaryCombustionInfo.fuelSourceDescription = fuelSourceDescription
@@ -743,12 +902,34 @@ class LoadEmissionFactorsService {
                       //add the emisssions to stationaryCombustionInfo
                       stationaryCombustionInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       stationaryCombustionInfo.save(flush:true)
+                      */
                   }                    
                   returnString = "Stationary Combustion Info uploaded"
                   break
 
            case "Mobile Combustion Info":
                   for (int r=1; r< sheet.rows; r++) {
+
+                      def sourceParameters = [:]
+                      sourceParameters.put("fuelSourceDescription",sheet.getCell(0, r).contents)
+		      sourceParameters.put("vehicleType",sheet.getCell(1, r).contents)
+		      sourceParameters.put("vehicleYear",sheet.getCell(2, r).contents)
+                      sourceParameters.put("fuelType",sheet.getCell(3, r).contents)
+                      sourceParameters.put("fuelUnit",sheet.getCell(4, r).contents)
+                      sourceParameters.put("fuelQuantity",sheet.getCell(5, r).contents)
+                      sourceParameters.put("milesTravelled",sheet.getCell(6, r).contents)
+                      sourceParameters.put("bioFuelPercent",sheet.getCell(7, r).contents)
+                      sourceParameters.put("ethanolPercent",sheet.getCell(8, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(9, r).contents)
+                      sourceParameters.put("fuelUsedEndDate",sheet.getCell(10, r).contents)
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+
+                      //def organizationId = sheet.getCell(11, r).contents
+
+                
+                      def theMobileCombustionInfo = mobileCombustionInfoService.save(sourceParameters)
+                      /*
                       def fuelSourceDescription = sheet.getCell(0, r).contents
 		      def vehicleType = sheet.getCell(1, r).contents
 		      def vehicleYear = sheet.getCell(2, r).contents
@@ -758,6 +939,8 @@ class LoadEmissionFactorsService {
                       def milesTravelled = sheet.getCell(6, r).contents
                       def bioFuelPercent = sheet.getCell(7, r).contents
                       def ethanolPercent = sheet.getCell(8, r).contents
+                      //def fuelUsedBeginDate = sheet.getCell(9, r).contents
+                      //def fuelUsedEndDate = sheet.getCell(10, r).contents
                       Date fuelUsedBeginDate = new Date().parse("MM/dd/yyyy", sheet.getCell(9, r).contents)
                       Date fuelUsedEndDate =  new Date().parse("MM/dd/yyyy", sheet.getCell(10, r).contents)
                       def organizationId = sheet.getCell(11, r).contents
@@ -766,6 +949,7 @@ class LoadEmissionFactorsService {
 		      Double milesTravelledDouble = milesTravelled.toDouble()
 		      Double bioFuelPercentDouble = bioFuelPercent.toDouble()
 		      Double ethanolPercentDouble = ethanolPercent.toDouble()
+
 
                       //Create mobileCombustionInfo object
                       def theMobileCombustionInfo = new MobileCombustionInfo()
@@ -809,6 +993,7 @@ class LoadEmissionFactorsService {
                       //add the emisssions to stationaryCombustionInfo
                       theMobileCombustionInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theMobileCombustionInfo.save(flush:true)
+                      */
                   }
                   returnString = "Mobile Combustion Info uploaded"
                   break
@@ -947,10 +1132,14 @@ class LoadEmissionFactorsService {
                   for (int r=1; r< sheet.rows; r++) {
                       def gasType = sheet.getCell(0, r).contents
                       def gasTypeGWP = sheet.getCell(1, r).contents
+                      def isUsedInRefridgeration = sheet.getCell(2, r).contents
+                      def isUsedInFireSuppression = sheet.getCell(3, r).contents
 
                       def gWP_RefridgerationAirConditioning_EPA = new GWP_RefridgerationAirConditioning_EPA()
                       gWP_RefridgerationAirConditioning_EPA.gasType = gasType
                       gWP_RefridgerationAirConditioning_EPA.gasTypeGWP = gasTypeGWP.toDouble()
+                      gWP_RefridgerationAirConditioning_EPA.isUsedInRefridgeration = (isUsedInRefridgeration == '1') ? true : false
+                      gWP_RefridgerationAirConditioning_EPA.isUsedInFireSuppression = (isUsedInFireSuppression == '1') ? true : false
 
                       gWP_RefridgerationAirConditioning_EPA.save(flush:true)
                   }
@@ -985,6 +1174,22 @@ class LoadEmissionFactorsService {
 
                   for (int r=4; r< sheet.rows; r++) {
                       println "I am inside RefridgerationAirConditioning - Material Balance"
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+                      sourceParameters.put("gasType",sheet.getCell(1, r).contents)
+		      sourceParameters.put("inventoryChange",sheet.getCell(2, r).contents)
+		      sourceParameters.put("transferredAmount",sheet.getCell(3, r).contents)
+                      sourceParameters.put("capacityChange",sheet.getCell(4, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(5, r).contents)
+                      sourceParameters.put("fuelUsedEndDate", sheet.getCell(6, r).contents)
+                      sourceParameters.put("fileType", parameters.fileType)
+                      sourceParameters.put("methodType", parameters.fileType) //fileType as a methodType
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+
+                      def theRefridgerationAirConditioningInfo = refridgerationAirConditioningInfoService.save(sourceParameters)
+
+                      /*
                       def gasType = sheet.getCell(0, r).contents
 		      def inventoryChange = sheet.getCell(1, r).contents
 		      def transferredAmount = sheet.getCell(2, r).contents
@@ -1038,12 +1243,32 @@ class LoadEmissionFactorsService {
                       //add the emisssions to stationaryCombustionInfo
                       theRefridgerationAirConditioningInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theRefridgerationAirConditioningInfo.save(flush:true)
+                      */
                   }
                   returnString = parameters.fileType + " uploaded!"
                   break
 
            case ["Refridgeration Air Conditioning - Company-Wide Simplified Material Balance Method", "Fire Suppression - Company-Wide Simplified Material Balance Method"]:
                   for (int r=4; r< sheet.rows; r++) {
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+                      sourceParameters.put("gasType",sheet.getCell(1, r).contents)
+		      sourceParameters.put("newUnitsCharge",sheet.getCell(2, r).contents)
+		      sourceParameters.put("newUnitsCapacity",sheet.getCell(3, r).contents)
+                      sourceParameters.put("existingUnitsRecharge",sheet.getCell(4, r).contents)
+                      sourceParameters.put("disposedUnitsCapacity",sheet.getCell(5, r).contents)
+                      sourceParameters.put("disposedUnitsRecovered",sheet.getCell(6, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(7, r).contents)
+                      sourceParameters.put("fuelUsedEndDate",sheet.getCell(8, r).contents)
+
+                      sourceParameters.put("fileType", parameters.fileType)
+                      sourceParameters.put("methodType", parameters.fileType) //fileType as a methodType
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+
+                      def theRefridgerationAirConditioningInfo = refridgerationAirConditioningInfoService.save(sourceParameters)
+
+                      /*
                       def gasType = sheet.getCell(0, r).contents
 		      def newUnitsCharge = sheet.getCell(1, r).contents
 		      def newUnitsCapacity = sheet.getCell(2, r).contents
@@ -1109,12 +1334,32 @@ class LoadEmissionFactorsService {
                       //add the emisssions to stationaryCombustionInfo
                       theRefridgerationAirConditioningInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theRefridgerationAirConditioningInfo.save(flush:true)
+                      */
                   }
+                  
                   returnString = parameters.fileType + " uploaded!"
                   break
 
            case "Refridgeration Air Conditioning - Source Level Screening Method":
                   for (int r=5; r< sheet.rows; r++) {
+                      def sourceParameters = [:]
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+		      sourceParameters.put("typeOfEquipment",sheet.getCell(1, r).contents)
+		      sourceParameters.put("gasType",sheet.getCell(2, r).contents)
+                      sourceParameters.put("sourceNewUnitsCharge",sheet.getCell(3, r).contents)
+                      sourceParameters.put("operatingUnitsCapacity",sheet.getCell(4, r).contents)
+                      sourceParameters.put("sourceDisposedUnitsCapacity",sheet.getCell(5, r).contents)
+                      sourceParameters.put("timeInYearsUsed",sheet.getCell(6, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate", sheet.getCell(7, r).contents)
+                      sourceParameters.put("fuelUsedEndDate", sheet.getCell(8, r).contents)
+                      sourceParameters.put("fileType", parameters.fileType)
+                      sourceParameters.put("methodType", parameters.fileType) //fileType us methodType
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+
+                      def theRefridgerationAirConditioningInfo = refridgerationAirConditioningInfoService.save(sourceParameters)
+
+                      /*
                       def sourceDescription = sheet.getCell(0, r).contents
 		      def typeOfEquipment = sheet.getCell(1, r).contents
 		      def gasType = sheet.getCell(2, r).contents
@@ -1182,12 +1427,30 @@ class LoadEmissionFactorsService {
                       //add the emisssions to stationaryCombustionInfo
                       theRefridgerationAirConditioningInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theRefridgerationAirConditioningInfo.save(flush:true)
+                      */
                   }
                   returnString = parameters.fileType + " uploaded!"
                   break
 
            case "Fire Suppression - Source Level Screening Method":
                   for (int r=5; r< sheet.rows; r++) {
+                      def sourceParameters = [:]
+
+                      sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
+		      sourceParameters.put("typeOfEquipment",sheet.getCell(1, r).contents)
+		      sourceParameters.put("gasType",sheet.getCell(2, r).contents)
+                      sourceParameters.put("sourceNewUnitsCharge",sheet.getCell(3, r).contents)
+                      sourceParameters.put("operatingUnitsCapacity",sheet.getCell(4, r).contents)
+                      sourceParameters.put("fuelUsedBeginDate",sheet.getCell(5, r).contents)
+                      sourceParameters.put("fuelUsedEndDate",sheet.getCell(6, r).contents)
+
+                      sourceParameters.put("fileType", parameters.fileType)
+                      sourceParameters.put("methodType", parameters.fileType) //fileType us methodType
+                      sourceParameters.put("organizationId", parameters.organizationId)
+                      sourceParameters.put("dataOrigin", fileToUploadName)
+                      def theRefridgerationAirConditioningInfo = refridgerationAirConditioningInfoService.save(sourceParameters)
+
+                      /*
                       def sourceDescription = sheet.getCell(0, r).contents
 		      def typeOfEquipment = sheet.getCell(1, r).contents
 		      def gasType = sheet.getCell(2, r).contents
@@ -1247,6 +1510,7 @@ class LoadEmissionFactorsService {
                       //add the emisssions to stationaryCombustionInfo
                       theRefridgerationAirConditioningInfo.addToEmissionsDetailsList(theEmissionsDetails)
                       theRefridgerationAirConditioningInfo.save(flush:true)
+                      */
                   }
                   returnString = parameters.fileType + " uploaded!"
                   break
@@ -1279,6 +1543,6 @@ class LoadEmissionFactorsService {
 
     def remove(Map<String, String> parameters) {
       log.info "remove( ${parameters} )"
-      EF_StationaryCombustion_EPA.get(parameters.id)?.delete()
+      EF_StationaryCombustion_EPA.get(parameters.org)?.delete()
     }
 }

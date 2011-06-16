@@ -1,7 +1,7 @@
 package org.ibLGHGCalc
 
 class EF_CO2_MobileCombustion_EPA {
-
+    //static searchable = true
     String fuelType
     String fuelNameInVehicleType
     String fuelUnit

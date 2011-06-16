@@ -43,6 +43,9 @@ class OptionalSourceInfo {
     Date dateCreated
     Date lastUpdated
 
+    SecUser lastUpdatedByUserReference
+    String dataOrigin //"sourceFileName" or 'UI'
+
     static hasMany = [emissionsDetailsList: EmissionsDetails]
 
     static constraints = {
@@ -62,6 +65,10 @@ class OptionalSourceInfo {
             fuelUsedBeginDate(nullable:false)
             fuelUsedEndDate(nullable:false)
             emissionsDetailsList(nullable:true)
+            
+            lastUpdatedByUserReference(nullable:true)
+            dataOrigin(nullable:true)
+
     }
     static mapping = {
         emissionsDetailsList cascade: "all-delete-orphan"

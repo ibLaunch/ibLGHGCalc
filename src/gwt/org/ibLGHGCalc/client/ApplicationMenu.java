@@ -13,12 +13,12 @@ import com.smartgwt.client.widgets.menu.events.ItemClickHandler;
 
 public class ApplicationMenu extends HLayout {
 
-  private static final int APPLICATION_MENU_HEIGHT = 42;
+  private static final int APPLICATION_MENU_HEIGHT = 23;
   private static final int MEMBERS_MARGIN = 5;
   private static final int PADDING_SIZE = 3;
   private static final int IMENU_BUTTON_HEIGHT = 23;
   private static final int IMENU_BUTTON_WIDTH = 120;
-  private static final int SHADOW_DEPTH = 5;
+  private static final int SHADOW_DEPTH = 0;
   private static final Menu emissionSourcesMenu = new Menu();;
   public static final Menu directEmissionsSourcesSubMenu = new Menu();;
   public static final Menu inDirectEmissionsSourcesSubMenu = new Menu();;
@@ -37,8 +37,9 @@ public class ApplicationMenu extends HLayout {
 
     // initialise the layout container
     this.setHeight(APPLICATION_MENU_HEIGHT);
+    this.setWidth100();
     //this.setBackgroundColor("#00FFFF");
-    this.setBackgroundColor("#A9F5F2");
+    //this.setBackgroundColor("#A9F5F2");
     //this.setDefaultLayoutAlign(Alignment.CENTER);
     //this.setAlign(VerticalAlignment.CENTER);
     //---
@@ -92,7 +93,7 @@ public class ApplicationMenu extends HLayout {
 
    reportSubMenu.setItems(
            new MenuItem("Calculate Emissions"),
-           new MenuItem("Emissions Summary"),
+           //new MenuItem("Emissions Summary"),
            new MenuItem("Emissions Report")
            );
 
@@ -231,11 +232,11 @@ public class ApplicationMenu extends HLayout {
     this.addMember(dataUploadMenuButton);
     //this.setIsGroup(Boolean.TRUE);
     //this.setGroupTitle("Application Menu");
-    this.setMembersMargin(MEMBERS_MARGIN);
-    
+    //this.setMembersMargin(MEMBERS_MARGIN);
+
     //this.setWidth("80%");
     
-    //emissionSourcesHLayout.setBorder("1px double orange");
+    //this.setBorder("1px double orange");
     //emissionSourcesHLayout.setTitle("Edit Emission Sources");
     //emissionSourcesHLayout.setShowEdges(true);
     //this.addMember(emissionSourcesHLayout);

@@ -38,7 +38,7 @@ class PurchasedSteamInfoController {
     try {
         thePurchasedSteamInfo = purchasedSteamInfoService.save(params)
 	//-- temporary approach below for now, need more better approach??
-	aclUtilService.addPermission(thePurchasedSteamInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
+	//aclUtilService.addPermission(thePurchasedSteamInfo, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
 	println "springSecurityService.authentication.name: " + springSecurityService.authentication.name
     }
     catch (Exception e) {
@@ -87,8 +87,8 @@ class PurchasedSteamInfoController {
         supplierCH4MultiplierUnit: purchasedSteamInfo.supplierCH4MultiplierUnit,
         supplierN2OMultiplierUnit: purchasedSteamInfo.supplierN2OMultiplierUnit,
 
-        fuelUsedBeginDate:purchasedSteamInfo.fuelUsedBeginDate,
-        fuelUsedEndDate:purchasedSteamInfo.fuelUsedEndDate
+        fuelUsedBeginDate:purchasedSteamInfo.fuelUsedBeginDate?.format("yyyy-MM-dd"),
+        fuelUsedEndDate:purchasedSteamInfo.fuelUsedEndDate?.format("yyyy-MM-dd")
     )
   }
 }
