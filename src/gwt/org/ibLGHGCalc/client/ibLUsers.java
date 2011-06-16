@@ -15,7 +15,6 @@ import com.smartgwt.client.widgets.events.ClickHandler;
 
 //import com.smartgwt.client.widgets.form.fields.events.ClickHandler;
 //import com.smartgwt.client.widgets.form.fields.events.ClickEvent;
-
 //import com.smartgwt.client.widgets.form.fields.LinkItem;
 //import com.smartgwt.client.widgets.form.fields.;
 
@@ -35,23 +34,45 @@ import com.smartgwt.client.widgets.menu.events.MenuItemClickEvent;
 import java.util.ArrayList;
 import java.util.List;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
+
 import com.google.gwt.i18n.client.TimeZone;
+import com.smartgwt.client.core.DataClass;
 import com.smartgwt.client.data.DSCallback;
 import com.smartgwt.client.data.DSRequest;
 import com.smartgwt.client.data.DSResponse;
+import com.smartgwt.client.data.RestDataSource;
+import com.smartgwt.client.data.SimpleType;
+import com.smartgwt.client.data.SimpleTypeFormatter;
 import com.smartgwt.client.util.DateDisplayFormatter;
 import com.smartgwt.client.util.DateInputFormatter;
+import com.smartgwt.client.widgets.events.CloseClickHandler;
+import com.smartgwt.client.widgets.events.DoubleClickEvent;
+import com.smartgwt.client.widgets.events.DoubleClickHandler;
+import com.smartgwt.client.widgets.events.HoverEvent;
+import com.smartgwt.client.widgets.events.HoverHandler;
 import com.smartgwt.client.widgets.form.validator.DateRangeValidator;
 import com.smartgwt.client.widgets.form.validator.FloatPrecisionValidator;
 import com.smartgwt.client.widgets.form.validator.IsFloatValidator;
+import com.smartgwt.client.widgets.form.validator.RequiredIfFunction;
+import com.smartgwt.client.widgets.form.validator.RequiredIfValidator;
 import com.smartgwt.client.widgets.form.validator.Validator;
+import com.smartgwt.client.widgets.grid.CellFormatter;
+import com.smartgwt.client.widgets.grid.events.CellClickEvent;
+import com.smartgwt.client.widgets.grid.events.CellClickHandler;
 import com.smartgwt.client.widgets.grid.events.RecordClickEvent;
 import com.smartgwt.client.widgets.grid.events.RecordClickHandler;
+import com.smartgwt.client.widgets.grid.events.RecordDoubleClickEvent;
+import com.smartgwt.client.widgets.grid.events.RecordDoubleClickHandler;
 import com.smartgwt.client.widgets.menu.events.ItemClickEvent;
 import com.smartgwt.client.widgets.menu.events.ItemClickHandler;
+import com.smartgwt.client.widgets.viewer.DetailFormatter;
 import com.smartgwt.client.widgets.viewer.DetailViewer;
 import com.smartgwt.client.widgets.viewer.DetailViewerField;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import com.smartgwt.client.widgets.form.validator.RegExpValidator;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -61,13 +82,43 @@ public class ibLUsers implements EntryPoint {
      * This is the entry point method.
      */
 
-    private static final int NORTH_HEIGHT = 107; // MASTHEAD_HEIGHT + APPLICATION_MENU_HEIGHT + USER_ORGANIZATION_HEADER_HEIGHT
+    private static final int NORTH_HEIGHT = 117-62; // MASTHEAD_HEIGHT + APPLICATION_MENU_HEIGHT + USER_ORGANIZATION_HEADER_HEIGHT
     private VLayout mainVLayout; // This is main Layout
     private HLayout northHLayout;  // This is for header purpose only
 
     private static final int LEFT_SECTION_BUTTON_WIDTH = 180;
     private static final int LEFT_SECTION_BUTTON_HEIGHT = 25;
-    
+    private static final String NUMBER_FORMAT_1 ="#,##0.00";
+
+//-- Listgrid Field Widths
+    //private static final int SOURCE_DESCRIPTION_WIDTH = 200;
+    private static final String SOURCE_DESCRIPTION_WIDTH = "20%";
+    private static final String VEHICLE_TYPE_FIELD_WIDTH = "15%";
+    private static final String FUEL_TYPE_FIELD_WIDTH = "20%";
+    private static final String FUEL_QUANTITY_FIELD_WIDTH = "10%";
+    private static final String FUEL_UNIT_FIELD_WIDTH = "5%";
+    private static final String BEGIN_DATE_FIELD_WIDTH = "8%";
+    private static final String END_DATE_FIELD_WIDTH = "8%";
+    private static final String EDIT_BUTTON_FIELD_WIDTH = "5%";
+    private static final String REMOVE_BUTTON_FIELD_WIDTH = "9%";
+
+    //-- purchased Electricity fields width
+    private static final String eGRIDSubregion_FIELD_WIDTH = "15%";
+    private static final String purchasedElectricityUnit_FIELD_WIDTH = "5%";
+
+    //-- purchased Electricity fields width
+    private static final String boilerEfficiencyPercent_WIDTH = "5%";
+
+    //-- purchased Electricity fields width
+    //private static final String VEHICLE_TYPE_FIELD_WIDTH = "20%";
+
+
+    private static final String PROGRAM_TYPE_FIELD_WIDTH = "20%";
+    private static final String TOTAL_EMISSIONS_FIELD_WIDTH = "20%";
+
+    private static final String GAS_TYPE_FIELD_WIDTH = "20%";
+    private static final String EQUIPMENT_TYPE_FIELD_WIDTH = "20%";
+
     private final HLayout mainHLayout = new HLayout();
     private final VLayout middleVLayout = new VLayout();
     private final HLayout topMenuHLayout = new HLayout();
@@ -81,13 +132,14 @@ public class ibLUsers implements EntryPoint {
     private String ADD_NEW_SOURCE_TEXT = "Add new source";
     private int ADD_BUTTON_WIDTH = 150;
     private int LABEL_HEIGHT = 15;
+
+    private DetailViewerField[] detailViewerFieldList;
     
 //- Data upload Options
     private String[] epaDataLoadOptions = {
 				"Stationary Combustion Info",
 				"Data - EPA Purchased Electricity",
 				"Data - EPA Purchased Steam",
-				"Data - EPA Employee Business Travel - By Vehicle",
 				"Data - EPA Employee Business Travel - By Vehicle",
 				"Data - EPA Employee Business Travel - By Bus",
 				"Data - EPA Employee Business Travel - By Rail",
@@ -131,22 +183,35 @@ public class ibLUsers implements EntryPoint {
 //-- file upload
     private VStack fileUploadLayout = new VStack();
     private final SelectItem fileTypeItem = new SelectItem("fileType");
+    private final HiddenItem fileUploadOrganizatonID = new HiddenItem("organizationId");
     
-//-- Validators
-    private Date currentInventoryBeginDateMin;
-    private Date currentInventoryEndDateMax;
+//-- User Organization Layot
+    //private static UserOrganizationHeader userOrganizationHeader = new UserOrganizationHeader();
 
-    private final DateRangeValidator validateDateRange = new DateRangeValidator();
-    private final IsFloatValidator floatValidator = new IsFloatValidator();
-    private final FloatPrecisionValidator floatPrecisionValidator = new FloatPrecisionValidator();
+//-- Validators
+    public static Date currentInventoryBeginDateMin;
+    public static Date currentInventoryEndDateMax;
+    public static Integer orgId; //--Remove this, I don't believe this is used.
+    public static Integer mainOrganizationId;// = (Integer) UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+
+    public static final DateRangeValidator validateDateRange = new DateRangeValidator();
+    public static final IsFloatValidator floatValidator = new IsFloatValidator();
+    public static final FloatPrecisionValidator floatPrecisionValidator = new FloatPrecisionValidator();
 
     private final TabSet tabSet = new TabSet();
     //private final DateTimeFormat dateFormatter = DateTimeFormat.getFormat("dd-MM-yyyy"+" "+"h:mm:a" );
     private final DateTimeFormat displayDateFormatter = DateTimeFormat.getFormat("MMM d, yyyy");
     private final DateTimeFormat inputDateFormatter = DateTimeFormat.getFormat("yyyy-MM-dd'T'hh:mm:ss");
+    //public final static DateDisplayFormat detailViewerDateFormat = DateDisplayFormat.getFormat("MMM d, yyyy");
+
+    public final NumberFormat floatSimpleFormat = NumberFormat.getFormat("#,##0.00");
+    public static SimpleType floatSimpleType = new SimpleType("floatSimpleTypeID", FieldType.FLOAT);
 
     private final String eFUploadFormSubmitAction = "EF_StationaryCombustion_EPA";
     private final DynamicForm uploadForm = new DynamicForm();
+
+
+    private final FileUploadDS fileUploadDS = FileUploadDS.getInstance();
 
 //--Stationary Combustions
     private final VLayout stationaryCombustionLayout = new VLayout();
@@ -171,90 +236,28 @@ public class ibLUsers implements EntryPoint {
     private final TabSet refridgerationAirConditioningTabSet = new TabSet();
     private final VLayout refridgerationAirConditioningLayout = new VLayout(15);
 
+    private final RefridgerationAirConditioningInfoDS refridgerationAirConditioningInfoDS = RefridgerationAirConditioningInfoDS.getInstance();
+    
 //-- refridgerationAirConditioning For Material balance method
     private final Window refridgerationAirConditioningFormWindow_1 = new Window();
     private final DynamicForm refridgerationAirConditioningForm_1 = new DynamicForm();
-    private final ListGrid refridgerationAirConditioningDataGrid_1 = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            refridgerationAirConditioningForm_1.editRecord(record);
-                            refridgerationAirConditioningFormWindow_1.show();
-                        }
-                    });
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       public void execute(Boolean value) {
-					   if (value){
-					       //refridgerationAirConditioningDataGrid.removeSelectedData();
-                                               refridgerationAirConditioningDataGrid_1.removeData(record);
-                                           }
-				       }
-			        });
-
-                        }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
-//-- For refridgerationAirConditioning Simplified Material balance method
+    private final IblListGrid refridgerationAirConditioningDataGrid_1 = new IblListGrid(refridgerationAirConditioningInfoDS, 
+                                                                                        refridgerationAirConditioningForm_1,
+                                                                                        refridgerationAirConditioningFormWindow_1);
+    //-- For refridgerationAirConditioning Simplified Material balance method
     private final Window refridgerationAirConditioningFormWindow_2 = new Window();
     private final DynamicForm refridgerationAirConditioningForm_2 = new DynamicForm();
-    private final ListGrid refridgerationAirConditioningDataGrid_2 = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            refridgerationAirConditioningForm_2.editRecord(record);
-                            refridgerationAirConditioningFormWindow_2.show();
-                        }
-                    });
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-                                   public void execute(Boolean value) {
-                                       if (value){
-                                           //refridgerationAirConditioningDataGrid.removeSelectedData();
-                                           refridgerationAirConditioningDataGrid_2.removeData(record);
-                                       }
-                                   }
-                            });
-                        }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
-
+    private final IblListGrid refridgerationAirConditioningDataGrid_2 = new IblListGrid(refridgerationAirConditioningInfoDS, 
+                                                                                        refridgerationAirConditioningForm_2,
+                                                                                        refridgerationAirConditioningFormWindow_2 );
 //-- For refridgerationAirConditioning Screening method
     private final Window refridgerationAirConditioningFormWindow_3 = new Window();
     private final DynamicForm refridgerationAirConditioningForm_3 = new DynamicForm();
-    private final ListGrid refridgerationAirConditioningDataGrid_3 = new ListGrid(){
+    private final IblListGrid refridgerationAirConditioningDataGrid_3 = new IblListGrid(refridgerationAirConditioningInfoDS, 
+                                                                                        refridgerationAirConditioningForm_3,
+                                                                                        refridgerationAirConditioningFormWindow_3 );
+    
+    /*private final ListGrid refridgerationAirConditioningDataGrid_3 = new ListGrid(){
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
 
@@ -291,7 +294,7 @@ public class ibLUsers implements EntryPoint {
                 }
 
             }
-    };
+    };*/
 
 //-- fireSuppression
     private final TabSet fireSuppressionTabSet = new TabSet();
@@ -300,6 +303,11 @@ public class ibLUsers implements EntryPoint {
 //-- fireSuppression For Material balance method
     private final Window fireSuppressionFormWindow_1 = new Window();
     private final DynamicForm fireSuppressionForm_1 = new DynamicForm();
+    private final IblListGrid fireSuppressionDataGrid_1 = new IblListGrid(refridgerationAirConditioningInfoDS,
+                                                                                    fireSuppressionForm_1,
+                                                                                    fireSuppressionFormWindow_1);
+
+    /*
     private final ListGrid fireSuppressionDataGrid_1 = new ListGrid(){
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
@@ -338,9 +346,16 @@ public class ibLUsers implements EntryPoint {
 
             }
     };
+     *
+     */
 //-- For fireSuppression Simplified Material balance method
     private final Window fireSuppressionFormWindow_2 = new Window();
     private final DynamicForm fireSuppressionForm_2 = new DynamicForm();
+    private final IblListGrid fireSuppressionDataGrid_2 = new IblListGrid(refridgerationAirConditioningInfoDS,
+                                                                                    fireSuppressionForm_2,
+                                                                                    fireSuppressionFormWindow_2);
+
+    /*
     private final ListGrid fireSuppressionDataGrid_2 = new ListGrid(){
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
@@ -379,10 +394,16 @@ public class ibLUsers implements EntryPoint {
 
             }
     };
+     *
+     */
 
 //-- For fireSuppression Screening method    
     private final Window fireSuppressionFormWindow_3 = new Window();
     private final DynamicForm fireSuppressionForm_3 = new DynamicForm();
+    private final IblListGrid fireSuppressionDataGrid_3 = new IblListGrid(refridgerationAirConditioningInfoDS,
+                                                                                    fireSuppressionForm_3,
+                                                                                    fireSuppressionFormWindow_3);
+    /*
     private final ListGrid fireSuppressionDataGrid_3 = new ListGrid(){
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
@@ -421,8 +442,8 @@ public class ibLUsers implements EntryPoint {
 
             }
     };
-
-    private final RefridgerationAirConditioningInfoDS refridgerationAirConditioningInfoDS = RefridgerationAirConditioningInfoDS.getInstance();
+    */
+    
     private final GWP_RefridgerationAirConditioning_EPADS gWP_RefridgerationAirConditioning_EPADS = GWP_RefridgerationAirConditioning_EPADS.getInstance();
     private final EquipmentCapacityRange_EPADS equipmentCapacityRange_EPADS = EquipmentCapacityRange_EPADS.getInstance();
 
@@ -435,17 +456,156 @@ public class ibLUsers implements EntryPoint {
     private final DynamicForm organizationInventoryYearForm = new DynamicForm();
     private final VLayout organizationInventoryYearVLayout = new VLayout();
 
+    private final Window detailViewerWindow = new Window();
+
     //private final HLayout emissionsSummaryLayout = new HLayout();
     private final DynamicForm emissionsSummaryInputForm = new DynamicForm();
-    private final ListGrid emissionsSummaryDataGrid = new ListGrid();
+    //private final ListGrid emissionsSummaryDataGrid = new ListGrid();
     private final DetailViewer emissionsSummaryDetailViewer = new DetailViewer();
     private final EmissionsSummaryDS emissionsSummaryDS = EmissionsSummaryDS.getInstance();
     private final VLayout emissionsSummaryInputVLayout = new VLayout();
     private final VLayout emissionsSummaryVLayout = new VLayout();
     private final VLayout detailViewerVLayout = new VLayout();
     private final Label emissionsSummaryDetailViewerLabel = new Label("Emission Details:");
+    //private final ListGrid emissionsSummaryDataGrid = new ListGrid();
+    
+    //private final ListGrid emissionsSummaryDataGrid = new IblReportListGrid(emissionsSummaryDS);
+/*
+    private final ListGrid emissionsSummaryDataGrid = new ListGrid()
+        {
+            @Override
+            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
+                final String fieldName = this.getFieldName(colNum);
+                if (fieldName.equals("downloadReportField")) {
+                    String fileName = record.getAttribute("reportFileName");
 
-    private final ListGrid stationaryCombustionDataGrid = new ListGrid(){
+		    Label reportFileNameLabel = getReportLink(fileName, new ClickHandler() {
+		       @Override
+		       public void onClick(ClickEvent event) {
+
+	                    Integer orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+                            String emissionsSummaryReportId = (String)record.getAttribute("id");
+                            //SC.say("I am in createRecord Overide");
+
+                            String url = "/ibLGHGCalc/reports?organizationId="+orgId+",emissionsSummaryReportId="+emissionsSummaryReportId;
+                            //String url = "/ibLGHGCalc/reports?organizationId={$orgId},emissionsSummaryReportId={$emissionsSummaryReportId}";
+                            SC.say("URL is---"+url);
+                            com.google.gwt.user.client.Window.open(url,null,null);
+		       }
+		    });
+                    return reportFileNameLabel;
+                } else {
+                    return null;
+                }
+
+            }
+        };
+*/
+  
+//-- Below works!!
+    private final ListGrid emissionsSummaryDataGrid = new ListGrid();
+    /*
+        {
+            @Override
+            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
+                final String fieldName = this.getFieldName(colNum);
+                if (fieldName.equals("downloadReportField")) {
+                    //Button viewReportButton = new Button();
+                    Button viewReportButton = new Button();
+                    //viewReportButton.setAutoFit(Boolean.TRUE);
+                    
+                    viewReportButton.addClickHandler(new ClickHandler() {
+                        public void onClick(ClickEvent event) {
+	                    Integer orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+                            //String fileName = record.getAttribute("reportFileName");
+                            String emissionsSummaryReportId = (String)record.getAttribute("id");
+                            String url = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+                            com.google.gwt.user.client.Window.open(url,null,null);
+                        }
+                    });
+                    return viewReportButton;
+                } else {
+                    return null;
+                }
+                
+            }
+        };
+     */
+/*
+//-- Below works!!
+private final ListGrid emissionsSummaryDataGrid = new ListGrid()
+        {
+            @Override
+            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
+                final String fieldName = this.getFieldName(colNum);
+
+                //SC.say("I am in createRecord Overide");
+                if (fieldName.equals("downloadReportField")) {
+                    //Button viewReportButton = new Button();
+                    Button viewReportButton = new Button();
+                    viewReportButton.addClickHandler(new ClickHandler() {
+                        public void onClick(ClickEvent event) {
+	                    Integer orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+                            //String fileName = record.getAttribute("reportFileName");
+                            String emissionsSummaryReportId = (String)record.getAttribute("id");
+                            //String url = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+                            //com.google.gwt.user.client.Window.open(url,null,null);
+
+   	                    HTMLPane htmlPane = new HTMLPane();
+			    htmlPane.setHeight100();
+			    htmlPane.setWidth100();
+			    htmlPane.setContentsURL("/ibLGHGCalc/reports");
+                            //htmlPane.setContentsURL(url);
+
+                            HashMap urlParams = new HashMap();
+                            urlParams.put("organizationId", orgId);
+                            //urlParams.put("fileName", fileName);
+                            urlParams.put("emissionsSummaryReportId", emissionsSummaryReportId);
+                            htmlPane.setContentsURLParams(urlParams);
+                            htmlPane.setContentsType(ContentsType.PAGE);
+                            //htmlPane.show();
+
+                            Window reportWindow = new Window();
+                            reportWindow.setWidth("50%");
+                            reportWindow.setHeight("70%");
+                            reportWindow.addItem(htmlPane);
+                            reportWindow.show();
+
+                            //HLayout newHLayout = new HLayout();
+                            //newHLayout.addChild(htmlPane);
+                            //middleBottomHLayout.addChild(htmlPane);
+                            //newHLayout.show();
+                        }
+                    });
+                    return viewReportButton;
+                } else {
+                    return null;
+                }
+
+            }
+        };
+*/
+
+/*
+    {
+            @Override
+            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
+                String fieldName = this.getFieldName(colNum);
+                if (fieldName.equals("reportFileNameField")) {
+                    String orgName = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
+                    ListGridField reportFileNameField = this.getField(colNum);
+                    reportFileNameField.setLinkURLPrefix("Reports/"+orgId+"/");
+                    return reportFileNameField;
+                    //return null;
+                }else {
+                    return null;
+                }
+            }
+    };
+*/    
+    private final IblListGrid stationaryCombustionDataGrid = new IblListGrid(stationaryCombustionInfoDS, stationaryCombustionForm, stationaryCombustionFormWindow );
+
+    private final ListGrid stationaryCombustionDataGrid_2 = new ListGrid(){
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
 
@@ -485,25 +645,56 @@ public class ibLUsers implements EntryPoint {
             }
     };
 
-    private final ListGrid mobileCombustionDataGrid = new ListGrid(){
+    private final IblListGrid mobileCombustionDataGrid = new IblListGrid(mobileCombustionInfoDS, mobileCombustionForm, mobileCombustionFormWindow);
+
+    private final ListGrid mobileCombustionDataGrid_2 = new ListGrid(){
+
+            @Override
+            protected Canvas getCellHoverComponent(Record record, Integer rowNum, Integer colNum) {
+                DetailViewer detailViewer = new DetailViewer();
+                detailViewer.setWidth(400);
+                detailViewer.setUseAllDataSourceFields(true);
+                //detailViewer.viewSelectedData(mobileCombustionDataGrid);
+                detailViewer.setDataSource(mobileCombustionInfoDS);
+                
+                Criteria criteria = new Criteria();
+                criteria.addCriteria("id", record.getAttribute("id"));
+                detailViewer.fetchData(criteria);                
+                return detailViewer;
+            }
+
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
 
                 String fieldName = this.getFieldName(colNum);
+                //HLayout recordCanvas = new HLayout();
+                //recordCanvas.setHeight(22);
+                //recordCanvas.setAlign(Alignment.CENTER);
 
                 if (fieldName.equals("editButtonField")) {
+                    
                     EditImageButton editImg = new EditImageButton();
+                    //IButton editImg = new IButton();
+                    //editImg.set
+                    //editImg.setWidth(10);
+                    //editImg.setContents("Edit");
+                    //editImg.setTitle("Edit");
                     editImg.addClickHandler(new ClickHandler() {
                         public void onClick(ClickEvent event) {
                             //mobileCombustionForm.editSelectedData(mobileCombustionDataGrid);
                             mobileCombustionForm.editRecord(record);
+                            //mobileCombustionForm.editNewRecord();
                             mobileCombustionFormWindow.show();
                         }
                     });
-
-                    return editImg;
+                    //recordCanvas.addMember(editImg);
+                    //return recordCanvas;
+                    return editImg;                    
+                    //return null;                    
                 } else if (fieldName.equals("removeButtonField")) {
                     RemoveIButton button = new RemoveIButton();
+                    //IButton button = new IButton();
+                    //button.setWidth(10);
                     button.addClickHandler(new ClickHandler() {
                        public void onClick(ClickEvent event) {
                                 SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
@@ -523,7 +714,76 @@ public class ibLUsers implements EntryPoint {
                 }
 
             }
+
     };
+
+//-- Generic Fields-------------------begin
+    private final List<ListGridField> mobileCombustionListGridFields = new ArrayList<ListGridField>();
+    private final List<FormItem> mobileCombustionFormItems = new ArrayList<FormItem>();
+    private final List<ListGridField> stationaryCombustionListGridFields = new ArrayList<ListGridField>();
+    private final List<FormItem> stationaryCombustionFormItems = new ArrayList<FormItem>();
+    
+    private final DynamicForm dataForm = new DynamicForm();
+    private final Window dataFormWindow = new Window();
+    private RestDataSource dataDS = new RestDataSource();
+    private final VLayout dataLayout = new VLayout();
+    
+//--Generic Listgrid to be used with all components
+    private final ListGrid dataGrid = new ListGrid(){
+            @Override
+            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
+
+                String fieldName = this.getFieldName(colNum);
+                if (fieldName.equals("editButtonField")) {
+                    EditImageButton editImg = new EditImageButton();
+                    editImg.addClickHandler(new ClickHandler() {
+                        public void onClick(ClickEvent event) {
+                            //mobileCombustionForm.editSelectedData(mobileCombustionDataGrid);
+                            dataForm.editRecord(record);
+                            dataFormWindow.show();
+                        }
+                    });
+
+                    return editImg;
+
+                } else if (fieldName.equals("removeButtonField")) {
+                    RemoveIButton button = new RemoveIButton();
+                    button.addClickHandler(new ClickHandler() {
+                       public void onClick(ClickEvent event) {
+                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
+				       				public void execute(Boolean value) {
+					   					if (value){
+					   					    //mobileCombustionDataGrid.removeSelectedData();
+                       			             dataGrid.removeData(record);
+                       		            }
+				       				}
+			        	});
+
+                       }
+                    });
+                    return button;
+                } else {
+                    return null;
+                }
+
+            }
+/*
+            @Override
+            protected Canvas getCellHoverComponent(Record record, Integer rowNum, Integer colNum) {
+                DetailViewer detailViewer = new DetailViewer();
+                detailViewer.setWidth(400);
+                detailViewer.setDataSource(dataDS);
+                //detailViewer.viewSelectedData(dataGrid);
+                Criteria criteria = new Criteria();
+                criteria.addCriteria("id", record.getAttribute("id"));
+                detailViewer.fetchData(criteria);
+                //detailViewer.
+                return detailViewer;
+            }
+*/
+    };
+
+//-- Generic Fields-------------------end
 
 //--Purchased Electricity
     private final TabSet purchasedElectricityTabSet = new TabSet();
@@ -534,6 +794,9 @@ public class ibLUsers implements EntryPoint {
     private final PurchasedElectricityInfoDS purchasedElectricityInfoDS = PurchasedElectricityInfoDS.getInstance();
     private final EF_PurchasedElectricity_EPADS theEF_PurchasedElectricity_EPADS = EF_PurchasedElectricity_EPADS.getInstance();
 
+    private final IblListGrid purchasedElectricityDataGrid = new IblListGrid(purchasedElectricityInfoDS, purchasedElectricityForm, purchasedElectricityFormWindow);
+
+    /*
     private final ListGrid purchasedElectricityDataGrid = new ListGrid(){
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
@@ -573,6 +836,7 @@ public class ibLUsers implements EntryPoint {
 
             }
     };
+    */
 
 //--Purchased Steam
     private final TabSet purchasedSteamTabSet = new TabSet();
@@ -582,7 +846,9 @@ public class ibLUsers implements EntryPoint {
     private final DynamicForm purchasedSteamForm = new DynamicForm();
     private final PurchasedSteamInfoDS purchasedSteamInfoDS = PurchasedSteamInfoDS.getInstance();
     private final EF_PurchasedSteam_EPADS theEF_PurchasedSteam_EPADS = EF_PurchasedSteam_EPADS.getInstance();
+    private final IblListGrid purchasedSteamDataGrid = new IblListGrid(purchasedSteamInfoDS, purchasedSteamForm, purchasedSteamFormWindow);
 
+/*
     private final ListGrid purchasedSteamDataGrid = new ListGrid(){
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
@@ -622,7 +888,7 @@ public class ibLUsers implements EntryPoint {
 
             }
     };
-
+*/
 //--Optinal Source DS
     private final OptionalSourceInfoDS optionalSourceInfoDS = OptionalSourceInfoDS.getInstance();
 
@@ -633,178 +899,24 @@ public class ibLUsers implements EntryPoint {
     private final Window employeeBusinessTravelByVehicleFormWindow = new Window();
     private final DynamicForm employeeBusinessTravelByVehicleForm = new DynamicForm();
     private final EF_VehicleType_EPADS theEF_VehicleType_EPADS = EF_VehicleType_EPADS.getInstance();
-    private final ListGrid employeeBusinessTravelByVehicleDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //employeeBusinessTravelByVehicleForm.editSelectedData(employeeBusinessTravelByVehicleDataGrid);
-                            employeeBusinessTravelByVehicleForm.editRecord(record);
-                            employeeBusinessTravelByVehicleFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //employeeBusinessTravelByVehicleDataGrid.removeSelectedData();
-                       			             employeeBusinessTravelByVehicleDataGrid.removeData(record);
-                       		            }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
-
+    private final IblListGrid employeeBusinessTravelByVehicleDataGrid = new IblListGrid(optionalSourceInfoDS, employeeBusinessTravelByVehicleForm, employeeBusinessTravelByVehicleFormWindow);
 //--employeeBusinessTravelByRail
     private final Window employeeBusinessTravelByRailFormWindow = new Window();
     private final DynamicForm employeeBusinessTravelByRailForm = new DynamicForm();
     private final EF_RailType_EPADS theEF_RailType_EPADS = EF_RailType_EPADS.getInstance();
-    private final ListGrid employeeBusinessTravelByRailDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //employeeBusinessTravelByRailForm.editSelectedData(employeeBusinessTravelByRailDataGrid);
-                            employeeBusinessTravelByRailForm.editRecord(record);
-                            employeeBusinessTravelByRailFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //employeeBusinessTravelByRailDataGrid.removeSelectedData();
-                       			             employeeBusinessTravelByRailDataGrid.removeData(record);
-                       		            }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    private final IblListGrid employeeBusinessTravelByRailDataGrid = new IblListGrid(optionalSourceInfoDS, employeeBusinessTravelByRailForm, employeeBusinessTravelByRailFormWindow);
 
 //--employeeBusinessTravelByBus
     private final Window employeeBusinessTravelByBusFormWindow = new Window();
     private final DynamicForm employeeBusinessTravelByBusForm = new DynamicForm();
     private final EF_BusType_EPADS theEF_BusType_EPADS = EF_BusType_EPADS.getInstance();
-    private final ListGrid employeeBusinessTravelByBusDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //employeeBusinessTravelByBusForm.editSelectedData(employeeBusinessTravelByBusDataGrid);
-                            employeeBusinessTravelByBusForm.editRecord(record);
-                            employeeBusinessTravelByBusFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //employeeBusinessTravelByBusDataGrid.removeSelectedData();
-                       			             employeeBusinessTravelByBusDataGrid.removeData(record);
-                       		            }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    private final IblListGrid employeeBusinessTravelByBusDataGrid = new IblListGrid(optionalSourceInfoDS, employeeBusinessTravelByBusForm, employeeBusinessTravelByBusFormWindow);
 
 //--employeeBusinessTravelByAir
     private final Window employeeBusinessTravelByAirFormWindow = new Window();
     private final DynamicForm employeeBusinessTravelByAirForm = new DynamicForm();
     private final EF_AirTravelType_EPADS theEF_AirTravelType_EPADS = EF_AirTravelType_EPADS.getInstance();
-    private final ListGrid employeeBusinessTravelByAirDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //employeeBusinessTravelByAirForm.editSelectedData(employeeBusinessTravelByAirDataGrid);
-                            employeeBusinessTravelByAirForm.editRecord(record);
-                            employeeBusinessTravelByAirFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //employeeBusinessTravelByAirDataGrid.removeSelectedData();
-                       			             employeeBusinessTravelByAirDataGrid.removeData(record);
-                       		            }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    private final IblListGrid employeeBusinessTravelByAirDataGrid = new IblListGrid(optionalSourceInfoDS, employeeBusinessTravelByAirForm, employeeBusinessTravelByAirFormWindow);
 
 //--employeeCommuting
     private final TabSet employeeCommutingTabSet = new TabSet();
@@ -814,133 +926,19 @@ public class ibLUsers implements EntryPoint {
     private final Window employeeCommutingByVehicleFormWindow = new Window();
     private final DynamicForm employeeCommutingByVehicleForm = new DynamicForm();
     //private final EF_VType_EPADS theEF_VehicleTypeType_EPADS = EF_VehicleTypeType_EPADS.getInstance();
-    private final ListGrid employeeCommutingByVehicleDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //employeeCommutingByVehicleForm.editSelectedData(employeeCommutingByVehicleDataGrid);
-                            employeeCommutingByVehicleForm.editRecord(record);
-                            employeeCommutingByVehicleFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //employeeCommutingByVehicleDataGrid.removeSelectedData();
-				                       			             employeeCommutingByVehicleDataGrid.removeData(record);
-					                  		        }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    private final IblListGrid employeeCommutingByVehicleDataGrid = new IblListGrid(optionalSourceInfoDS, employeeCommutingByVehicleForm, employeeCommutingByVehicleFormWindow);
 
 //--employeeCommutingByRail
     private final Window employeeCommutingByRailFormWindow = new Window();
     private final DynamicForm employeeCommutingByRailForm = new DynamicForm();
     //private final EF_VehicleType_EPADS theEF_RailType_EPADS = EF_RailType_EPADS.getInstance();
-    private final ListGrid employeeCommutingByRailDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //employeeCommutingByRailForm.editSelectedData(employeeCommutingByRailDataGrid);
-                            employeeCommutingByRailForm.editRecord(record);
-                            employeeCommutingByRailFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //employeeCommutingByRailDataGrid.removeSelectedData();
-				                       			             employeeCommutingByRailDataGrid.removeData(record);
-					                  		        }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    private final IblListGrid employeeCommutingByRailDataGrid = new IblListGrid(optionalSourceInfoDS, employeeCommutingByRailForm, employeeCommutingByRailFormWindow);
 
 //--employeeCommutingByBus
     private final Window employeeCommutingByBusFormWindow = new Window();
     private final DynamicForm employeeCommutingByBusForm = new DynamicForm();
     //private final EF_VehicleType_EPADS theEF_BusType_EPADS = EF_BusType_EPADS.getInstance();
-    private final ListGrid employeeCommutingByBusDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //employeeCommutingByBusForm.editSelectedData(employeeCommutingByBusDataGrid);
-                            employeeCommutingByBusForm.editRecord(record);
-                            employeeCommutingByBusFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //employeeCommutingByBusDataGrid.removeSelectedData();
-				                       			             employeeCommutingByBusDataGrid.removeData(record);
-					                  		        }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    private final IblListGrid employeeCommutingByBusDataGrid = new IblListGrid(optionalSourceInfoDS, employeeCommutingByBusForm, employeeCommutingByBusFormWindow);
 
 //--product Transport
     private final TabSet productTransportTabSet = new TabSet();
@@ -950,177 +948,26 @@ public class ibLUsers implements EntryPoint {
     private final Window productTransportByVehicleFormWindow = new Window();
     private final DynamicForm productTransportByVehicleForm = new DynamicForm();
     private final EF_ProductTransport_VehicleType_EPADS theEF_ProductTransport_VehicleType_EPADS = EF_ProductTransport_VehicleType_EPADS.getInstance();
-    private final ListGrid productTransportByVehicleDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
+    private final IblListGrid productTransportByVehicleDataGrid = new IblListGrid(optionalSourceInfoDS, productTransportByVehicleForm, productTransportByVehicleFormWindow);
 
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //productTransportByVehicleForm.editSelectedData(productTransportByVehicleDataGrid);
-                            productTransportByVehicleForm.editRecord(record);
-                            productTransportByVehicleFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //productTransportByVehicleDataGrid.removeSelectedData();
-				                       			             productTransportByVehicleDataGrid.removeData(record);
-					                  		        }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
 
 //--productTransportByHeavyDutyTrucks
     private final Window productTransportByHeavyDutyTrucksFormWindow = new Window();
     private final DynamicForm productTransportByHeavyDutyTrucksForm = new DynamicForm();
     private final EF_ProductTransportType_EPADS theEF_ProductTransportType_EPADS= EF_ProductTransportType_EPADS.getInstance();
-    private final ListGrid productTransportByHeavyDutyTrucksDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //productTransportByHeavyDutyTrucksForm.editSelectedData(productTransportByHeavyDutyTrucksDataGrid);
-                            productTransportByHeavyDutyTrucksForm.editRecord(record);
-                            productTransportByHeavyDutyTrucksFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //productTransportByHeavyDutyTrucksDataGrid.removeSelectedData();
-				                       			             productTransportByHeavyDutyTrucksDataGrid.removeData(record);
-					                  		        }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    private final IblListGrid productTransportByHeavyDutyTrucksDataGrid = new IblListGrid(optionalSourceInfoDS, productTransportByHeavyDutyTrucksForm, productTransportByHeavyDutyTrucksFormWindow);
 
 //--productTransportByRail
     private final Window productTransportByRailFormWindow = new Window();
     private final DynamicForm productTransportByRailForm = new DynamicForm();
     //private final EF_ProductTransportType_EPADS theEF_ProductTransportType_EPADS= EF_ProductTransportType_EPADS.getInstance();
-    private final ListGrid productTransportByRailDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //productTransportByRailForm.editSelectedData(productTransportByRailDataGrid);
-                            productTransportByRailForm.editRecord(record);
-                            productTransportByRailFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-				       				public void execute(Boolean value) {
-					   					if (value){
-					   					    //productTransportByRailDataGrid.removeSelectedData();
-				                       			             productTransportByRailDataGrid.removeData(record);
-					                  		        }
-				       				}
-			        	});
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    private final IblListGrid productTransportByRailDataGrid = new IblListGrid(optionalSourceInfoDS, productTransportByRailForm, productTransportByRailFormWindow);
 
 //--productTransportByWaterAir
     private final Window productTransportByWaterAirFormWindow = new Window();
     private final DynamicForm productTransportByWaterAirForm = new DynamicForm();
     //private final EF_ProductTransportType_EPADS theEF_ProductTransportType_EPADS= EF_ProductTransportType_EPADS.getInstance();
-    private final ListGrid productTransportByWaterAirDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //productTransportByWaterAirForm.editSelectedData(productTransportByWaterAirDataGrid);
-                            productTransportByWaterAirForm.editRecord(record);
-                            productTransportByWaterAirFormWindow.show();
-                        }
-                    });
-
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                                SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-                                    public void execute(Boolean value) {
-                                                    if (value){
-                                                        //productTransportByWaterAirDataGrid.removeSelectedData();
-                                                         productTransportByWaterAirDataGrid.removeData(record);
-                                                    }
-                                    }
-                                });
-
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    private final IblListGrid productTransportByWaterAirDataGrid = new IblListGrid(optionalSourceInfoDS, productTransportByWaterAirForm, productTransportByWaterAirFormWindow);
 
 //--wasteStreamCombustion
     private final VLayout wasteStreamCombustionLayout = new VLayout(15);
@@ -1129,50 +976,15 @@ public class ibLUsers implements EntryPoint {
     private final Window wasteStreamCombustionFormWindow = new Window();
     private final DynamicForm wasteStreamCombustionForm = new DynamicForm();
     private final WasteStreamCombustionInfoDS wasteStreamCombustionInfoDS= WasteStreamCombustionInfoDS.getInstance();
-    private final ListGrid wasteStreamCombustionDataGrid = new ListGrid(){
-            @Override
-            protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-
-                String fieldName = this.getFieldName(colNum);
-
-                if (fieldName.equals("editButtonField")) {
-                    EditImageButton editImg = new EditImageButton();
-                    editImg.addClickHandler(new ClickHandler() {
-                        public void onClick(ClickEvent event) {
-                            //wasteStreamCombustionForm.editSelectedData(wasteStreamCombustionDataGrid);
-                            wasteStreamCombustionForm.editRecord(record);
-                            wasteStreamCombustionFormWindow.show();
-                        }
-                    });
-                    return editImg;
-                } else if (fieldName.equals("removeButtonField")) {
-                    RemoveIButton button = new RemoveIButton();
-                    button.addClickHandler(new ClickHandler() {
-                       public void onClick(ClickEvent event) {
-                            SC.confirm("ibL GHG Calc","Are you sure?", new BooleanCallback() {
-                                    public void execute(Boolean value) {
-                                        if (value){
-                                            //wasteStreamCombustionDataGrid.removeSelectedData();
-                                             wasteStreamCombustionDataGrid.removeData(record);
-                                        }
-                                    }
-                                });
-                       }
-                    });
-                    return button;
-                } else {
-                    return null;
-                }
-
-            }
-    };
+    //private final ListGrid wasteStreamCombustionDataGrid = new ListGrid();
+    
+    private final IblListGrid wasteStreamCombustionDataGrid = new IblListGrid(wasteStreamCombustionInfoDS, wasteStreamCombustionForm, wasteStreamCombustionFormWindow);
 
 public void onModuleLoad() {
 
-
 // - New code added below for layout management
       GWT.log("init OnLoadModule()...", null);
-
+      //SC.say(organ);
       // get rid of scroll bars, and clear out the window's built-in margin,
       // because we want to take advantage of the entire client area
       //Window.enableScrolling(false);
@@ -1180,33 +992,52 @@ public void onModuleLoad() {
 
       // initialise the main layout container
       mainVLayout = new VLayout();
-      mainVLayout.setWidth100();
-      mainVLayout.setHeight100();
-
+      mainVLayout.setWidth("100%");
+      mainVLayout.setHeight("100%");
+      //mainVLayout.setOverflow(Overflow.HIDDEN);
+      //mainVLayout.setAlign(Alignment.RIGHT);
+      //mainVLayout.setBorder("1px double orange");
+      //mainVLayout.setShowEdges(true);
+      
+      //mainVLayout.setLayoutRightMargin(50);
+      //mainVLayout.setLayoutLeftMargin(50);
+      //mainVLayout.setLayoutTopMargin(20);
+      mainVLayout.setLayoutBottomMargin(20);
+      //mainVLayout.setBackgroundColor("#A9F5F2");
+      mainVLayout.setBackgroundColor("#CCFFCC");
+      
       // initialise the North layout container
       northHLayout = new HLayout();
       northHLayout.setHeight(NORTH_HEIGHT);
-
+      //northHLayout.setOverflow(Overflow.);
+      //northHLayout.setWidth100();
+      
       VLayout vLayout = new VLayout();
+
+      //vLayout.setWidth100();
       // add the Masthead to the nested layout container
-      vLayout.addMember(new Masthead());
+//---      vLayout.addMember(new Masthead());
       // add the UserOrganizationHeader to the nested layout container
+      //UserOrganizationHeader userOrganizationHeader = new UserOrganizationHeader();
       vLayout.addMember(new UserOrganizationHeader());
       // add the Application menu to the nested layout container
-      //vLayout.addMember(new ApplicationMenu());
+      vLayout.addMember(new ApplicationMenu());
+
 
       // add the nested layout container to the  North layout container
       northHLayout.addMember(vLayout);
 
       middleBottomHLayout.setOverflow(Overflow.AUTO);
       middleMiddleHLayout.setOverflow(Overflow.AUTO);
+      //middleMiddleHLayout.setShowCloseButton
       
 //-- setValidators for the forms for common types.
 //      setValidators();
 
    //stationaryCombustionDataGrid.setDateFormatter(dateFormatter);
 
-   DateUtil.setDefaultDisplayTimezone("+00:00");
+   //DateUtil.setDefaultDisplayTimezone("+00:00");
+
 
    DateUtil.setShortDateDisplayFormatter(new DateDisplayFormatter() {
     public String format(Date date) {
@@ -1215,7 +1046,8 @@ public void onModuleLoad() {
         }
         // set the date format as per the WWF date preference
         //DateTimeFormat dateFormatter = DateTimeFormat.getFormat("dd-MM-yyyy"+" "+"h:mm:a" );
-        return displayDateFormatter.format(date, TimeZone.createTimeZone(0));
+        //return displayDateFormatter.format(date, TimeZone.createTimeZone(0));
+        return displayDateFormatter.format(date);
         /*
         final DateTimeFormat dateFormatter = DateTimeFormat.getFormat("MMM d, yyyy");
         String format = dateFormatter.format(date);
@@ -1224,6 +1056,18 @@ public void onModuleLoad() {
          */
      }
    });
+
+
+    // Create a SimpleType for float fields and set the formatters.
+    floatSimpleType.setNormalDisplayFormatter(new SimpleTypeFormatter() {
+            @Override
+            public String format(Object value, DataClass field,
+                            DataBoundComponent component, Record record) {
+                    return floatSimpleFormat.format(Double.valueOf(value.toString()));
+            }
+    });
+    floatSimpleType.register();
+
 
 /* Below was causing problem for editOrganizationProfileForm - dateTime fields. Hence commented for a while.
 //- Below is code for input date format, to avoide default timezone adjustment based on location of the user -- ??
@@ -1237,6 +1081,7 @@ public void onModuleLoad() {
 */
    mainHLayout.setWidth100();
    mainHLayout.setHeight100();
+   //mainHLayout.setOverflow(Overflow.AUTO);
    /*
    topMenuHLayout.setWidth100();
    topMenuHLayout.setHeight("4%");
@@ -1352,18 +1197,35 @@ public void onModuleLoad() {
 
 //-Layout for Mid top mid section
     middleVLayout.setWidth("80%");
-    middleVLayout.setWidth100();
+    //middleVLayout.setWidth100();
     middleVLayout.setHeight100();
     //middleVLayout.setAnimateMembers(true);
     
     final Label middleMiddleHLayoutLable = new Label("This middleMiddleHLayout");
     final Label middleBottomHLayoutLable = new Label("This middleBottomHLayout");
 
-    middleMiddleHLayout.addChild(middleMiddleHLayoutLable);
-    middleBottomHLayout.addChild(middleBottomHLayoutLable);
-    middleBottomHLayout.animateShow(AnimationEffect.SLIDE);    
-    middleBottomHLayout.hide();
+    //middleMiddleHLayout.addChild(middleMiddleHLayoutLable);
+    middleMiddleHLayout.addChild(new Dashboard());
+    middleMiddleHLayout.setBackgroundImage("sun.gif");
     
+    middleBottomHLayout.addChild(middleBottomHLayoutLable);
+    middleBottomHLayout.animateShow(AnimationEffect.SLIDE);
+    //middleBottomHLayout.set
+    middleBottomHLayout.hide();
+//---detailViewerWindow setting
+    /*
+    detailViewerWindow.setWidth100();
+    detailViewerWindow.setHeight100();
+
+    detailViewerWindow.addCloseClickHandler(new CloseClickHandler() {
+      public void onCloseClick(ClickEvent clickEvent) {
+        middleBottomHLayout.hide();
+      }
+    });
+    */
+//---
+
+
 //--set Height and width of defauly deatil Viewer layout
     detailViewerVLayout.setWidth100();
     detailViewerVLayout.setHeight100();
@@ -1376,7 +1238,9 @@ public void onModuleLoad() {
     leftSectionStack.setShowEdges(true);
     leftSectionStack.setCanDragResize(Boolean.TRUE);
     leftSectionStack.setResizeFrom("R");
-    leftSectionStack.setBackgroundColor("#A9F5F2");
+    //leftSectionStack.setBackgroundColor("#CCFFCC");
+    //leftSectionStack.setBackgroundColor("#A9F5F2");
+
     //leftSectionStack.setAlign(Alignment.CENTER);
     //leftSectionStack.setBorder("2px solid blue");
 
@@ -1617,6 +1481,7 @@ public void onModuleLoad() {
     });
     reportSection.addItem(calculateEmissionsLabel);
 
+    /*
     Label emissionsSummaryLabel = getSectionLink("Emissions Summary", new ClickHandler() {
        @Override
        public void onClick(ClickEvent event) {
@@ -1624,6 +1489,7 @@ public void onModuleLoad() {
        }
     });
     reportSection.addItem(emissionsSummaryLabel);
+    */
 
     Label emissionsReportLabel = getSectionLink("Emissions Report", new ClickHandler() {
        @Override
@@ -1645,6 +1511,7 @@ public void onModuleLoad() {
        @Override
        public void onClick(ClickEvent event) {
           displayEmissionSourceInfo("Stationary Combustions Sources");
+           //displayData ("Stationary Combustions Sources", stationaryCombustionListGridFields, stationaryCombustionFormItems, stationaryCombustionInfoDS);
        }
     });
     directEmissionsSourcesSection.addItem(getStationaryCombustionInfoLabel);
@@ -1653,6 +1520,9 @@ public void onModuleLoad() {
        @Override
        public void onClick(ClickEvent event) {
           displayEmissionSourceInfo("Mobile Combustions Sources");
+           //initializeDataForm();
+           //initMobileCombustionEditForm_2();
+           //displayData ("Mobile Combustions Sources", mobileCombustionListGridFields, mobileCombustionFormItems, mobileCombustionInfoDS);
        }
     });
     directEmissionsSourcesSection.addItem(getMobileCombustionInfoLabel);
@@ -1849,6 +1719,11 @@ public void onModuleLoad() {
     tabSet.setWidth100();
     tabSet.setHeight100();
 
+
+//intitialize generic components
+    initializeDataLayout();
+    initializeDataForm();
+    
     refridgerationAirConditioningTabSet.setTabBarAlign(Side.LEFT);
     refridgerationAirConditioningTabSet.setWidth100();
     refridgerationAirConditioningTabSet.setHeight100();
@@ -1868,33 +1743,39 @@ public void onModuleLoad() {
 //--init Emissions Summary Input Form
     initEmissionsSummaryInputForm();
 
-//--Defining Stationary Combustion tab layout
+//--Defining Stationary Combustion tab layout    
     stationaryCombustionTab();
-
+    //stationaryCombustionTab_2();
+    
 //--Calling form to Add New Record to Stationary Combustion Source
     initStationaryCombustionEditForm();
-
+    //initStationaryCombustionEditForm_2();
+    
 //--Defining Mobile Combustion tab layout
     mobileCombustionTab();
+    //mobileCombustionTab_2();
 
 //--Calling form to Add New Record to Mobile Combustion Source
     initMobileCombustionEditForm();
+    //initMobileCombustionEditForm_2();
 
 //--Defining Refridgeration Air Conditioning tab layout
     refridgerationAirConditioningTab ();
 
 //--Initializing forms to Add New Record to Mobile Combustion Source
-    initRefridgerationAirConditioningEditForm_1();
-    initRefridgerationAirConditioningEditForm_2();
-    initRefridgerationAirConditioningEditForm_3();
+    initRefridgerationAirConditioningEditForm_123();
+    //initRefridgerationAirConditioningEditForm_1();
+    //initRefridgerationAirConditioningEditForm_2();
+    //initRefridgerationAirConditioningEditForm_3();
 
 //--Defining Fire Suppression tab layout
     fireSuppressionTab ();
 
 //--Initializing forms to Add New Record to FireSuppression Source
-    initFireSuppressionEditForm_1();
-    initFireSuppressionEditForm_2();
-    initFireSuppressionEditForm_3();
+    initFireSuppressionEditForm_123();
+    //initFireSuppressionEditForm_1();
+    //initFireSuppressionEditForm_2();
+    //initFireSuppressionEditForm_3();
 
 //--Defining Purchased Electricity tab layout
     purchasedElectricityTab();
@@ -1992,64 +1873,166 @@ public void onModuleLoad() {
     mainVLayout.addMember(northHLayout);
     mainVLayout.addMember(mainHLayout);
 
+
 //--Add topLayout to "main"
     //RootPanel.get("main").add(mainHLayout);
     RootPanel.get("main").add(mainVLayout);
     //topLayout.draw();
 }
+
+public void initializeDataForm(){
+    dataForm.setCellPadding(5);
+    dataForm.setWidth("100%");
+
+    //--initialze Validators for the form
+    initializeValidators();
+
+    final IButton cancelButton = new IButton();
+    final IButton saveButton = new IButton();
+
+    saveButton.setTitle("SAVE");
+    saveButton.setTooltip("Save this Source");
+    saveButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        if (dataForm.validate()) {
+            SC.warn("Hello Start!!");
+            Record dataFormRecord = dataForm.getValuesAsRecord();
+            //SC.warn("Hello!!");
+            Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
+            dataFormRecord.setAttribute("organizationId", organizationIdValue);
+            dataGrid.updateData(dataFormRecord);
+             
+            
+/*
+            String fuelName = dataForm.getValueAsString("fuelSourceDescription");
+            String fuelQty = dataForm.getValueAsString("fuelQuantity");
+            Criteria formValues = dataForm.getValuesAsCriteria();
+            //SC.warn(fuelName+"  "+fuelQty);
+            //SC.warn(formValues.getValues().toString());
+            Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
+            //dataFormRecord.setAttribute("organizationId", organizationIdValue);
+            formValues.setAttribute("organizationId", organizationIdValue);
+            //Record dataFormRecord = (Record) formValues;
+            //dataGrid.updateData(formValues.);
+            SC.warn(formValues.toString());
+            //dataForm.clearValues();
+            //dataForm.markForRedraw();
+            //dataForm.markForDestroy();
+ *
+ */
+            dataFormWindow.hide();
+        } else {
+            SC.say("Please provide proper information");
+        }
+      }
+    });
+
+    cancelButton.setTitle("CANCEL");
+    cancelButton.setTooltip("Cancel");
+    cancelButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {        
+        //dataForm.markForDestroy();
+        dataFormWindow.hide();
+      }
+    });
+
+    HLayout buttons = new HLayout(10);
+    buttons.setAlign(Alignment.CENTER);
+    buttons.addMember(cancelButton);
+    buttons.addMember(saveButton);
+
+    VLayout dialog = new VLayout(10);
+    dialog.setPadding(10);
+    dialog.addMember(dataForm);
+    dialog.addMember(buttons);
+    dataFormWindow.setShowShadow(true);
+    dataFormWindow.setIsModal(true);
+    dataFormWindow.setPadding(20);
+    dataFormWindow.setWidth(500);
+    dataFormWindow.setHeight(425);
+    dataFormWindow.setShowMinimizeButton(false);
+    dataFormWindow.setShowCloseButton(true);
+    dataFormWindow.setShowModalMask(true);
+    dataFormWindow.centerInPage();
+    dataFormWindow.setTitle("Please enter combustion source information:");
+    dataFormWindow.addItem(dialog);
+}
+public void initializeDataLayout(){
+        dataLayout.setWidth100();
+        dataLayout.setHeight100();
+/*
+        VLayout mobileCombustionTabLayout = new VLayout(15);
+        mobileCombustionTabLayout.setWidth100();
+        mobileCombustionTabLayout.setHeight100();
+*/
+        Label dataLabel = new Label("Current combustion sources");
+        dataLabel.setHeight(15);
+        dataLabel.setWidth100();
+        dataLabel.setAlign(Alignment.LEFT);
+        dataLabel.setStyleName("labels");
+
+//--ListGrid setup
+        dataGrid.setWidth100();
+        dataGrid.setHeight100();
+        dataGrid.setShowRecordComponents(true);
+        dataGrid.setShowRecordComponentsByCell(true);
+        dataGrid.setAutoFetchData(Boolean.FALSE);
+        dataGrid.setCanEdit(Boolean.TRUE);
+        dataGrid.setDataSource(dataDS);
+        dataGrid.setCanHover(true);
+        dataGrid.setShowHover(true);
+        //dataGrid.setShowHoverComponents(true);
+
+        IButton newCombustionButton = new IButton(ADD_NEW_SOURCE_TEXT);
+        newCombustionButton.setWidth(ADD_BUTTON_WIDTH);
+        newCombustionButton.setIcon("addIcon.jpg");
+
+        newCombustionButton.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent event) {
+                dataForm.editNewRecord();
+                dataFormWindow.show();
+            }
+        });
+
+        HLayout gridButtonLayout = new HLayout(10);
+        gridButtonLayout.addMember(dataLabel);
+        gridButtonLayout.addMember(newCombustionButton);
+
+        dataLayout.addMember(gridButtonLayout);
+        dataLayout.addMember(dataGrid);
+
+ /*
+        dataTabLayout.addMember(gridButtonLayout);
+        dataTabLayout.addMember(dataGrid);
+
+//--Defining data Combustion tab
+        final Tab dataTab1 = new Tab();
+        dataTab1.setPane(mobileCombustionTabLayout);
+
+//---Adding data Combustion tab to tabSet
+        dataTabSet.addTab(dataTab1);
+        dataLayout.addMember(dataTabSet);
+*/
+
+}
+
 private void fileUploadTab(){
 
     uploadForm.setEncoding(Encoding.MULTIPART);
     uploadForm.setAction(eFUploadFormSubmitAction);
-
+    //uploadForm.setMethod(FormMethod.POST);
+    
     final UploadItem fileUpload = new UploadItem("fileUpload");
     fileUpload.setTitle("File");
     fileUpload.setWidth(300);
-
+    
+    /*
+    final FileItem fileUpload = new FileItem("fileUpload");
+    fileUpload.setTitle("File");
+    fileUpload.setWidth(300);
+    */
     //final SelectItem fileTypeItem = new SelectItem("fileType");
     fileTypeItem.setTitle("Select File to upload");
-    /*
-    fileTypeItem.setValueMap("EF - EPA Stationary Combustion", "Stationary Combustion Info",
-                             "EF - EPA Purchased Electricity",
-                             "Data - EPA Purchased Electricity",
-                             "EF - EPA Purchased Steam",
-                             "Data - EPA Purchased Steam",
-                             "EF - EPA Waste Stream Combustion",
-                             "EF - EPA Vehicle Type",
-                             "Data - EPA Employee Business Travel - By Vehicle",
-                             "EF - EPA Rail Type",
-                             "EF - EPA Bus Type",
-                             "EF - EPA Air Travel Type",
-                             "EF - EPA Product Transport Vehicle Type",
-                             "EF - EPA Product Transport Type",
-                             "Data - EPA Employee Business Travel - By Vehicle",
-                             "Data - EPA Employee Business Travel - By Bus",
-                             "Data - EPA Employee Business Travel - By Rail",
-                             "Data - EPA Employee Business Travel - By Air",
-                             "Data - EPA Employee Commuting - By Vehicle",
-                             "Data - EPA Employee Commuting - By Rail",
-                             "Data - EPA Employee Commuting - By Bus",
-                             "Data - EPA Product Transport - By Vehicle",
-                             "Data - EPA Product Transport - By Heavy Duty Trucks",
-                             "Data - EPA Product Transport - By Rail",
-                             "Data - EPA Product Transport - By Water or Air",
-                             "Mobile Combustion Info - EF_CO2_MobileCombustion_EPA",
-                             "Mobile Combustion Info - VehicleType_EPA",
-                             "Mobile Combustion Info - EF_CH4N2O_MobileCombustionGasoline_EPA",
-                             "Mobile Combustion Info - EF_CH4N2O_MobileCombustionNonGasoline_EPA",
-                             "Mobile Combustion Info - EF_CH4N2O_MobileCombustionNonHighway_EPA",
-                             "Mobile Combustion Info - EF_CH4N2O_MobileCombustion_EPA",
-                             "Mobile Combustion Info",
-                             "RefridgerationAirConditioning - GWP_RefridgerationAirConditioning_EPA",
-                             "RefridgerationAirConditioning - EquipmentCapacityRange_EPA",
-                             "Refridgeration Air Conditioning - Company-Wide Material Balance Method",
-                             "Refridgeration Air Conditioning - Company-Wide Simplified Material Balance Method",
-                             "Refridgeration Air Conditioning - Source Level Screening Method",
-                             "Fire Suppression - Company-Wide Material Balance Method",
-                             "Fire Suppression - Company-Wide Simplified Material Balance Method",
-                             "Fire Suppression - Source Level Screening Method"
-                             );
-                  */
     fileTypeItem.setValueMap(epaDataLoadOptions);
 
     fileUpload.addChangedHandler(new ChangedHandler() {
@@ -2058,25 +2041,51 @@ private void fileUploadTab(){
             }
     });
 
+    //fileUploadOrganizatonID.
+    
+    List<FormItem> items = new ArrayList<FormItem>();
+    items.add(fileTypeItem);
+    items.add(fileUpload);
+    items.add(fileUploadOrganizatonID);
+
+    FormItem[] fitems = new FormItem[items.size()];
+    items.toArray(fitems);
+    uploadForm.setItems(fitems);
+    
     Button uploadButton = new Button("Upload");
 
     uploadButton.addClickHandler(new ClickHandler(){
          public void onClick(ClickEvent e) {
                     Object obj = fileUpload.getDisplayValue();
                     if (obj != null) {
+                            Integer orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+                            fileUploadOrganizatonID.setValue(orgId);
                             uploadForm.submitForm();
+                            /*
+                            uploadForm.submit(new DSCallback() {
+                                        public void execute(DSResponse response, Object rawData, DSRequest request) {
+                                        SC.say("File Uploaded Successfully.");
+                                        }
+                            });
+                             *
+                             */
+                            /*
+                            Record formRecord = uploadForm.getValuesAsRecord();
+                            //Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
+                            formRecord.setAttribute("organizationId", fileUploadOrganizatonID);
+                            //fileUploadDS.updateData(fileUpload,fileUploadOrganizatonID);
+                            fileUploadDS.updateData(formRecord, new DSCallback() {
+                                        public void execute(DSResponse response, Object rawData, DSRequest request) {
+                                            SC.say("File Uploaded Successfully.");
+                                        }
+                            });
+                             
+                            */
+
                     } else
                             SC.say("Please select a file.");
          }
     });
-
-    List<FormItem> items = new ArrayList<FormItem>();
-    items.add(fileTypeItem);
-    items.add(fileUpload);
-
-    FormItem[] fitems = new FormItem[items.size()];
-    items.toArray(fitems);
-    uploadForm.setItems(fitems);
 
 //-Load form and button on Vstack
     //VStack fileUploadLayout = new VStack();
@@ -2087,24 +2096,305 @@ private void fileUploadTab(){
     fileUploadLayout.addMember(uploadForm);
     fileUploadLayout.addMember(uploadButton);
 
-//---Adding Stationary Combustion tab to topTab
-/*    final Tab fileUploadTab = new Tab("Emission Factor File Upload");
-    fileUploadTab.setPane(fileUploadLayout);
-    tabSet.addTab(fileUploadTab);
-*/
-    /*
-    //--Add fileUpload in left section
-    SectionStackSection fileUploadSection = new SectionStackSection("fileUpload");
-    fileUploadSection.addItem(fileUploadLayout);
-    leftSectionStack.addSection(fileUploadSection);
-    */
     }
+private void emissionsSummaryTab() {
 
-private void initializeValidators(){
+        emissionsSummaryVLayout.setWidth100();
+        emissionsSummaryVLayout.setHeight100();
+        /*
+        emissionsSummaryDetailViewer.setDataSource(emissionsSummaryDS);
+        //emissionsSummaryDetailViewer.setTitle("Emissions Summary Details:");
+        //emissionsSummaryDetailViewer.setGroupTitle("Emissions Summary Details:");
+
+        //Detail viewer label
+        emissionsSummaryDetailViewerLabel.setHeight(15);
+        emissionsSummaryDetailViewerLabel.setWidth100();
+        emissionsSummaryDetailViewerLabel.setAlign(Alignment.LEFT);
+        //emissionsSummaryDetailViewerLabel.setShowEdges(true);
+        //emissionsSummaryDetailViewerLabel.setBackgroundColor("#EFFBFB");
+        emissionsSummaryDetailViewerLabel.setStyleName("labels");
+
+        //detailViewerVLayout.addMember(emissionsSummaryDetailViewerLabel);
+        //detailViewerVLayout.addMember(emissionsSummaryDetailViewer);
+        //middleBottomHLayout.addMember(detailViewerVLayout);
+
+        //HLayout detailViewerHeader = new HLayout();
+        //detailViewerHeader.addMember(emissionsSummaryDetailViewerLabel);
+        */
+        //final VLayout emissionsSummaryVLayout = new VLayout();
+        Label emissionReportLabel = new Label("Emissions Report");
+        emissionReportLabel.setHeight(20);
+        emissionReportLabel.setStyleName("labels");
+        emissionsSummaryVLayout.addMember(emissionReportLabel);
+
+        emissionsSummaryDataGrid.setWidth100();
+        emissionsSummaryDataGrid.setHeight100();
+        emissionsSummaryDataGrid.setShowRecordComponents(true);
+        emissionsSummaryDataGrid.setShowRecordComponentsByCell(true);
+        emissionsSummaryDataGrid.setCanExpandRecords(true);
+        emissionsSummaryDataGrid.setExpansionMode(ExpansionMode.DETAILS);
+        emissionsSummaryDataGrid.setCanRemoveRecords(true);
+        //emissionsSummaryDataGrid.
+        emissionsSummaryDataGrid.setAutoFetchData(Boolean.TRUE);
+        emissionsSummaryDataGrid.setDataSource(emissionsSummaryDS);
+
+        ListGridField organizationIdField2 = new ListGridField("organizationId", "Organization Id");
+        organizationIdField2.setType(ListGridFieldType.INTEGER);
+/*
+        FloatDetailViewerField directEmissionsField = new FloatDetailViewerField("directEmissions", "Direct Emissions");
+
+       
+        directEmissionsField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+       
+
+        FloatDetailViewerField stationaryCombustionEmissionsField = new FloatDetailViewerField("stationaryCombustionEmissions", "Stationary Combustion Emissions");
+        //stationaryCombustionEmissionsField.setType(DetailViewerField.FLOAT);
+
+        FloatDetailViewerField mobileCombustionEmissionsField = new FloatDetailViewerField("mobileCombustionEmissions", "Mobile Source Emissions");
+        //mobileCombustionEmissionsField.setType(ListGridFieldType.FLOAT);
+
+        FloatDetailViewerField refridgerationAirConditioningEmissionsField = new FloatDetailViewerField("refridgerationAirConditioningEmissions", "Refridgeration And Ac Emissions");
+        //refridgerationAirConditioningEmissionsField.setType(ListGridFieldType.FLOAT);
+
+        FloatDetailViewerField fireSuppressantEmissionsField = new FloatDetailViewerField("fireSuppressantEmissions", "Fire Suppressant Emissions");
+        //fireSuppressantEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField wasteStreamCombustionEmissionsField = new FloatDetailViewerField("wasteStreamCombustionEmissions", "WasteStream Combustion Emissions");
+        //wasteStreamCombustionEmissionsField.setType(ListGridFieldType.FLOAT);
+
+        FloatDetailViewerField  purchasedElectricityEmissionsField = new FloatDetailViewerField("purchasedElectricityEmissions", "Purchased Electricity Emissions");
+        //purchasedElectricityEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField purchasedSteamEmissionsField = new FloatDetailViewerField("purchasedSteamEmissions", "Purchased Steam Emissions");
+       //purchasedSteamEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField employeeBusinessTravelByVehicleEmissionsField = new FloatDetailViewerField("employeeBusinessTravelByVehicleEmissions", "Employee Business Travel By Vehicle Emissions");
+        //employeeBusinessTravelByVehicleEmissionsField.setType(ListGridFieldType.FLOAT);
+
+        FloatDetailViewerField employeeBusinessTravelByRailEmissionsField = new FloatDetailViewerField("employeeBusinessTravelByRailEmissions", "Employee Business Travel By Rail Emissions");
+        //employeeBusinessTravelByRailEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField employeeBusinessTravelByBusEmissionsField = new FloatDetailViewerField("employeeBusinessTravelByBusEmissions", "Employee Business Travel By Bus Emissions");
+        //employeeBusinessTravelByBusEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField employeeBusinessTravelByAirEmissionsField = new FloatDetailViewerField("employeeBusinessTravelByAirEmissions", "Employee Business Travel By Air Emissions");
+        //employeeBusinessTravelByAirEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField employeeCommutingByVehicleEmissionsField = new FloatDetailViewerField("employeeCommutingByVehicleEmissions", "Employee Commuting By Vehicle Emissions");
+        //employeeCommutingByVehicleEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField employeeCommutingByBusEmissionsField = new FloatDetailViewerField("employeeCommutingByBusEmissions", "Employee Commuting By Bus Emissions");
+        //employeeCommutingByBusEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField productTransportByVehicleEmissionsField = new FloatDetailViewerField("productTransportByVehicleEmissions", "Product Transport By Vehicle Emissions");
+        //productTransportByVehicleEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField productTransportByHeavyDutyTrucksEmissionsField = new FloatDetailViewerField("productTransportByHeavyDutyTrucksEmissions", "Product Transport By Heavy Duty Trucks Emissions");
+        //productTransportByHeavyDutyTrucksEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField productTransportByRailEmissionsField = new FloatDetailViewerField("productTransportByRailEmissions", "Product Transport By Rail Emissions");
+        //productTransportByRailEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField productTransportByWaterAirEmissionsField = new FloatDetailViewerField("productTransportByWaterAirEmissions", "Product Transport By Water/Air Emissions");
+        //productTransportByWaterAirEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField biomassStationaryCombustionEmissionsField = new FloatDetailViewerField("biomassStationaryCombustionEmissions", "Biomass Stationary Combustion Emissions");
+        //biomassStationaryCombustionEmissionsField.setType(ListGridFieldType.FLOAT);
+
+
+        FloatDetailViewerField biomassMobileCombustionEmissionsField = new FloatDetailViewerField("biomassMobileCombustionEmissions", "Biomass Mobile Source Emissions");
+        //biomassMobileCombustionEmissionsField.setType(ListGridFieldType.FLOAT);
+*/
+
+        FloatListGridField totalEmissionsField = new FloatListGridField("totalEmissions", "Total Emissions");
+        //totalEmissionsField.setType(ListGridFieldType.FLOAT);
+        totalEmissionsField.setWidth(TOTAL_EMISSIONS_FIELD_WIDTH);
+
+        ListGridField programTypeField = new ListGridField("programType", "Program Type");
+        programTypeField.setType(ListGridFieldType.TEXT);
+        programTypeField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
+
+        ListGridField emissionsBeginDateField = new ListGridField("emissionsBeginDate", "Emissions Begin Date");
+        emissionsBeginDateField.setType(ListGridFieldType.DATE);
+        emissionsBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField emissionsEndDateField = new ListGridField("emissionsEndDate", "Emissions End Date");
+        emissionsEndDateField.setType(ListGridFieldType.DATE);
+        emissionsEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        //ListGridField reportFileLocationField = new ListGridField("reportFileLocation", "Report File Location");
+        //reportFileLocationField.setType(ListGridFieldType.LINK);
+        //reportFileLocationField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
+
+        ListGridField reportFileNameField = new ListGridField("reportFileName", "Download Report");
+        reportFileNameField.setType(ListGridFieldType.TEXT);
+        reportFileNameField.setBaseStyle("listgridField");
+        //reportFileNameField.setShowD
+        reportFileNameField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
+        //reportFileNameField.setLinkURLPrefix("/ibLGHGCalc/reports/");
+
+
+        ListGridField downloadReportField = new ListGridField("downloadReportField", "Download Report");
+        //downloadReportField.setType(ListGridFieldType.TEXT);
+        downloadReportField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
+
+
+        ListGridField viewReportButtonField = new ListGridField("viewReportButtonField", "Download Report");
+        //viewReportButtonField.setType(ListGridFieldType.LINK);
+        viewReportButtonField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
+
+        //viewReportButtonField
+        ListGridField reportGeneratedDate = new ListGridField("lastUpdated", "Report Generation Date");
+        reportGeneratedDate.setWidth(END_DATE_FIELD_WIDTH);
+        
+/*
+        emissionsSummaryDataGrid.setFields(organizationIdField2, programTypeField, emissionsBeginDateField, emissionsEndDateField, directEmissionsField,
+        					stationaryCombustionEmissionsField, mobileCombustionEmissionsField, refridgerationAirConditioningEmissionsField,
+        					fireSuppressantEmissionsField, wasteStreamCombustionEmissionsField, purchasedElectricityEmissionsField,
+                                                purchasedSteamEmissionsField, employeeBusinessTravelByVehicleEmissionsField,
+                                                employeeBusinessTravelByRailEmissionsField,employeeBusinessTravelByBusEmissionsField,
+                                                employeeBusinessTravelByAirEmissionsField,employeeCommutingByVehicleEmissionsField,
+                                                employeeCommutingByBusEmissionsField,productTransportByVehicleEmissionsField,
+                                                productTransportByHeavyDutyTrucksEmissionsField,productTransportByRailEmissionsField,
+                                                productTransportByWaterAirEmissionsField,
+                                                biomassStationaryCombustionEmissionsField, biomassMobileCombustionEmissionsField,
+                                                totalEmissionsField);
+ *
+ */
+        emissionsSummaryDataGrid.setFields(programTypeField, emissionsBeginDateField, emissionsEndDateField,totalEmissionsField,reportGeneratedDate, reportFileNameField);
+        //reportFileNameField.setHidden(true);
+        //emissionsSummaryDataGrid.setFields(programTypeField, emissionsBeginDateField, emissionsEndDateField,totalEmissionsField,reportFileNameField,reportGeneratedDate);
+        //reportFileNameField.setHidden(true);
+        //emissionsSummaryDataGrid.setFields(programTypeField, emissionsBeginDateField, emissionsEndDateField,totalEmissionsField);
+        //reportFileLocationField.setHidden(true);
+        //emissionsSummaryDataGrid.setOverflow(Overflow.VISIBLE);
+        //emissionsSummaryDataGrid.setAutoWidth();
+
+        //- adding cell click handler
+        //emissionsSummaryDataGrid.getR
+        emissionsSummaryDataGrid.addCellClickHandler(new CellClickHandler() {
+            public void onCellClick(CellClickEvent event) {
+                ListGridRecord record =  event.getRecord();
+                int colNum = event.getColNum();
+                ListGridField field = emissionsSummaryDataGrid.getField(colNum);
+                //String fieldName = emissionsSummaryDataGrid.getFieldName(colNum);
+                String fieldTitle = field.getTitle();
+
+                if (fieldTitle.contains("Download Report")){
+                        //String orgId = (String)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+                        //field.setLinkURLPrefix("Reports/"+orgId+"/");
+                        Integer orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+                        //String fileName = record.getAttribute("reportFileName");
+                        String emissionsSummaryReportId = (String)record.getAttribute("id");
+                        String url = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+                        com.google.gwt.user.client.Window.open(url,null,null);
+                }
+            }
+        });        
+        
+        
+        emissionsSummaryVLayout.addMember(emissionsSummaryDataGrid);
+
+        //emissionsSummaryDetailViewer.setFields(stationaryCombustionEmissionsField);
+        /*
+        emissionsSummaryDetailViewer.setFields(directEmissionsField,
+        					stationaryCombustionEmissionsField, mobileCombustionEmissionsField, refridgerationAirConditioningEmissionsField,
+        					fireSuppressantEmissionsField, wasteStreamCombustionEmissionsField, purchasedElectricityEmissionsField,
+                                                purchasedSteamEmissionsField, employeeBusinessTravelByVehicleEmissionsField,
+                                                employeeBusinessTravelByRailEmissionsField,employeeBusinessTravelByBusEmissionsField,
+                                                employeeBusinessTravelByAirEmissionsField,employeeCommutingByVehicleEmissionsField,
+                                                employeeCommutingByBusEmissionsField,productTransportByVehicleEmissionsField,
+                                                productTransportByHeavyDutyTrucksEmissionsField,productTransportByRailEmissionsField,
+                                                productTransportByWaterAirEmissionsField,
+                                                biomassStationaryCombustionEmissionsField, biomassMobileCombustionEmissionsField
+                                                );
+        */
+
+        //set the Width and height of emissionsSummaryLayout
+	//middleVLayout.addChild(emissionsSummaryLayout);
+        //emissionsSummaryLayout.setWidth100();
+        //emissionsSummaryLayout.setHeight(200);
+
+//--Chart example
+        /*
+        PieChart pie = new PieChart(createTable(), createOptions());
+        Widget panel = new Widget();
+        panel.add(pie);
+         *
+         */
+/*
+        List<DetailViewerField> items = new ArrayList<DetailViewerField>();
+
+        items.add(directEmissionsField);
+        items.add(stationaryCombustionEmissionsField);
+        items.add(mobileCombustionEmissionsField);
+        items.add(refridgerationAirConditioningEmissionsField);
+        items.add(fireSuppressantEmissionsField);
+        items.add(wasteStreamCombustionEmissionsField);
+
+        items.add(purchasedElectricityEmissionsField);
+        items.add(purchasedSteamEmissionsField);
+
+        items.add(employeeBusinessTravelByVehicleEmissionsField);
+        items.add(employeeBusinessTravelByRailEmissionsField);
+        items.add(employeeBusinessTravelByBusEmissionsField);
+        items.add(employeeBusinessTravelByAirEmissionsField);
+        items.add(employeeCommutingByVehicleEmissionsField);
+        items.add(employeeCommutingByBusEmissionsField);
+
+        items.add(productTransportByVehicleEmissionsField);
+        items.add(productTransportByHeavyDutyTrucksEmissionsField);
+        items.add(productTransportByRailEmissionsField);
+        items.add(productTransportByWaterAirEmissionsField);
+
+        items.add(biomassStationaryCombustionEmissionsField);
+        items.add(biomassMobileCombustionEmissionsField);
+
+
+        final DetailViewerField[] fitems = new DetailViewerField[items.size()];
+        items.toArray(fitems);
+*//*
+        emissionsSummaryDataGrid.addRecordClickHandler(new RecordClickHandler() {
+            public void onRecordClick(RecordClickEvent event) {
+                displayDetailInfo(emissionsSummaryDataGrid, fitems);
+            }
+        });
+*/
+        final Tab emissionsSummaryTab = new Tab("Emissions Summary");
+        emissionsSummaryTab.setPane(emissionsSummaryVLayout);
+
+//---Adding Mobile Combustion tab to tabSet
+        tabSet.addTab(emissionsSummaryTab);
+
+ }
+
+public static void initializeValidators(){
 
     currentInventoryBeginDateMin = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryBeginDate").getValue();
     currentInventoryEndDateMax = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryEndDate").getValue();
-    
+    //orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
     //SC.say("inventoryYearBeginDate :"+inventoryYearBeginDate);
     //SC.say("inventoryYearEndDate :"+inventoryYearEndDate);
     
@@ -2112,7 +2402,7 @@ private void initializeValidators(){
     validateDateRange.setMin(currentInventoryBeginDateMin);
     validateDateRange.setMax(currentInventoryEndDateMax);
     validateDateRange.setErrorMessage("Date is not within reporting period");
-
+    
     //IsFloatValidator floatValidator = new IsFloatValidator();
     floatValidator.setErrorMessage("Not a valid float value");
 
@@ -2120,91 +2410,26 @@ private void initializeValidators(){
     floatPrecisionValidator.setErrorMessage("Need to have 2 decimal places");
 
 }
+private HashMap getInitialValues() {
+    HashMap formDefaultValue = new HashMap();
+    formDefaultValue.put("fuelUsedBeginDate", currentInventoryBeginDateMin);
+    formDefaultValue.put("fuelUsedEndDate", currentInventoryEndDateMax);
+    return formDefaultValue;
+}
+
 private void stationaryCombustionTab() {
+
+        //--Get the mobile Combustion list grid fields
+        final ListGridField[] listGridFields = getStationaryCombustionListGridFields();        
+        stationaryCombustionDataGrid.setFields(listGridFields);
+
         stationaryCombustionLayout.setWidth100();
         stationaryCombustionLayout.setHeight100();
+        
+        //stationaryCombustionDataGrid.setFields(sourceDescriptionField, organizationIdField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField);
+        TabLayout stationaryCombustionTabLayout = new TabLayout("Current stationary combustion sources",stationaryCombustionForm,
+                                                                stationaryCombustionFormWindow, stationaryCombustionDataGrid);
 
-        VLayout stationaryCombustionTabLayout = new VLayout(15);
-
-        stationaryCombustionTabLayout.setWidth100();
-        stationaryCombustionTabLayout.setHeight100();
-
-        Label stationaryCombustionDataLabel = new Label("Current stationary combustion sources");
-        stationaryCombustionDataLabel.setHeight(15);
-        stationaryCombustionDataLabel.setWidth100();
-        stationaryCombustionDataLabel.setAlign(Alignment.LEFT);
-        stationaryCombustionDataLabel.setStyleName("labels");
-
-        //stationaryCombustionTabLayout.addMember(stationaryCombustionDataLabel);
-
-//--ListGrid setup
-        stationaryCombustionDataGrid.setWidth100();
-        //stationaryCombustionDataGrid.setHeight(200);
-        stationaryCombustionDataGrid.setHeight100();
-        stationaryCombustionDataGrid.setShowRecordComponents(true);
-        stationaryCombustionDataGrid.setShowRecordComponentsByCell(true);
-        //stationaryCombustionDataGrid.setCanRemoveRecords(true);
-        //stationaryCombustionDataGrid.setShowAllRecords(true);
-        stationaryCombustionDataGrid.setAutoFetchData(Boolean.FALSE);
-        stationaryCombustionDataGrid.setDataSource(stationaryCombustionInfoDS);
-        //stationaryCombustionDataGrid.setHeaderBackgroundColor("#4096EE");
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField fuelQuantityField = new ListGridField("fuelQuantity", "Fuel Quantity");
-        fuelQuantityField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        stationaryCombustionDataGrid.setFields(sourceDescriptionField, organizationIdField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField,editButtonField, removeButtonField);
-
-        //stationaryCombustionTabLayout.addMember(stationaryCombustionDataGrid);
-
-        IButton newStationaryCombustionButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newStationaryCombustionButton.setWidth(ADD_BUTTON_WIDTH);
-        newStationaryCombustionButton.setIcon(ADD_ICON_IMAGE);
-
-        newStationaryCombustionButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                //-- setValidators for the forms for common types.
-                initializeValidators();
-                stationaryCombustionForm.editNewRecord();
-                stationaryCombustionFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-        gridButtonLayout.addMember(stationaryCombustionDataLabel);
-        gridButtonLayout.addMember(newStationaryCombustionButton);
-//        gridButtonLayout.addMember(editStationaryCombustionButton);
-//        gridButtonLayout.addMember(removeStationaryCombustionButton);
-        stationaryCombustionTabLayout.addMember(gridButtonLayout);
-        stationaryCombustionTabLayout.addMember(stationaryCombustionDataGrid);
-
-//--Initialize stuff for Emissions Summary
-
-// For now commented below just to see how dynamic content management will work for one module at a time display.
 //--Defining Stationary Combustion tab
         final Tab stationaryCombustionTab = new Tab("Stationary Combustion");
         stationaryCombustionTab.setPane(stationaryCombustionTabLayout);
@@ -2216,262 +2441,27 @@ private void stationaryCombustionTab() {
 }
 private void initStationaryCombustionEditForm() {
 
-    stationaryCombustionForm.setCellPadding(5);
-    stationaryCombustionForm.setWidth("100%");
-    //stationaryCombustionForm.setTitle("Please enter stationary combustion Source information:");
+    FormItem[] formItemFields = getStationaryCombustionFormFields();
+    stationaryCombustionForm.setItems(formItemFields);
 
-//-- setValidators for the forms for common types.
-      initializeValidators();
-
-//-- Form fields  -------------------------------------------------------------------
-    TextItem fuelSourceDescription = new TextItem("fuelSourceDescription");
-    fuelSourceDescription.setTitle("Fuel Source Description");
-    fuelSourceDescription.setSelectOnFocus(true);
-    fuelSourceDescription.setWrapTitle(false);
-    fuelSourceDescription.setDefaultValue("[Enter Source Description]");
-    fuelSourceDescription.setRequired(Boolean.TRUE);
-    //fuelSourceDescription
-
-    final SelectItem fuelTypeItem = new SelectItem();
-    fuelTypeItem.setName("fuelType");
-    //fuelTypeItem.setPickListWidth(310);
-    fuelTypeItem.setTitle("Fuel Type");
-    fuelTypeItem.setOptionDataSource(eF_StationaryCombustion_EPADS);
-    fuelTypeItem.setRequired(Boolean.TRUE);
-
-    fuelTypeItem.addChangedHandler(new ChangedHandler() {
-        public void onChanged(ChangedEvent event) {
-            //stationaryCombustionForm.clearValue("fuelUnit");
-            Record selectedFuelTypeRecord = fuelTypeItem.getSelectedRecord();
-            stationaryCombustionForm.setValue("fuelUnit", selectedFuelTypeRecord.getAttributeAsString("fuelUnit"));
-        }
-    });
-
-    final StaticTextItem fuelUnitItem = new StaticTextItem("fuelUnit");
-
-    /*
-    final SelectItem fuelUnitItem = new SelectItem() {
-        @Override
-        protected Criteria getPickListFilterCriteria() {
-            String fuelType = (String) fuelTypeItem.getValue();
-            Criteria criteria = new Criteria("fuelType", fuelType);
-            return criteria;
-        }
-    };
-    */
-    
-    //fuelUnitItem.setName("fuelUnit");
-    fuelUnitItem.setTitle("Fuel Unit");
-    //fuelUnitItem.setPickListWidth(250);
-    //fuelUnitItem.setOptionDataSource(eF_StationaryCombustion_EPADS);
-
-    //TextItem testTextItem = new TextItem("fuelUnit2");
-///*
-
- //*/
-
-    FloatItem fuelQuantityItem = new FloatItem();
-    fuelQuantityItem.setName("fuelQuantity");
-    fuelQuantityItem.setValidators(floatValidator);
-    fuelQuantityItem.setValidateOnExit(Boolean.TRUE);
-    fuelQuantityItem.setValidateOnChange(Boolean.TRUE);
-    fuelQuantityItem.setRequired(Boolean.TRUE);
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-    fuelUsedBeginDateItem.setWidth("*");
-    fuelUsedBeginDateItem.setStartDate(currentInventoryBeginDateMin);
-    fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
-    fuelUsedBeginDateItem.setValidators(validateDateRange);
-    //fuelUsedBeginDateItem.setValidateOnExit(Boolean.TRUE);
-    fuelUsedBeginDateItem.setValidateOnChange(Boolean.TRUE);
-    fuelUsedBeginDateItem.setRequired(Boolean.TRUE);
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-    fuelUsedEndDateItem.setWidth("*");
-    fuelUsedEndDateItem.setStartDate(currentInventoryBeginDateMin);
-    fuelUsedEndDateItem.setEndDate(currentInventoryEndDateMax);
-    fuelUsedEndDateItem.setValidators(validateDateRange);
-    //fuelUsedEndDateItem.setValidateOnExit(Boolean.TRUE);
-    fuelUsedEndDateItem.setValidateOnChange(Boolean.TRUE);
-    fuelUsedEndDateItem.setRequired(Boolean.TRUE);
-
-    //Record organizationSelectFormRecord = UserOrganizationHeader.organizationSelectForm.getValuesAsRecord();
-    //Integer currentOrganizationId = organizationSelectFormRecord.getAttributeAsInt("id");
-
-    //IntegerItem organizationId = new IntegerItem();
-    //organizationId.setName("organizationId");
-    //SC.say("currentOrganizationId " + currentOrganizationId);
-    //organizationId.setValue(currentOrganizationId);
-    
-//    organizationId.setValue(currentOrganizationId);
-//    Integer currentOrganizationId = (Integer)organizationForm.getItem("id").getValue();
-
-    stationaryCombustionForm.setItems(fuelSourceDescription, fuelTypeItem, fuelQuantityItem, fuelUnitItem, fuelUsedBeginDateItem, fuelUsedEndDateItem);
-    final IButton stationaryCombustionCancelButton = new IButton();
-    final IButton stationaryCombustionSaveButton = new IButton();
-
-    stationaryCombustionSaveButton.setTitle("SAVE");
-    stationaryCombustionSaveButton.setTooltip("Save this Stationary Combustion Source");
-    stationaryCombustionSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        if ((!stationaryCombustionForm.getErrors().isEmpty()) || !stationaryCombustionForm.validate()){
-            SC.say("Please clear errors before submitting this information!");
-        }
-        else {
-            Record stationaryCombustionFormRecord = stationaryCombustionForm.getValuesAsRecord();
-            Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
-            //String organizationNameValue = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
-            stationaryCombustionFormRecord.setAttribute("organizationId", organizationIdValue);
-            stationaryCombustionDataGrid.updateData(stationaryCombustionFormRecord);
-            stationaryCombustionForm.clearValues();
-            stationaryCombustionForm.markForRedraw();
-            stationaryCombustionFormWindow.hide();
-        }
-      }
-    });
-
-    stationaryCombustionCancelButton.setTitle("CANCEL");
-    stationaryCombustionCancelButton.setTooltip("Cancel");
-    stationaryCombustionCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        //stationaryCombustionForm.saveData();
-        stationaryCombustionFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(stationaryCombustionCancelButton);
-    buttons.addMember(stationaryCombustionSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(stationaryCombustionForm);
-    dialog.addMember(buttons);
-    stationaryCombustionFormWindow.setShowShadow(true);
-    //stationaryCombustionFormWindow.setShowTitle(false);
-    stationaryCombustionFormWindow.setIsModal(true);
-    stationaryCombustionFormWindow.setPadding(20);
-    stationaryCombustionFormWindow.setWidth(500);
-    stationaryCombustionFormWindow.setHeight(260);
-    stationaryCombustionFormWindow.setShowMinimizeButton(false);
-    stationaryCombustionFormWindow.setShowCloseButton(true);
-    stationaryCombustionFormWindow.setShowModalMask(true);
-    stationaryCombustionFormWindow.centerInPage();
-    stationaryCombustionFormWindow.setTitle("Please enter stationary combustion source information:");
-    //stationaryCombustionFormWindow.setStyleName("labels");
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //stationaryCombustionFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    stationaryCombustionFormWindow.addItem(dialog);
+    //stationaryCombustionForm.setItems(fuelSourceDescription, fuelTypeItem, fuelQuantityItem, fuelUnitItem, fuelUsedBeginDateItem, fuelUsedEndDateItem);
+    setIbLFormWindow("Please enter stationary combustion source information:", stationaryCombustionForm,
+                      stationaryCombustionFormWindow, stationaryCombustionDataGrid );
 }
 
 private void mobileCombustionTab() {
+        //--Get the mobile Combustion list grid fields
+        final ListGridField[] listGridFields = getMobileCombustionListGridFields();
+
+        mobileCombustionDataGrid.setFields(listGridFields);
+        //mobileCombustionDataGrid.setFields(sourceDescriptionField, vehicleTypeField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField);
+
+        //-set Height and Width to 100 for mobile Combustion layout
         mobileCombustionLayout.setWidth100();
         mobileCombustionLayout.setHeight100();
 
-        VLayout mobileCombustionTabLayout = new VLayout(15);
-        mobileCombustionTabLayout.setWidth100();
-        mobileCombustionTabLayout.setHeight100();
-
-        Label mobileCombustionDataLabel = new Label("Current mobile combustion sources");
-        mobileCombustionDataLabel.setHeight(15);
-        mobileCombustionDataLabel.setWidth100();
-        mobileCombustionDataLabel.setAlign(Alignment.LEFT);
-        mobileCombustionDataLabel.setStyleName("labels");
-
-        //mobileCombustionTabLayout.addMember(mobileCombustionDataLabel);
-
-//--ListGrid setup
-        mobileCombustionDataGrid.setWidth100();
-        //mobileCombustionDataGrid.setHeight(200);
-        mobileCombustionDataGrid.setHeight100();
-        mobileCombustionDataGrid.setShowRecordComponents(true);
-        mobileCombustionDataGrid.setShowRecordComponentsByCell(true);
-        //mobileCombustionDataGrid.setCanRemoveRecords(true);
-        //mobileCombustionDataGrid.setShowAllRecords(true);
-        mobileCombustionDataGrid.setAutoFetchData(Boolean.FALSE);
-        mobileCombustionDataGrid.setDataSource(mobileCombustionInfoDS);
-        //mobileCombustionDataGrid.setS
-//--Only fetch data that is related to THE organization
-        //Record organizationRecord= organizationForm.getValuesAsRecord();
-        //mobileCombustionDataGrid.fetchRelatedData(organizationRecord,organizationDS);
-
-        //mobileCombustionDataGrid.fetchData();
-
-//        ListGridField organizationNameField = new ListGridField("name", "Organization Name");
-//        organizationNameField.setType(ListGridFieldType.TEXT);
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField vehicleTypeField = new ListGridField("vehicleType", "Vehicle Type");
-        vehicleTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField vehicleYearField = new ListGridField("vehicleYear", "Vehicle Year");
-        vehicleYearField.setType(ListGridFieldType.TEXT);
-
-        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
-        fuelTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField fuelQuantityField = new ListGridField("fuelQuantity", "Fuel Quantity");
-        fuelQuantityField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField milesTravelledField = new ListGridField("milesTravelled", "Miles Travelled");
-        milesTravelledField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField bioFuelPercentField = new ListGridField("bioFuelPercent", "Biofuel Percent");
-        bioFuelPercentField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField ethanolPercentField = new ListGridField("ethanolPercent", "Ethanol Percent");
-        ethanolPercentField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        mobileCombustionDataGrid.setFields(sourceDescriptionField, vehicleTypeField,vehicleYearField, organizationIdField, fuelTypeField, fuelQuantityField, fuelUnitField, milesTravelledField, bioFuelPercentField, ethanolPercentField,fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-        //mobileCombustionDataGrid.setOverflow(Overflow.VISIBLE);
-        //mobileCombustionDataGrid.setAutoWidth();
-
-        //mobileCombustionTabLayout.addMember(mobileCombustionDataGrid);
-
-        IButton newMobileCombustionButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newMobileCombustionButton.setWidth(ADD_BUTTON_WIDTH);
-        //newMobileCombustionButton.sets
-        newMobileCombustionButton.setIcon("addIcon.jpg");
-
-        newMobileCombustionButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                mobileCombustionForm.editNewRecord();
-                mobileCombustionFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-        gridButtonLayout.addMember(mobileCombustionDataLabel);
-        gridButtonLayout.addMember(newMobileCombustionButton);
-//        gridButtonLayout.addMember(editMobileCombustionButton);
-//        gridButtonLayout.addMember(removeMobileCombustionButton);
-        mobileCombustionTabLayout.addMember(gridButtonLayout);
-        mobileCombustionTabLayout.addMember(mobileCombustionDataGrid);
-
+        TabLayout mobileCombustionTabLayout = new TabLayout("Current mobile combustion sources", mobileCombustionForm,
+                                                            mobileCombustionFormWindow, mobileCombustionDataGrid);
 //--Defining Mobile Combustion tab
         final Tab mobileCombustionTab = new Tab("Mobile Combustion");
         mobileCombustionTab.setPane(mobileCombustionTabLayout);
@@ -2479,9 +2469,1294 @@ private void mobileCombustionTab() {
 //---Adding Mobile Combustion tab to tabSet
         mobileCombustionTabSet.addTab(mobileCombustionTab);
         mobileCombustionLayout.addMember(mobileCombustionTabSet);
-
 }
 private void initMobileCombustionEditForm() {
+
+    FormItem[] formItemFields = getMobileCombustionFormFields();
+    mobileCombustionForm.setItems(formItemFields);
+    //mobileCombustionForm.setItems(fuelSourceDescriptionItem ,vehicleTypeItem, vehicleYearItem, fuelTypeItem, fuelQuantityItem, fuelUnitItem, milesTravelledItem, bioFuelPercentItem,ethanolPercentItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
+
+    setIbLFormWindow("Please enter mobile combustion source information:", mobileCombustionForm,
+                      mobileCombustionFormWindow, mobileCombustionDataGrid );
+ }
+
+private void refridgerationAirConditioningTab() {
+
+	refridgerationAirConditioningLayout.setWidth100();
+	refridgerationAirConditioningLayout.setHeight100();
+
+//-- Material Balance Method
+        final ListGridField[] listGridFields_1 = getRefridgerationAirConditioningListGridFields_1();
+        refridgerationAirConditioningDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout refridgerationAirConditioningLayout_1 = new TabLayout("Current refridgeration & air conditioning sources", refridgerationAirConditioningForm_1,
+	                                                     refridgerationAirConditioningFormWindow_1, refridgerationAirConditioningDataGrid_1);        
+//-- Simplified Material Balance Method
+        final ListGridField[] listGridFields_2 = getRefridgerationAirConditioningListGridFields_2();
+        refridgerationAirConditioningDataGrid_2.setFields(listGridFields_2);
+
+        TabLayout refridgerationAirConditioningLayout_2 = new TabLayout("Current refridgeration & air conditioning sources", refridgerationAirConditioningForm_2,
+	                                                     refridgerationAirConditioningFormWindow_2, refridgerationAirConditioningDataGrid_2);        
+//-- Screening Method
+        final ListGridField[] listGridFields_3 = getRefridgerationAirConditioningListGridFields_3("RefridgerationAirConditioning");
+        refridgerationAirConditioningDataGrid_3.setFields(listGridFields_3);
+
+        TabLayout refridgerationAirConditioningLayout_3 = new TabLayout("Current refridgeration & air conditioning sources", refridgerationAirConditioningForm_3,
+	                                                     refridgerationAirConditioningFormWindow_3, refridgerationAirConditioningDataGrid_3);
+        
+//--Defining Refridgeration Air Conditioning Combustion tab
+        final Tab refridgerationAirConditioningTab_1 = new Tab("Company-Wide Material Balance Method");
+        refridgerationAirConditioningTab_1.setPane(refridgerationAirConditioningLayout_1);
+
+        final Tab refridgerationAirConditioningTab_2 = new Tab("Company-Wide Simplified Material Balance Method");
+        refridgerationAirConditioningTab_2.setPane(refridgerationAirConditioningLayout_2);
+
+        final Tab refridgerationAirConditioningTab_3 = new Tab("Source Level Screening Method");
+        refridgerationAirConditioningTab_3.setPane(refridgerationAirConditioningLayout_3);
+
+//---Adding Refridgeration Air Conditioning Combustion tabs to refridgerationAirConditioningTabSet
+        refridgerationAirConditioningTabSet.addTab(refridgerationAirConditioningTab_1);
+        refridgerationAirConditioningTabSet.addTab(refridgerationAirConditioningTab_2);
+        refridgerationAirConditioningTabSet.addTab(refridgerationAirConditioningTab_3);
+
+        refridgerationAirConditioningLayout.addMember(refridgerationAirConditioningTabSet);
+
+ }
+private void initRefridgerationAirConditioningEditForm_123() {
+
+//-- Form_1 fields  -------------------------------------------------------------------
+    FormItem[] formItemFields_1 = getRefridgerationAirConditioningFormFields_1("RefridgerationAirConditioning");
+    refridgerationAirConditioningForm_1.setItems(formItemFields_1);
+    refridgerationAirConditioningForm_1.hideItem("methodType");
+    setIbLFormWindow("Please enter Refridgeration & Air Conditioning source information:", refridgerationAirConditioningForm_1,
+                          refridgerationAirConditioningFormWindow_1, refridgerationAirConditioningDataGrid_1 );
+
+//-- Form_2 fields  -------------------------------------------------------------------
+    FormItem[] formItemFields_2 = getRefridgerationAirConditioningFormFields_2("RefridgerationAirConditioning");
+    refridgerationAirConditioningForm_2.setItems(formItemFields_2);
+    refridgerationAirConditioningForm_2.hideItem("methodType");
+
+    setIbLFormWindow("Please enter Refridgeration & Air Conditioning source information:", refridgerationAirConditioningForm_2,
+                          refridgerationAirConditioningFormWindow_2, refridgerationAirConditioningDataGrid_2 );
+
+
+//-- Form_3 fields  -------------------------------------------------------------------
+    FormItem[] formItemFields_3 = getRefridgerationAirConditioningFormFields_3("RefridgerationAirConditioning");
+    refridgerationAirConditioningForm_3.setItems(formItemFields_3);
+    refridgerationAirConditioningForm_3.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter Refridgeration & Air Conditioning source information:", refridgerationAirConditioningForm_3,
+                          refridgerationAirConditioningFormWindow_3, refridgerationAirConditioningDataGrid_3 );
+
+ }
+
+private void fireSuppressionTab() {
+
+        fireSuppressionLayout.setWidth100();
+        fireSuppressionLayout.setHeight100();
+
+//-- Material Balance Method
+        final ListGridField[] listGridFields_1 = getRefridgerationAirConditioningListGridFields_1();
+        fireSuppressionDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout fireSuppressionLayout_1 = new TabLayout("Current Fire Suppression sources", fireSuppressionForm_1,
+	                                                     fireSuppressionFormWindow_1, fireSuppressionDataGrid_1);
+//-- Simplified Material Balance Method
+        final ListGridField[] listGridFields_2 = getRefridgerationAirConditioningListGridFields_2();
+        fireSuppressionDataGrid_2.setFields(listGridFields_2);
+
+        TabLayout fireSuppressionLayout_2 = new TabLayout("Current Fire Suppression sources", fireSuppressionForm_2,
+	                                                     fireSuppressionFormWindow_2, fireSuppressionDataGrid_2);
+//-- Screening Method
+        final ListGridField[] listGridFields_3 = getRefridgerationAirConditioningListGridFields_3("FireSuppression");
+        fireSuppressionDataGrid_3.setFields(listGridFields_3);
+
+        TabLayout fireSuppressionLayout_3 = new TabLayout("Current Fire Suppression sources", fireSuppressionForm_3,
+	                                                     fireSuppressionFormWindow_3, fireSuppressionDataGrid_3);
+
+        final Tab fireSuppressionTab_1 = new Tab("Company-Wide Material Balance Method");
+        fireSuppressionTab_1.setPane(fireSuppressionLayout_1);
+
+        final Tab fireSuppressionTab_2 = new Tab("Company-Wide Simplified Material Balance Method");
+        fireSuppressionTab_2.setPane(fireSuppressionLayout_2);
+
+        final Tab fireSuppressionTab_3 = new Tab("Source Level Screening Method");
+        fireSuppressionTab_3.setPane(fireSuppressionLayout_3);
+
+//---Adding Fire Suppression tab to tabSet
+        fireSuppressionTabSet.addTab(fireSuppressionTab_1);
+        fireSuppressionTabSet.addTab(fireSuppressionTab_2);
+        fireSuppressionTabSet.addTab(fireSuppressionTab_3);
+
+        fireSuppressionLayout.addMember(fireSuppressionTabSet);
+ }
+private void initFireSuppressionEditForm_123() {
+
+//-- Form_1 fields  -------------------------------------------------------------------
+    FormItem[] formItemFields_1 = getRefridgerationAirConditioningFormFields_1("FireSuppression");
+    fireSuppressionForm_1.setItems(formItemFields_1);
+    fireSuppressionForm_1.hideItem("methodType");
+    setIbLFormWindow("Please enter Fire Suppression source information:", fireSuppressionForm_1,
+                          fireSuppressionFormWindow_1, fireSuppressionDataGrid_1 );
+
+//-- Form_2 fields  -------------------------------------------------------------------
+    FormItem[] formItemFields_2 = getRefridgerationAirConditioningFormFields_2("FireSuppression");
+    fireSuppressionForm_2.setItems(formItemFields_2);
+    fireSuppressionForm_2.hideItem("methodType");
+
+    setIbLFormWindow("Please enter Fire Suppression source information:", fireSuppressionForm_2,
+                          fireSuppressionFormWindow_2, fireSuppressionDataGrid_2 );
+
+//-- Form_3 fields  -------------------------------------------------------------------
+    FormItem[] formItemFields_3 = getRefridgerationAirConditioningFormFields_3("FireSuppression");
+    fireSuppressionForm_3.setItems(formItemFields_3);
+    fireSuppressionForm_3.hideItem("methodType");
+
+    setIbLFormWindow("Please enter Fire Suppression source information:", fireSuppressionForm_3,
+                          fireSuppressionFormWindow_3, fireSuppressionDataGrid_3 );
+
+ }
+
+private void purchasedElectricityTab() {
+
+        purchasedElectricityLayout.setWidth100();
+        purchasedElectricityLayout.setHeight100();
+
+        final ListGridField[] listGridFields = getPurchasedElecricityListGridFields();
+        purchasedElectricityDataGrid.setFields(listGridFields);
+        
+	TabLayout purchasedElectricityTabLayout = new TabLayout("Current purchased electricity sources", purchasedElectricityForm,
+	                                                     purchasedElectricityFormWindow, purchasedElectricityDataGrid);
+//--Defining Purchased Electricity tab
+        final Tab purchasedElectricityTab = new Tab("Purchased Electricity");
+        purchasedElectricityTab.setPane(purchasedElectricityTabLayout);
+
+//---Adding Purchased Electricity tab to tabSet
+        purchasedElectricityTabSet.addTab(purchasedElectricityTab);
+        purchasedElectricityLayout.addMember(purchasedElectricityTabSet);
+}
+private void initPurchasedElectricityEditForm() {
+
+//-- Form fields  -------------------------------------------------------------------
+    FormItem[] formItemFields = getPurchasedElectricityFormFields();
+    purchasedElectricityForm.setItems(formItemFields);
+
+    setIbLFormWindow("Please enter purchased electricity information:", purchasedElectricityForm,
+                          purchasedElectricityFormWindow, purchasedElectricityDataGrid );
+
+ }
+
+private void purchasedSteamTab() {
+
+        purchasedSteamLayout.setWidth100();
+        purchasedSteamLayout.setHeight100();
+
+        final ListGridField[] listGridFields = getPurchasedSteamListGridFields();
+        purchasedSteamDataGrid.setFields(listGridFields);
+
+	TabLayout purchasedSteamTabLayout = new TabLayout("Current purchased steam sources", purchasedSteamForm,
+	                                                     purchasedSteamFormWindow, purchasedSteamDataGrid);
+
+//--Defining Purchased Steam tab
+        final Tab purchasedSteamTab = new Tab("Purchased Steam");
+        purchasedSteamTab.setPane(purchasedSteamTabLayout);
+
+//---Adding Purchased Steam tab to tabSet
+        purchasedSteamTabSet.addTab(purchasedSteamTab);
+        purchasedSteamLayout.addMember(purchasedSteamTabSet);
+}
+private void initPurchasedSteamEditForm() {
+//-- Form fields  -------------------------------------------------------------------
+    FormItem[] formItemFields = getPurchasedSteamFormFields();
+    purchasedSteamForm.setItems(formItemFields);
+
+    setIbLFormWindow("Please enter purchased steam information:", purchasedSteamForm,
+                          purchasedSteamFormWindow, purchasedSteamDataGrid );
+
+ }
+
+//--employeeBusinessTravelByVehicle
+private void employeeBusinessTravelByVehicleTab() {
+
+        //VLayout employeeBusinessTravelByVehicleLayout = new VLayout(15);
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("employeeBusinessTravelByVehicle");
+        employeeBusinessTravelByVehicleDataGrid.setFields(listGridFields);
+
+	TabLayout employeeBusinessTravelByVehicleLayout = new TabLayout("Current Sources of Employee Business Travel By Vehicle", employeeBusinessTravelByVehicleForm,
+	                                                     employeeBusinessTravelByVehicleFormWindow, employeeBusinessTravelByVehicleDataGrid);
+//--Defining employeeBusinessTravel By Vehicle
+        final Tab employeeBusinessTravelByVehicleTab = new Tab("Employee Business Travel By Vehicle");
+        employeeBusinessTravelByVehicleTab.setPane(employeeBusinessTravelByVehicleLayout);
+
+//---Adding employeeBusinessTravel By Vehicle tab to tabSet
+        employeeBusinessTravelTabSet.addTab(employeeBusinessTravelByVehicleTab);
+            //tabSet.addTab(employeeBusinessTravelTabSet);
+        //tabSet.addTab(employeeBusinessTravelByVehicleTab);
+}
+private void initEmployeeBusinessTravelByVehicleEditForm() {
+    FormItem[] formItemFields = getOptionalSourceFormFields("employeeBusinessTravelByVehicle");
+    employeeBusinessTravelByVehicleForm.setItems(formItemFields);
+    employeeBusinessTravelByVehicleForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter employee business travel by vehicle information:", employeeBusinessTravelByVehicleForm,
+                          employeeBusinessTravelByVehicleFormWindow, employeeBusinessTravelByVehicleDataGrid );
+ }
+
+//--employeeBusinessTravelByRail
+private void employeeBusinessTravelByRailTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("employeeBusinessTravelByRail");
+        employeeBusinessTravelByRailDataGrid.setFields(listGridFields);
+
+	TabLayout employeeBusinessTravelByRailLayout = new TabLayout("Current Sources of Employee Business Travel By Rail", employeeBusinessTravelByRailForm,
+	                                                     employeeBusinessTravelByRailFormWindow, employeeBusinessTravelByRailDataGrid);
+//--Defining employeeBusinessTravel By Rail
+        final Tab employeeBusinessTravelByRailTab = new Tab("Employee Business Travel By Rail");
+        employeeBusinessTravelByRailTab.setPane(employeeBusinessTravelByRailLayout);
+
+//---Adding employeeBusinessTravel By Rail tab to tabSet
+        employeeBusinessTravelTabSet.addTab(employeeBusinessTravelByRailTab);
+}
+private void initEmployeeBusinessTravelByRailEditForm() {
+    FormItem[] formItemFields = getOptionalSourceFormFields("employeeBusinessTravelByRail");
+    employeeBusinessTravelByRailForm.setItems(formItemFields);
+    employeeBusinessTravelByRailForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter employee business travel by rail information:", employeeBusinessTravelByRailForm,
+                          employeeBusinessTravelByRailFormWindow, employeeBusinessTravelByRailDataGrid );
+ }
+
+//--employeeBusinessTravelByBus
+private void employeeBusinessTravelByBusTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("employeeBusinessTravelByBus");
+        employeeBusinessTravelByBusDataGrid.setFields(listGridFields);
+	TabLayout employeeBusinessTravelByBusLayout = new TabLayout("Current Sources of Employee Business Travel By Bus", employeeBusinessTravelByBusForm,
+	                                                     employeeBusinessTravelByBusFormWindow, employeeBusinessTravelByBusDataGrid);
+//--Defining employeeBusinessTravel By Bus
+        final Tab employeeBusinessTravelByBusTab = new Tab("Employee Business Travel By Bus");
+        employeeBusinessTravelByBusTab.setPane(employeeBusinessTravelByBusLayout);
+
+//---Adding employeeBusinessTravel By Bus tab to tabSet
+        employeeBusinessTravelTabSet.addTab(employeeBusinessTravelByBusTab);
+        //tabSet.addTab(employeeBusinessTravelTabSet);
+        //tabSet.addTab(employeeBusinessTravelByBusTab);
+}
+private void initEmployeeBusinessTravelByBusEditForm() {
+
+    FormItem[] formItemFields = getOptionalSourceFormFields("employeeBusinessTravelByBus");
+    employeeBusinessTravelByBusForm.setItems(formItemFields);
+    employeeBusinessTravelByBusForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter employee business travel by bus information:", employeeBusinessTravelByBusForm,
+                          employeeBusinessTravelByBusFormWindow, employeeBusinessTravelByBusDataGrid );
+ }
+
+//--employeeBusinessTravelByAir
+private void employeeBusinessTravelByAirTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("employeeBusinessTravelByAir");
+        employeeBusinessTravelByAirDataGrid.setFields(listGridFields);
+	TabLayout employeeBusinessTravelByAirLayout = new TabLayout("Current Sources of Employee Business Travel By Air", employeeBusinessTravelByAirForm,
+	                                                     employeeBusinessTravelByAirFormWindow, employeeBusinessTravelByAirDataGrid);
+    
+//--Defining employeeBusinessTravel By Air
+        final Tab employeeBusinessTravelByAirTab = new Tab("Employee Business Travel By Air");
+        employeeBusinessTravelByAirTab.setPane(employeeBusinessTravelByAirLayout);
+
+//---Adding employeeBusinessTravel By Air tab to tabSet
+        employeeBusinessTravelTabSet.addTab(employeeBusinessTravelByAirTab);
+        //tabSet.addTab(employeeBusinessTravelTabSet);
+        //tabSet.addTab(employeeBusinessTravelByAirTab);
+}
+private void initEmployeeBusinessTravelByAirEditForm() {
+
+    FormItem[] formItemFields = getOptionalSourceFormFields("employeeBusinessTravelByAir");
+    employeeBusinessTravelByAirForm.setItems(formItemFields);
+    employeeBusinessTravelByAirForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter employee business travel by air information:", employeeBusinessTravelByAirForm,
+                          employeeBusinessTravelByAirFormWindow, employeeBusinessTravelByAirDataGrid );
+ }
+
+//--employeeCommutingByVehicle
+private void employeeCommutingByVehicleTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("employeeCommutingByVehicle");
+        employeeCommutingByVehicleDataGrid.setFields(listGridFields);
+	TabLayout employeeCommutingByVehicleLayout = new TabLayout("Current Sources of Employee Commuting By Vehicle", employeeCommutingByVehicleForm,
+	                                                     employeeCommutingByVehicleFormWindow, employeeCommutingByVehicleDataGrid);
+//--Defining employeeCommutingByVehicle
+        final Tab employeeCommutingByVehicleTab = new Tab("Employee Commuting By Vehicle");
+        employeeCommutingByVehicleTab.setPane(employeeCommutingByVehicleLayout);
+
+//---Adding employeeCommutingByVehicle tab to tabSet
+        employeeCommutingTabSet.addTab(employeeCommutingByVehicleTab);
+        //tabSet.addTab(employeeCommutingTabSet);
+        //tabSet.addTab(employeeCommutingByVehicleTab);
+}
+private void initEmployeeCommutingByVehicleEditForm() {
+
+    FormItem[] formItemFields = getOptionalSourceFormFields("employeeCommutingByVehicle");
+    employeeCommutingByVehicleForm.setItems(formItemFields);
+    employeeCommutingByVehicleForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter employee commuting by vehicle information:", employeeCommutingByVehicleForm,
+                          employeeCommutingByVehicleFormWindow, employeeCommutingByVehicleDataGrid );
+ }
+
+//--employeeCommutingByRail
+private void employeeCommutingByRailTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("employeeCommutingByRail");
+        employeeCommutingByRailDataGrid.setFields(listGridFields);
+	TabLayout employeeCommutingByRailLayout = new TabLayout("Current Sources of Employee Commuting By Rail", employeeCommutingByRailForm,
+	                                                     employeeCommutingByRailFormWindow, employeeCommutingByRailDataGrid);
+//--Defining employeeCommutingByRail
+        final Tab employeeCommutingByRailTab = new Tab("Employee Commuting By Rail");
+        employeeCommutingByRailTab.setPane(employeeCommutingByRailLayout);
+
+//---Adding employeeCommutingByRail tab to tabSet
+       employeeCommutingTabSet.addTab(employeeCommutingByRailTab);
+        //tabSet.addTab(employeeCommutingTabSet);
+        //tabSet.addTab(employeeCommutingByRailTab);
+}
+private void initEmployeeCommutingByRailEditForm() {
+
+    FormItem[] formItemFields = getOptionalSourceFormFields("employeeCommutingByRail");
+    employeeCommutingByRailForm.setItems(formItemFields);
+    employeeCommutingByRailForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter employee commuting by rail information:", employeeCommutingByRailForm,
+                          employeeCommutingByRailFormWindow, employeeCommutingByRailDataGrid );
+ }
+
+//--employeeCommutingByBus
+private void employeeCommutingByBusTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("employeeCommutingByBus");
+        employeeCommutingByBusDataGrid.setFields(listGridFields);
+	TabLayout employeeCommutingByBusLayout = new TabLayout("Current Sources of Employee Commuting By Bus", employeeCommutingByBusForm,
+	                                                     employeeCommutingByBusFormWindow, employeeCommutingByBusDataGrid);
+//--Defining employeeCommutingByBus
+        final Tab employeeCommutingByBusTab = new Tab("Employee Commuting By Bus");
+        employeeCommutingByBusTab.setPane(employeeCommutingByBusLayout);
+
+//---Adding employeeCommutingByBus tab to tabSet
+        employeeCommutingTabSet.addTab(employeeCommutingByBusTab);
+        //tabSet.addTab(employeeCommutingTabSet);
+        //tabSet.addTab(employeeCommutingByBusTab);
+}
+private void initEmployeeCommutingByBusEditForm() {
+
+    FormItem[] formItemFields = getOptionalSourceFormFields("employeeCommutingByBus");
+    employeeCommutingByBusForm.setItems(formItemFields);
+    employeeCommutingByBusForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter employee commuting by bus information:", employeeCommutingByBusForm,
+                          employeeCommutingByBusFormWindow, employeeCommutingByBusDataGrid );
+ }
+
+//--productTransportByVehicle
+private void productTransportByVehicleTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("productTransportByVehicle");
+        productTransportByVehicleDataGrid.setFields(listGridFields);
+	TabLayout productTransportByVehicleLayout = new TabLayout("Current Sources of Product Transport - By Vehicle", productTransportByVehicleForm,
+	                                                     productTransportByVehicleFormWindow, productTransportByVehicleDataGrid);
+
+//--Defining productTransportByVehicle
+        final Tab productTransportByVehicleTab = new Tab("Product Transport - By Vehicle");
+        productTransportByVehicleTab.setPane(productTransportByVehicleLayout);
+
+//---Adding productTransportByVehicle tab to tabSet
+        productTransportTabSet.addTab(productTransportByVehicleTab);
+        //tabSet.addTab(productTransportTabSet);
+        //tabSet.addTab(productTransportByVehicleTab);
+}
+private void initProductTransportByVehicleEditForm() {
+
+    FormItem[] formItemFields = getOptionalSourceFormFields("productTransportByVehicle");
+    productTransportByVehicleForm.setItems(formItemFields);
+    productTransportByVehicleForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter Product Transport By Vehicle information:", productTransportByVehicleForm,
+                          productTransportByVehicleFormWindow, productTransportByVehicleDataGrid );
+ }
+
+//--productTransportByHeavyDutyTrucks
+private void productTransportByHeavyDutyTrucksTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("productTransportByHeavyDutyTrucks");
+        productTransportByHeavyDutyTrucksDataGrid.setFields(listGridFields);
+	TabLayout productTransportByHeavyDutyTrucksLayout = new TabLayout("Current Sources of Product Transport - By Heavy Duty Trucks", productTransportByHeavyDutyTrucksForm,
+	                                                     productTransportByHeavyDutyTrucksFormWindow, productTransportByHeavyDutyTrucksDataGrid);
+
+//--Defining productTransportByHeavyDutyTrucks
+        final Tab productTransportByHeavyDutyTrucksTab = new Tab("Product Transport - By Heavy Duty Trucks");
+        productTransportByHeavyDutyTrucksTab.setPane(productTransportByHeavyDutyTrucksLayout);
+
+//---Adding productTransportByHeavyDutyTrucks tab to tabSet
+        productTransportTabSet.addTab(productTransportByHeavyDutyTrucksTab);
+        //tabSet.addTab(productTransportTabSet);
+        //tabSet.addTab(productTransportByHeavyDutyTrucksTab);
+}
+private void initProductTransportByHeavyDutyTrucksEditForm() {
+
+    FormItem[] formItemFields = getOptionalSourceFormFields("productTransportByHeavyDutyTrucks");
+    productTransportByHeavyDutyTrucksForm.setItems(formItemFields);
+    productTransportByHeavyDutyTrucksForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter Product Transport By Heavy Duty Trucks information:", productTransportByHeavyDutyTrucksForm,
+                          productTransportByHeavyDutyTrucksFormWindow, productTransportByHeavyDutyTrucksDataGrid );
+ }
+
+//--productTransportByRail
+private void productTransportByRailTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("productTransportByRail");
+        productTransportByRailDataGrid.setFields(listGridFields);
+	TabLayout productTransportByRailLayout = new TabLayout("Current Sources of Product Transport - By Rail", productTransportByRailForm,
+	                                                     productTransportByRailFormWindow, productTransportByRailDataGrid);
+//--Defining productTransportByRail
+        final Tab productTransportByRailTab = new Tab("Product Transport - By Rail");
+        productTransportByRailTab.setPane(productTransportByRailLayout);
+
+//---Adding productTransportByRail tab to tabSet
+        productTransportTabSet.addTab(productTransportByRailTab);
+        //tabSet.addTab(productTransportTabSet);
+        //tabSet.addTab(productTransportByRailTab);
+}
+private void initProductTransportByRailEditForm() {
+
+    FormItem[] formItemFields = getOptionalSourceFormFields("productTransportByRail");
+    productTransportByRailForm.setItems(formItemFields);
+    productTransportByRailForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter Product Transport By Rail information:", productTransportByRailForm,
+                          productTransportByRailFormWindow, productTransportByRailDataGrid );
+ }
+
+//--productTransportByWaterAir
+private void productTransportByWaterAirTab() {
+
+        final ListGridField[] listGridFields = getOptionalSourceListGridFields("productTransportByWaterAir");
+        productTransportByWaterAirDataGrid.setFields(listGridFields);
+	TabLayout productTransportByWaterAirLayout = new TabLayout("Current Sources of Product Transport - By Water Air", productTransportByWaterAirForm,
+	                                                     productTransportByWaterAirFormWindow, productTransportByWaterAirDataGrid);
+//--Defining productTransportByWaterAir
+        final Tab productTransportByWaterAirTab = new Tab("Product Transport - By Water or Air");
+        productTransportByWaterAirTab.setPane(productTransportByWaterAirLayout);
+
+//---Adding productTransportByWaterAir tab to tabSet
+        productTransportTabSet.addTab(productTransportByWaterAirTab);
+        //tabSet.addTab(productTransportTabSet);
+        //tabSet.addTab(productTransportByWaterAirTab);
+}
+private void initProductTransportByWaterAirEditForm() {
+    FormItem[] formItemFields = getOptionalSourceFormFields("productTransportByWaterAir");
+    productTransportByWaterAirForm.setItems(formItemFields);
+    productTransportByWaterAirForm.hideItem("optionalSourceType");
+    setIbLFormWindow("Please enter Product Transport By Water/Air information:", productTransportByWaterAirForm,
+                          productTransportByWaterAirFormWindow, productTransportByWaterAirDataGrid );
+ }
+
+//--wasteStreamCombustion
+private void wasteStreamCombustionTab() {
+
+        final ListGridField[] listGridFields = getWasteStreamCombustionListGridFields();
+        wasteStreamCombustionDataGrid.setFields(listGridFields);
+	TabLayout wasteStreamCombustionTabLayout = new TabLayout("Current Sources of Waste Stream Combustion", wasteStreamCombustionForm,
+	                                                     wasteStreamCombustionFormWindow, wasteStreamCombustionDataGrid);
+        wasteStreamCombustionLayout.setWidth100();
+        wasteStreamCombustionLayout.setHeight100();
+
+//--Defining wasteStreamCombustion
+        final Tab wasteStreamCombustionTab = new Tab("Waste Stream Combustion");
+        wasteStreamCombustionTab.setPane(wasteStreamCombustionTabLayout);
+
+//---Adding wasteStreamCombustion tab to tabSet
+        wasteStreamCombustionTabSet.addTab(wasteStreamCombustionTab);
+        wasteStreamCombustionLayout.addMember(wasteStreamCombustionTabSet);
+
+}
+private void initWasteStreamCombustionEditForm() {
+
+    FormItem[] formItemFields = getWasteStreamCombustionFormFields();
+    wasteStreamCombustionForm.setItems(formItemFields);
+    setIbLFormWindow("Please enter Waste Stream Combustion information:", wasteStreamCombustionForm,
+                          wasteStreamCombustionFormWindow, wasteStreamCombustionDataGrid );
+
+ }
+
+private void initOrganizationProfileEditForm() {
+
+    organizationProfileForm.setCellPadding(5);
+    //organizationProfileForm.setDefaultWidth(800);
+    organizationProfileForm.setWidth("50%");
+    organizationProfileForm.setNumCols(2);
+    //organizationProfileForm.setColWidths("25%");
+
+    organizationProfileVLayout.setWidth100();
+    organizationProfileVLayout.setHeight100();
+    //organizationProfileForm.setBorder("1px double orange");
+    //organizationProfileForm.setTitleOrientation(TitleOrientation.TOP);
+    organizationProfileForm.setDataSource(organizationDS);    
+    //organizationProfileForm.setDisableValidation(Boolean.TRUE);
+    organizationProfileForm.setAlign(Alignment.CENTER);
+
+    //organizationProfileForm.animateShow(AnimationEffect.SLIDE);
+    //organizationProfileForm.hide();
+    //organizationProfileForm.setTitle("Please your organization information:");
+
+//-- setValidators for the forms for common types.
+    //initializeValidators();
+
+//-- Form fields  -------------------------------------------------------------------
+    TextItem organizationNameItem = new TextItem("organizationName");
+    organizationNameItem.setWidth(200);
+    organizationNameItem.setColSpan(2);
+    //organizationNameItem.
+
+/*
+    DateItem currentInventoryBeginDateItem = new DateItem();
+    currentInventoryBeginDateItem.setName("currentInventoryBeginDate");
+    //currentInventoryBeginDateItem.setValidateOnExit(Boolean.FALSE);
+    //currentInventoryBeginDateItem.setValidateOnChange(Boolean.FALSE);
+    //currentInventoryBeginDateItem.setEditorType();
+    //currentInventoryBeginDateItem.setUseTextField(Boolean.TRUE);
+    
+    DateItem currentInventoryEndDateItem = new DateItem();
+    currentInventoryEndDateItem.setName("currentInventoryEndDate");
+    //currentInventoryEndDateItem.setValidateOnExit(Boolean.FALSE);
+    //currentInventoryEndDateItem.setValidateOnChange(Boolean.FALSE);
+*/
+    TextItem organizationStreetAddress1Item = new TextItem("organizationStreetAddress1");
+    //organizationNameItem.setWidth(100);
+
+    TextItem organizationStreetAddress2Item = new TextItem("organizationStreetAddress2");
+    //organizationNameItem.setWidth(200);
+
+    TextItem organizationCityItem = new TextItem("organizationCity");
+    //organizationNameItem.setWidth(50);
+
+    TextItem organizationStateItem = new TextItem("organizationState");
+    //organizationNameItem.setWidth(20);
+
+    TextItem organizationZipCodeItem = new TextItem("organizationZipCode");
+    organizationZipCodeItem.setValidators(new RegExpValidator("^\\d{5}(-\\d{4})?$"));
+    organizationZipCodeItem.setValidateOnChange(Boolean.TRUE);
+    //ZipCodeUSType organizationZipCodeItem = new ZipCodeUSType();
+    organizationNameItem.setWidth(20);
+
+    TextItem organizationCountryItem = new TextItem("organizationCountry");
+    organizationNameItem.setWidth(200);
+
+    TextItem organizationWebsiteItem = new TextItem("organizationWebsite");
+    organizationNameItem.setWidth(200);
+
+    TextItem organizationHQItem = new TextItem("organizationHQ");
+    organizationNameItem.setWidth(20);
+
+    TextItem pointOfContactItem = new TextItem("pointOfContact");
+    organizationNameItem.setWidth(200);
+
+    //organizationProfileForm.setIsGroup(Boolean.TRUE);
+    //organizationProfileForm.setGroupTitle("Update your organization profile");
+    //organizationProfileForm.setRedrawOnResize(true);
+
+    organizationProfileForm.setItems(organizationNameItem, 
+                                        organizationStreetAddress1Item,organizationStreetAddress2Item,
+                                        organizationCityItem,organizationStateItem,organizationZipCodeItem,
+                                        organizationCountryItem,organizationWebsiteItem,organizationHQItem,pointOfContactItem);
+
+    final IButton organizationProfileCancelButton = new IButton();
+    final IButton organizationProfileSaveButton = new IButton();
+
+    organizationProfileSaveButton.setTitle("SAVE");
+    organizationProfileSaveButton.setTooltip("Save");
+    organizationProfileSaveButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        //if (!organizationProfileForm.getErrors().isEmpty()|| !organizationProfileForm.validate()){
+        if (!organizationProfileForm.validate()){
+            SC.say("Please clear errors before submitting this information!");
+        }
+        else {
+            //Record organizationRecord = organizationProfileForm.getValuesAsRecord();
+            organizationProfileForm.saveData();
+            //organizationProfileForm.clearValues();
+            //organizationProfileForm.markForRedraw();
+            //organizationProfileVLayout.hide();
+        }
+      }
+    });
+
+    organizationProfileCancelButton.setTitle("CANCEL");
+    organizationProfileCancelButton.setTooltip("Cancel");
+    organizationProfileCancelButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        //organizationProfileForm.saveData();
+        //organizationProfileVLayout.hide();
+        Criteria fetchCriteria = new Criteria();
+
+        String orgName = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
+        fetchCriteria.addCriteria("organizationName", orgName);
+        organizationProfileForm.fetchData(fetchCriteria);
+      }
+    });
+
+    HLayout buttons = new HLayout();
+    //buttons.setWidth("50%");
+    //buttons.setAlign(Alignment.CENTER);
+    buttons.addMember(organizationProfileCancelButton);
+    buttons.addMember(organizationProfileSaveButton);
+
+    Label updateOrganizationProfileLabel = new Label("Organization Profile");
+    updateOrganizationProfileLabel.setHeight(15);
+    updateOrganizationProfileLabel.setWidth100();
+    updateOrganizationProfileLabel.setAlign(Alignment.LEFT);
+    updateOrganizationProfileLabel.setStyleName("labels");
+
+    organizationProfileVLayout.setAlign(Alignment.CENTER);
+    organizationProfileVLayout.addMember(updateOrganizationProfileLabel);
+    organizationProfileVLayout.addMember(organizationProfileForm);
+    organizationProfileVLayout.addMember(buttons);
+    
+    /*
+    organizationProfileFormWindow.setShowShadow(true);
+    //organizationProfileFormWindow.setShowTitle(false);
+    //organizationProfileFormWindow.setIsModal(true);
+    organizationProfileFormWindow.setPadding(20);
+    organizationProfileFormWindow.setWidth(500);
+    organizationProfileFormWindow.setHeight(350);
+    //organizationProfileFormWindow.setShowMinimizeButton(false);
+    //organizationProfileFormWindow.setShowCloseButton(true);
+    organizationProfileFormWindow.setShowModalMask(true);
+    organizationProfileFormWindow.centerInPage();
+    organizationProfileFormWindow.setTitle("Please update your organization profile: ");
+	
+    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
+    //organizationProfileFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
+    organizationProfileFormWindow.addItem(dialog);
+    */
+}
+
+private void initOrganizationInventoryYearEditForm() {
+
+    organizationInventoryYearVLayout.setWidth100();
+    organizationInventoryYearVLayout.setHeight100();
+    organizationInventoryYearForm.setCellPadding(5);
+    //organizationInventoryYearForm.setDefaultWidth(800);
+    organizationInventoryYearForm.setWidth("50%");
+    organizationInventoryYearForm.setNumCols(2);
+    //organizationInventoryYearForm.setColWidths("25%");
+
+    //organizationInventoryYearForm.setBorder("1px double orange");
+    //organizationInventoryYearForm.setTitleOrientation(TitleOrientation.TOP);
+    organizationInventoryYearForm.setDataSource(organizationDS);
+    //organizationInventoryYearForm.setDisableValidation(Boolean.TRUE);
+    //organizationInventoryYearForm.setAlign(Alignment.CENTER);
+
+    //organizationInventoryYearForm.animateShow(AnimationEffect.SLIDE);
+    //organizationInventoryYearForm.hide();
+    //organizationInventoryYearForm.setTitle("Please your organization information:");
+
+//-- setValidators for the forms for common types.
+    //initializeValidators();
+
+//-- Form fields  -------------------------------------------------------------------
+    //TextItem organizationNameItem = new TextItem("organizationName");
+    //organizationNameItem.setWidth(200);
+
+    //organizationNameItem.
+
+    DateItem currentInventoryBeginDateItem = new DateItem();
+    currentInventoryBeginDateItem.setName("currentInventoryBeginDate");
+    //currentInventoryBeginDateItem.setValidateOnExit(Boolean.FALSE);
+    //currentInventoryBeginDateItem.setValidateOnChange(Boolean.FALSE);
+    //currentInventoryBeginDateItem.setEditorType();
+    //currentInventoryBeginDateItem.setUseTextField(Boolean.TRUE);
+    //currentInventoryBeginDateItem.setUseMask(Boolean.TRUE);
+    
+    final DateItem currentInventoryEndDateItem = new DateItem();
+    currentInventoryEndDateItem.setName("currentInventoryEndDate");
+    //currentInventoryEndDateItem.setValidateOnExit(Boolean.FALSE);
+    //currentInventoryEndDateItem.setValidateOnChange(Boolean.FALSE);
+    //currentInventoryEndDateItem.setUseTextField(Boolean.TRUE);
+    //currentInventoryEndDateItem.setUseMask(Boolean.TRUE);
+
+    organizationInventoryYearForm.setItems(currentInventoryBeginDateItem, currentInventoryEndDateItem);
+
+    final IButton organizationInventoryYearCancelButton = new IButton();
+    final IButton organizationInventoryYearSaveButton = new IButton();
+
+    organizationInventoryYearSaveButton.setTitle("SAVE");
+    organizationInventoryYearSaveButton.setTooltip("Save");
+    organizationInventoryYearSaveButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        if (!organizationInventoryYearForm.getErrors().isEmpty()){
+            SC.say("Please clear errors before submitting this information!");
+        }
+        else {
+            //Record organizationRecord = organizationInventoryYearForm.getValuesAsRecord();           
+            organizationInventoryYearForm.saveData(
+                          new DSCallback() {
+                                        public void execute(DSResponse response, Object rawData, DSRequest request) {
+                                        UserOrganizationHeader.organizationSelectForm.fetchData();
+                            }
+                          });
+
+            //--Update Inventory Year in the Header
+            //UserOrganizationHeader.organizationSelectForm.fetchData();
+            //UserOrganizationHeader.organizationSelectForm.fetchData();
+            //organizationInventoryYearForm.clearValues();
+            //organizationInventoryYearForm.markForRedraw();
+            //organizationInventoryYearVLayout.hide();
+        }
+      }
+    });
+
+    organizationInventoryYearCancelButton.setTitle("CANCEL");
+    organizationInventoryYearCancelButton.setTooltip("Cancel");
+    organizationInventoryYearCancelButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        //organizationInventoryYearForm.saveData();
+        //organizationInventoryYearVLayout.hide();
+        Criteria fetchCriteria = new Criteria();
+
+        String orgName = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
+        fetchCriteria.addCriteria("organizationName", orgName);
+        organizationInventoryYearForm.fetchData(fetchCriteria);
+      }
+    });
+
+    HLayout buttons = new HLayout();
+    //buttons.setWidth("50%");
+    //buttons.setAlign(Alignment.CENTER);
+    buttons.addMember(organizationInventoryYearCancelButton);
+    buttons.addMember(organizationInventoryYearSaveButton);
+
+    Label currentInventoryYearLabel = new Label("Current Inventory Year");
+    currentInventoryYearLabel.setHeight(15);
+    currentInventoryYearLabel.setWidth100();
+    currentInventoryYearLabel.setAlign(Alignment.LEFT);
+    currentInventoryYearLabel.setStyleName("labels");
+
+    organizationInventoryYearVLayout.addMember(currentInventoryYearLabel);
+    organizationInventoryYearVLayout.addMember(organizationInventoryYearForm);
+    organizationInventoryYearVLayout.addMember(buttons);
+}
+
+private void initEmissionsSummaryInputForm() {
+
+    emissionsSummaryInputVLayout.setWidth100();
+    emissionsSummaryInputVLayout.setHeight100();
+
+    emissionsSummaryInputForm.setCellPadding(5);
+    //emissionsSummaryInputForm.setDefaultWidth(800);
+    emissionsSummaryInputForm.setWidth("50%");
+    emissionsSummaryInputForm.setNumCols(2);
+    //emissionsSummaryInputForm.setColWidths("25%");
+
+    //emissionsSummaryInputForm.setBorder("1px double orange");
+    //emissionsSummaryInputForm.setTitleOrientation(TitleOrientation.TOP);
+    emissionsSummaryInputForm.setDataSource(organizationDS);
+    //emissionsSummaryInputForm.setDisableValidation(Boolean.TRUE);
+    //emissionsSummaryInputForm.setAlign(Alignment.CENTER);
+
+    //emissionsSummaryInputForm.animateShow(AnimationEffect.SLIDE);
+    //emissionsSummaryInputForm.hide();
+    //emissionsSummaryInputForm.setTitle("Please your organization information:");
+
+//-- setValidators for the forms for common types.
+    //initializeValidators();
+
+//-- Form fields  ------------------------------------------------------------------
+    
+     //IntegerItem emissionsSummaryReportId = new IntegerItem("id");
+     DateItem emissionsBeginDate = new DateItem("emissionsBeginDate");
+     emissionsBeginDate.setTitle("Emissions Begin Date");
+     
+     DateItem emissionsEndDate = new DateItem("emissionsEndDate");
+     emissionsEndDate.setTitle("Emissions End Date");
+
+     final SelectItem programTypeItem = new SelectItem();
+     programTypeItem.setName("programType");
+     programTypeItem.setTitle("Program Type");
+     programTypeItem.setValueMap("EPA Climate Leaders", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
+     programTypeItem.setDefaultToFirstOption(Boolean.TRUE);
+     programTypeItem.setDisabled(Boolean.TRUE);
+    //emissionsSummaryInputForm.setDataSource(emissionsSummaryDS);
+    emissionsSummaryInputForm.setItems(emissionsBeginDate, emissionsEndDate, programTypeItem);
+    //emissionsSummaryInputForm.hideItem("id");
+
+    //final IButton emissionsSummaryCancelButton = new IButton();
+    final IButton emissionsSummaryCalculateButton = new IButton();
+
+    emissionsSummaryCalculateButton.setWidth(180);
+
+    emissionsSummaryCalculateButton.setTitle("Calculate Emissions");
+    emissionsSummaryCalculateButton.setTooltip("Calculate Emissions");
+    emissionsSummaryCalculateButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        if (!emissionsSummaryInputForm.getErrors().isEmpty()){
+            SC.say("Please clear errors before submitting this information!");
+        }
+        else {
+                //SC.say("I am in Emissions!");
+        	Record emissionsSummaryInputRecord = emissionsSummaryInputForm.getValuesAsRecord();
+                String orgName = (String) UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
+                emissionsSummaryInputRecord.setAttribute("organizationName",orgName);
+                final ListGrid lastEmissionsSummaryRecordGrid = new ListGrid();
+                lastEmissionsSummaryRecordGrid.setDataSource(emissionsSummaryDS);
+                
+                lastEmissionsSummaryRecordGrid.addData(emissionsSummaryInputRecord, new DSCallback() {
+                            public void execute(DSResponse response, Object rawData, DSRequest request) {
+                                //SC.say("Response object STATUS_SUCCESS is:" + response.STATUS_SUCCESS);
+                                //if (response.STATUS_SUCCESS<0) SC.say("Response object STATUS_SUCCESS is:" + response.STATUS_SUCCESS);
+                                //String emissionsSummaryReportId = (String)emissionsSummaryDS.getField("id").getAttributeAsString("id");
+                                
+                                //SC.say("emissionsSummaryReportId=======:" + emissionsSummaryReportId);
+                                final Record[] records = response.getData();
+                                String emissionsSummaryReportId = records[0].getAttributeAsString("id");
+                                displayEmissionsReport("Just Calculated", emissionsSummaryReportId);
+                                //SC.say("emissionsSummaryReportId=======:" + emissionsSummaryReportId);
+                            }
+                        });
+        }
+      }
+    });
+
+    /*
+    emissionsSummaryCancelButton.setTitle("CANCEL");
+    emissionsSummaryCancelButton.setTooltip("Cancel");
+    emissionsSummaryCancelButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+      		SC.say("I need to cancel this!");
+      }
+    });
+    */
+
+    HLayout buttons = new HLayout();
+    //buttons.setAlign(Alignment.CENTER);
+    //buttons.addMember(emissionsSummaryCancelButton);
+    buttons.addMember(emissionsSummaryCalculateButton);
+
+    Label calculateEmissionsLabel = new Label("Calculate Emissions for the specific period");
+    calculateEmissionsLabel.setHeight(15);
+    calculateEmissionsLabel.setWidth100();
+    calculateEmissionsLabel.setAlign(Alignment.LEFT);
+    calculateEmissionsLabel.setStyleName("labels");
+
+    emissionsSummaryInputVLayout.addMember(calculateEmissionsLabel);
+    emissionsSummaryInputVLayout.addMember(emissionsSummaryInputForm);
+    emissionsSummaryInputVLayout.addMember(buttons);
+}
+
+public void displayDetailInfo(ListGrid listGrid, DetailViewerField[] fieldList) {
+    
+    Canvas[] children = detailViewerVLayout.getChildren();
+    if (children.length>0){
+        for (int i=0; i < children.length; i++){
+            detailViewerVLayout.removeChild(children[i]);
+        }
+    }
+   Canvas[] children2 = middleBottomHLayout.getChildren();
+    if (children2.length>0){
+        for (int i=0; i < children2.length; i++){
+            middleBottomHLayout.removeChild(children2[i]);
+        }
+    }
+
+    emissionsSummaryDetailViewer.setFields(fieldList);
+    emissionsSummaryDetailViewer.viewSelectedData(listGrid);
+    //emissionsSummaryDetailViewer.set
+    //detailViewerVLayout.addMember(emissionsSummaryDetailViewerLabel);
+    detailViewerVLayout.addMember(emissionsSummaryDetailViewer);
+    middleBottomHLayout.addMember(detailViewerVLayout);
+    //middleBottomHLayout.addMember(panel);
+    middleBottomHLayout.show();
+    
+    /*
+    Canvas[] children = detailViewerWindow.getChildren();
+    if (children.length>0){
+        for (int i=0; i < children.length; i++){
+            detailViewerWindow.removeChild(children[i]);
+        }
+    }
+
+   Canvas[] children2 = middleBottomHLayout.getChildren();
+    if (children2.length>0){
+        for (int i=0; i < children2.length; i++){
+            middleBottomHLayout.removeChild(children2[i]);
+        }
+    }
+    
+    emissionsSummaryDetailViewer.setFields(fieldList);
+    emissionsSummaryDetailViewer.viewSelectedData(listGrid);
+    //emissionsSummaryDetailViewer.set
+    //detailViewerVLayout.addMember(emissionsSummaryDetailViewerLabel);
+    detailViewerWindow.addMember(emissionsSummaryDetailViewer);
+    //middleBottomHLayout.addMember(detailViewerVLayout);
+    middleBottomHLayout.addMember(detailViewerWindow);
+    middleBottomHLayout.show();
+    */
+}
+
+public void displayEmissionsReport(String emissionsReportChoice, String emissionsSummaryReportId) {
+
+    //--remove existing child from middleBottomHLayout
+    Canvas[] children2 = middleBottomHLayout.getChildren();
+    if (children2.length>0){
+	for (int i=0; i < children2.length; i++){
+	    middleBottomHLayout.removeChild(children2[i]);
+	}
+    }
+
+    orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+    String reportUrl = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+    com.google.gwt.user.client.Window.open(reportUrl,null,null);
+
+    /*
+    if (emissionsReportChoice.equals("Just Calculated")){
+        HTMLPane htmlPane = new HTMLPane();
+        htmlPane.setHeight100();
+        htmlPane.setWidth100();
+        //htmlPane.setContentsURL("/ibLGHGCalc/reports/ghgReport.pdf");
+        htmlPane.setContentsURL(reportUrl);
+        htmlPane.setContentsType(ContentsType.PAGE);
+        middleBottomHLayout.addChild(htmlPane);
+        //middleBottomHLayout.show();
+    }
+    */
+
+    }
+public void displayEmissionSourceInfo(String emissionSourceChoice) {
+            Criteria fetchCriteria = new Criteria();
+
+            String orgName = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
+            fetchCriteria.addCriteria("organizationName", orgName);
+
+            orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+
+            //SC.say("Org Name is " + orgName);
+            Date currentInventoryBeginDate = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryBeginDate").getValue();
+            fetchCriteria.addCriteria("inventoryYearBeginDate", currentInventoryBeginDate);
+
+            Date currentInventoryEndDate = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryEndDate").getValue();
+            fetchCriteria.addCriteria("inventoryYearEndDate", currentInventoryEndDate);
+
+            String programType = (String) UserOrganizationHeader.organizationSelectForm.getField("programType").getValue();
+            fetchCriteria.addCriteria("programType", programType);
+
+            //--remove existing child from middleMiddleHLayout
+            Canvas[] children = middleMiddleHLayout.getChildren();
+
+            if (children.length>0){
+                for (int i=0; i < children.length; i++){
+                    middleMiddleHLayout.removeChild(children[i]);
+                }
+            }
+
+            //--remove existing child from middleMiddleHLayout
+            Canvas[] children2 = middleBottomHLayout.getChildren();
+            if (children2.length>0){
+                for (int i=0; i < children2.length; i++){
+                    middleBottomHLayout.removeChild(children2[i]);
+                }
+            }
+
+            //--hide middleBottomHLayout
+            middleBottomHLayout.hide();
+            
+            if (emissionSourceChoice.equals("Load Data")){
+               //emissionsSummaryInputForm.fetchData(fetchCriteria);
+               fileTypeItem.setValueMap(epaDataLoadOptions);
+               middleMiddleHLayout.addChild(fileUploadLayout);
+            } else if (emissionSourceChoice.equals("Load Emission Factors")){
+               //emissionsSummaryInputForm.fetchData(fetchCriteria);
+               fileTypeItem.setValueMap(emissionFactorsLoadOptions);
+               middleMiddleHLayout.addChild(fileUploadLayout);
+            } else if (emissionSourceChoice.equals("Emissions Summary")){
+                HTMLPane htmlPane = new HTMLPane();
+                htmlPane.setHeight100();
+                htmlPane.setWidth100();
+                htmlPane.setContentsURL("/ibLGHGCalc/reports/ghgReport.pdf");
+                //htmlPane.setContentsURL("/ibLGHGCalc/reports/firstReport.jrxml");
+                //htmlPane.setContentsURL("/ibLGHGCalc/reports/Document1.txt");
+                //htmlPane.setContentsURLParams(params);
+                htmlPane.setContentsType(ContentsType.PAGE);
+                //htmlPane.markForDestroy();
+               //htmlPane.draw();
+                middleBottomHLayout.addChild(htmlPane);
+                middleBottomHLayout.show();
+              //emissionsSummaryInputForm.fetchData(fetchCriteria);
+               //middleMiddleHLayout.addChild(emissionsSummaryInputVLayout);
+            } else if (emissionSourceChoice.equals("Emissions Report")){
+               //emissionsSummaryInputForm.fetchData(fetchCriteria);
+               //mainOrganizationId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+               //emissionsSummaryDataGrid.getField("reportFileName").setLinkURLPrefix("/ibLGHGCalc/reports/"+mainOrganizationId+"/");
+               //emissionsSummaryDataGrid.redraw();
+               emissionsSummaryDataGrid.filterData(fetchCriteria);
+               middleMiddleHLayout.addChild(emissionsSummaryVLayout);
+               //emissionsSummaryDataGrid.markForRedraw();
+            } else if (emissionSourceChoice.equals("Calculate Emissions")){
+               //emissionsSummaryInputForm.fetchData(fetchCriteria);
+               middleMiddleHLayout.addChild(emissionsSummaryInputVLayout);
+            } else if(emissionSourceChoice.equals("Change Inventory Year")) {
+              //--Display Edit Organizatin form
+               //stationaryCombustionDataGrid.filterData(fetchCriteria);
+               //organizationProfileForm.filterData(fetchCriteria);
+               organizationInventoryYearForm.fetchData(fetchCriteria);
+               middleMiddleHLayout.addChild(organizationInventoryYearVLayout);
+               //--There should be a better way to manage this
+               //organizationProfileForm.show();
+            } else if (emissionSourceChoice.equals("Organization Profile")){
+              //--Display Edit Organizatin form
+               //stationaryCombustionDataGrid.filterData(fetchCriteria);
+               //organizationProfileForm.filterData(fetchCriteria);
+               organizationProfileForm.fetchData(fetchCriteria);
+               middleMiddleHLayout.addChild(organizationProfileVLayout);
+               //--There should be a better way to manage this
+               //organizationProfileForm.show();
+            } else if (emissionSourceChoice.equals("Dashboard")){
+               middleMiddleHLayout.addChild(new Dashboard());
+               //organizationProfileForm.fetchData(fetchCriteria);
+               //middleMiddleHLayout.addChild(organizationProfileVLayout);
+               //--There should be a better way to manage this
+               //organizationProfileForm.show();
+            } else if (emissionSourceChoice.equals("Stationary Combustions Sources")){
+               //--Display stationary Combustion Data
+               //stationaryCombustionDataGrid.setCriteria(fetchCriteria);
+               stationaryCombustionDataGrid.filterData(fetchCriteria);
+               middleMiddleHLayout.addChild(stationaryCombustionLayout);
+            } else if (emissionSourceChoice.equals("Mobile Combustions Sources")){
+               //--Display Mobile Combustion Data
+               mobileCombustionDataGrid.filterData(fetchCriteria);
+               middleMiddleHLayout.addChild(mobileCombustionLayout);
+            } else if (emissionSourceChoice.equals("Refridgeration and Air Conditioning Sources")){
+               //--Display Refridgeration an Ar Conditioning Data
+               Criteria refridgerationACMaterialBalanceFetchCriteria = new Criteria();
+               refridgerationACMaterialBalanceFetchCriteria.addCriteria("methodType", "Refridgeration Air Conditioning - Company-Wide Material Balance Method");
+               refridgerationACMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
+               refridgerationAirConditioningDataGrid_1.filterData(refridgerationACMaterialBalanceFetchCriteria);
+
+               Criteria refridgerationACSimplifiedMaterialBalanceFetchCriteria = new Criteria();
+               refridgerationACSimplifiedMaterialBalanceFetchCriteria.addCriteria("methodType", "Refridgeration Air Conditioning - Company-Wide Simplified Material Balance Method");
+               refridgerationACSimplifiedMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
+               refridgerationAirConditioningDataGrid_2.filterData(refridgerationACSimplifiedMaterialBalanceFetchCriteria);
+
+               Criteria refridgerationACScreeningFetchCriteria = new Criteria();
+               refridgerationACScreeningFetchCriteria.addCriteria("methodType", "Refridgeration Air Conditioning - Source Level Screening Method");
+               refridgerationACScreeningFetchCriteria.addCriteria(fetchCriteria);
+               refridgerationAirConditioningDataGrid_3.filterData(refridgerationACScreeningFetchCriteria);
+
+               middleMiddleHLayout.addChild(refridgerationAirConditioningLayout);
+               //middleMiddleHLayout.addChild(refridgerationAirConditioningTabSet);
+            } else if (emissionSourceChoice.equals("Fire Suppression Sources")){
+               //--Display Refridgeration an Ar Conditioning Data
+               Criteria fireSuppressionMaterialBalanceFetchCriteria = new Criteria();
+               fireSuppressionMaterialBalanceFetchCriteria.addCriteria("methodType", "Fire Suppression - Company-Wide Material Balance Method");
+               fireSuppressionMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
+               fireSuppressionDataGrid_1.filterData(fireSuppressionMaterialBalanceFetchCriteria);
+
+               Criteria fireSuppressionSimplifiedMaterialBalanceFetchCriteria = new Criteria();
+               fireSuppressionSimplifiedMaterialBalanceFetchCriteria.addCriteria("methodType", "Fire Suppression - Company-Wide Simplified Material Balance Method");
+               fireSuppressionSimplifiedMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
+               fireSuppressionDataGrid_2.filterData(fireSuppressionSimplifiedMaterialBalanceFetchCriteria);
+
+               Criteria fireSuppressionACScreeningFetchCriteria = new Criteria();
+               fireSuppressionACScreeningFetchCriteria.addCriteria("methodType", "Fire Suppression - Source Level Screening Method");
+               fireSuppressionACScreeningFetchCriteria.addCriteria(fetchCriteria);
+               fireSuppressionDataGrid_3.filterData(fireSuppressionACScreeningFetchCriteria);
+
+               middleMiddleHLayout.addChild(fireSuppressionLayout);
+               //middleMiddleHLayout.addChild(refridgerationAirConditioningTabSet);
+            } else if (emissionSourceChoice.equals("Waste Stream Combustions Sources")){
+               //--Display Waste Stream Combustions Sources Data
+               wasteStreamCombustionDataGrid.filterData(fetchCriteria);
+               middleMiddleHLayout.addChild(wasteStreamCombustionLayout);
+            } else  if (emissionSourceChoice.equals("Purchased Electricity")){
+               //--Display purchased Electricity Data
+               purchasedElectricityDataGrid.filterData(fetchCriteria);
+               middleMiddleHLayout.addChild(purchasedElectricityLayout);
+            } else if (emissionSourceChoice.equals("Purchased Steam")){
+               //--Display purchasedSteam Data
+               purchasedSteamDataGrid.filterData(fetchCriteria);
+               middleMiddleHLayout.addChild(purchasedSteamLayout);
+            } else if (emissionSourceChoice.equals("Employee Business Travel")){
+               //--Display Mobile Combustion Data
+                //Different criteria for optionalSourceInfo
+                Criteria employeeBusinessTravelByVehicleFetchCriteria = new Criteria();
+                employeeBusinessTravelByVehicleFetchCriteria.addCriteria(fetchCriteria);
+                employeeBusinessTravelByVehicleFetchCriteria.addCriteria("optionalSourceType", "Employee Business Travel - By Vehicle");
+
+                Criteria employeeBusinessTravelByRailFetchCriteria = new Criteria();
+                employeeBusinessTravelByRailFetchCriteria.addCriteria(fetchCriteria);
+                employeeBusinessTravelByRailFetchCriteria.addCriteria("optionalSourceType", "Employee Business Travel - By Rail");
+
+                Criteria employeeBusinessTravelByBusFetchCriteria = new Criteria();
+                employeeBusinessTravelByBusFetchCriteria.addCriteria(fetchCriteria);
+                employeeBusinessTravelByBusFetchCriteria.addCriteria("optionalSourceType", "Employee Business Travel - By Bus");
+
+                Criteria employeeBusinessTravelByAirFetchCriteria = new Criteria();
+                employeeBusinessTravelByAirFetchCriteria.addCriteria(fetchCriteria);
+                employeeBusinessTravelByAirFetchCriteria.addCriteria("optionalSourceType", "Employee Business Travel - By Air");
+
+                employeeBusinessTravelByVehicleDataGrid.filterData(employeeBusinessTravelByVehicleFetchCriteria);
+                employeeBusinessTravelByRailDataGrid.filterData(employeeBusinessTravelByRailFetchCriteria);
+                employeeBusinessTravelByBusDataGrid.filterData(employeeBusinessTravelByBusFetchCriteria);
+                employeeBusinessTravelByAirDataGrid.filterData(employeeBusinessTravelByAirFetchCriteria);
+
+                middleMiddleHLayout.addChild(employeeBusinessTravelLayout);
+            } else if (emissionSourceChoice.equals("Employee Commuting")){
+               //--Display Employee Commuting
+                Criteria employeeCommutingByVehicleFetchCriteria = new Criteria();
+                employeeCommutingByVehicleFetchCriteria.addCriteria(fetchCriteria);
+                employeeCommutingByVehicleFetchCriteria.addCriteria("optionalSourceType", "Employee Commuting - By Vehicle");
+
+                Criteria employeeCommutingByRailFetchCriteria = new Criteria();
+                employeeCommutingByRailFetchCriteria.addCriteria(fetchCriteria);
+                employeeCommutingByRailFetchCriteria.addCriteria("optionalSourceType", "Employee Commuting - By Rail");
+
+                Criteria employeeCommutingByBusFetchCriteria = new Criteria();
+                employeeCommutingByBusFetchCriteria.addCriteria(fetchCriteria);
+
+                employeeCommutingByBusFetchCriteria.addCriteria("optionalSourceType", "Employee Commuting - By Bus");
+                employeeCommutingByVehicleDataGrid.filterData(employeeCommutingByVehicleFetchCriteria);
+                employeeCommutingByRailDataGrid.filterData(employeeCommutingByRailFetchCriteria);
+                employeeCommutingByBusDataGrid.filterData(employeeCommutingByBusFetchCriteria);
+
+                middleMiddleHLayout.addChild(employeeCommutingLayout);
+            } else if (emissionSourceChoice.equals("Product Transport")){
+               //--Display Product Transport Data
+                Criteria productTransportByVehicleFetchCriteria = new Criteria();
+                productTransportByVehicleFetchCriteria.addCriteria(fetchCriteria);
+                productTransportByVehicleFetchCriteria.addCriteria("optionalSourceType", "Product Transport - By Vehicle");
+
+                Criteria productTransportByHeavyDutyTrucksFetchCriteria = new Criteria();
+                productTransportByHeavyDutyTrucksFetchCriteria.addCriteria(fetchCriteria);
+                productTransportByHeavyDutyTrucksFetchCriteria.addCriteria("optionalSourceType", "Product Transport - By Heavy Duty Trucks");
+
+                Criteria productTransportByRailFetchCriteria = new Criteria();
+                productTransportByRailFetchCriteria.addCriteria(fetchCriteria);
+                productTransportByRailFetchCriteria.addCriteria("optionalSourceType", "Product Transport - By Rail");
+
+                Criteria productTransportByWaterAirFetchCriteria = new Criteria();
+                productTransportByWaterAirFetchCriteria.addCriteria(fetchCriteria);
+                productTransportByWaterAirFetchCriteria.addCriteria("optionalSourceType", "Product Transport - By Water or Air");
+
+                productTransportByVehicleDataGrid.filterData(productTransportByVehicleFetchCriteria);
+                productTransportByHeavyDutyTrucksDataGrid.filterData(productTransportByHeavyDutyTrucksFetchCriteria);
+                productTransportByRailDataGrid.filterData(productTransportByRailFetchCriteria);
+                productTransportByWaterAirDataGrid.filterData(productTransportByWaterAirFetchCriteria);
+
+                middleMiddleHLayout.addChild(productTransportLayout);
+            }
+  }
+
+public void displayData(String emissionSourceChoice, List<ListGridField> dataListGridFields,List<FormItem> dataFormItems, RestDataSource dataSource){
+            Criteria fetchCriteria = new Criteria();
+
+            String orgName = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
+            fetchCriteria.addCriteria("organizationName", orgName);
+
+            //SC.say("Org Name is " + orgName);
+            Date currentInventoryBeginDate = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryBeginDate").getValue();
+            fetchCriteria.addCriteria("inventoryYearBeginDate", currentInventoryBeginDate);
+
+            Date currentInventoryEndDate = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryEndDate").getValue();
+            fetchCriteria.addCriteria("inventoryYearEndDate", currentInventoryEndDate);
+
+            String programType = (String) UserOrganizationHeader.organizationSelectForm.getField("programType").getValue();
+            fetchCriteria.addCriteria("programType", programType);
+
+            //--remove existing child from middleMiddleHLayout
+            Canvas[] children = middleMiddleHLayout.getChildren();
+
+            if (children.length>0){
+                for (int i=0; i < children.length; i++){
+                    middleMiddleHLayout.removeChild(children[i]);
+                }
+            }
+/*
+            Canvas[] removeFormItems = dataForm.getChildren();
+            if (removeFormItems.length>0){
+                for (int i=0; i < children.length; i++){
+                    dataForm.removeChild(children[i]);
+                }
+            }
+*/
+            //--set the datasource and fields for the dataGrid
+            //dataGrid.redraw();
+            dataDS = dataSource;
+            final ListGridField[] listGridFields = new ListGridField[dataListGridFields.size()];
+            dataListGridFields.toArray(listGridFields);
+            dataGrid.setDataSource(dataDS);
+            dataGrid.setFields(listGridFields);
+            
+            //--set the dataForm            
+
+            //dataForm.setDataSource(dataDS);
+            final FormItem[] formItems = new FormItem[dataFormItems.size()];
+            dataFormItems.toArray(formItems);
+            dataForm.setDataSource(dataDS);
+            dataForm.setItems(formItems);
+
+            //dataForm.redraw();
+                        
+            //--Display the middleMiddleHLayout
+            //if (emissionSourceChoice.equals("Mobile Combustions Sources")){
+               //--Display Mobile Combustion Data
+               dataGrid.filterData(fetchCriteria);
+               middleMiddleHLayout.addChild(dataLayout);
+            //}
+}
+
+public static Label getSectionLink(String message, ClickHandler handler) {
+   Label link = new Label();
+   link = new Label(message);
+   link.setStyleName("sectionLink");
+   link.setHeight(20);
+   link.setAlign(Alignment.LEFT);
+
+   //Set the width to the length of the text.
+   //link.setWidth(message.length()*6);
+   link.setWidth100();
+
+   //link.setBorder("1px Solid orange");
+   //link.setEdgeSize(15);
+   //link.setShowRollOver(Boolean.TRUE) ;
+   
+   link.setShowDown(Boolean.TRUE);   
+   link.setShowFocused(Boolean.TRUE);
+   link.setShadowDepth(5);
+   //link.setShadowSoftness(5);
+
+   //link.setBackgroundColor("#EFBFB");
+   link.addClickHandler(handler);
+   return link;
+
+   }
+
+public static Label getReportLink(String message, ClickHandler handler) {
+   Label link = new Label();
+   link = new Label(message);
+   link.setStyleName("sectionLink");
+   //link.setHeight(20);
+   link.setAlign(Alignment.LEFT);
+
+   //Set the width to the length of the text.
+   //link.setWidth(message.length()*6);
+   //link.setWidth100();
+
+   //link.setBorder("1px Solid orange");
+   //link.setEdgeSize(15);
+   //link.setShowRollOver(Boolean.TRUE) ;
+
+   link.setShowDown(Boolean.TRUE);
+   link.setShowFocused(Boolean.TRUE);
+   link.setShadowDepth(5);
+   //link.setShadowSoftness(5);
+
+   //link.setBackgroundColor("#EFBFB");
+   link.addClickHandler(handler);
+   return link;
+
+   }
+
+
+private void initMobileCombustionEditForm_2() {
 
     mobileCombustionForm.setCellPadding(5);
     mobileCombustionForm.setWidth("100%");
@@ -2505,18 +3780,25 @@ private void initMobileCombustionEditForm() {
     vehicleTypeItem.setTitle("Vehicle Type");
     vehicleTypeItem.setOptionDataSource(vehicleType_EPADS);
     vehicleTypeItem.setRequired(Boolean.TRUE);
+    //vehicleTypeItem.fetchData();
+    //vehicleTypeItem.setDefaultToFirstOption(Boolean.TRUE);
 
     vehicleTypeItem.addChangedHandler(new ChangedHandler() {
         public void onChanged(ChangedEvent event) {
+            /*
             mobileCombustionForm.clearValue("vehicleYear");
-            mobileCombustionForm.clearValue("fuelType");            
-            //mobileCombustionForm.clearValue("fuelUnit");
+            mobileCombustionForm.clearValue("fuelType");
             Record selectedFuelTypeRecord = vehicleTypeItem.getSelectedRecord();
             mobileCombustionForm.setValue("fuelUnit", selectedFuelTypeRecord.getAttributeAsString("fuelUnit"));
+             *
+             */
+            dataForm.clearValue("vehicleYear");
+            dataForm.clearValue("fuelType");
+            Record selectedFuelTypeRecord = vehicleTypeItem.getSelectedRecord();
+            dataForm.setValue("fuelUnit", selectedFuelTypeRecord.getAttributeAsString("fuelUnit"));
         }
     });
-   // final SelectItem vehicleYearItem = new SelectItem();
- 
+
     final SelectItem vehicleYearItem = new SelectItem(){
         @Override
         protected Criteria getPickListFilterCriteria() {
@@ -2524,8 +3806,8 @@ private void initMobileCombustionEditForm() {
             Criteria criteria = new Criteria("vehicleType", vehicleType);
             return criteria;
         }
-    };    
- 
+    };
+
     vehicleYearItem.setName("vehicleYear");
     //vehicleYearItem.setPickListWidth(310);
     vehicleYearItem.setTitle("Vehicle Year");
@@ -2541,30 +3823,12 @@ private void initMobileCombustionEditForm() {
             return criteria;
         }
     };
+
     fuelTypeItem.setName("fuelType");
     //fuelTypeItem.setPickListWidth(310);
     fuelTypeItem.setTitle("Fuel Type");
     fuelTypeItem.setOptionDataSource(vehicleType_EPADS);
 
-/*
-    fuelTypeItem.addChangedHandler(new ChangedHandler() {
-        public void onChanged(ChangedEvent event) {
-            mobileCombustionForm.clearValue("fuelUnit");
-        }
-    });
-*/
-    /*
-    final SelectItem fuelUnitItem = new SelectItem() {
-        @Override
-        protected Criteria getPickListFilterCriteria() {
-            String vehicleType = (String) vehicleTypeItem.getValue();
-            Criteria criteria = new Criteria("vehicleType", vehicleType);
-            return criteria;
-        }
-    };
-     *
-     */
-    
     final StaticTextItem fuelUnitItem = new StaticTextItem();
     fuelUnitItem.setName("fuelUnit");
     fuelUnitItem.setTitle("Fuel Unit");
@@ -2585,30 +3849,66 @@ private void initMobileCombustionEditForm() {
     milesTravelledItem.setValidateOnChange(Boolean.TRUE);
     milesTravelledItem.setRequired(Boolean.TRUE);
 
+    RequiredIfValidator ifBiofuelPctRequiredValidator = new RequiredIfValidator();
+    ifBiofuelPctRequiredValidator.setExpression(new RequiredIfFunction() {
+        public boolean execute(FormItem formItem, Object value) {
+            //String valueStr = (String) mobileCombustionForm.getItem("fuelType").getValue();
+            String valueStr = (String) dataForm.getItem("fuelType").getValue();
+            if (valueStr !=  null){
+                if (valueStr.contains("Biodiesel")){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        }
+    });
+    ifBiofuelPctRequiredValidator.setErrorMessage("Please provide biofuel percent Value");
+
     FloatItem bioFuelPercentItem = new FloatItem();
     bioFuelPercentItem.setName("bioFuelPercent");
     bioFuelPercentItem.setValidators(floatValidator);
     bioFuelPercentItem.setValidateOnExit(Boolean.TRUE);
     bioFuelPercentItem.setValidateOnChange(Boolean.TRUE);
+    bioFuelPercentItem.setValidators(ifBiofuelPctRequiredValidator);
+
+    RequiredIfValidator ifEthanolPctRequiredValidator = new RequiredIfValidator();
+    ifEthanolPctRequiredValidator.setExpression(new RequiredIfFunction() {
+        public boolean execute(FormItem formItem, Object value) {
+            //String valueStr = (String) mobileCombustionForm.getItem("fuelType").getValue();
+            String valueStr = (String) dataForm.getItem("fuelType").getValue();
+            if (valueStr !=  null){
+                if (valueStr.contains("Ethanol")){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        }
+    });
+    ifEthanolPctRequiredValidator.setErrorMessage("Please provide ethanol percent Value");
 
     FloatItem ethanolPercentItem = new FloatItem();
     ethanolPercentItem.setName("ethanolPercent");
     ethanolPercentItem.setValidators(floatValidator);
     ethanolPercentItem.setValidateOnExit(Boolean.TRUE);
     ethanolPercentItem.setValidateOnChange(Boolean.TRUE);
+    ethanolPercentItem.setValidators(ifEthanolPctRequiredValidator);
 
     DateItem fuelUsedBeginDateItem = new DateItem();
     fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-    fuelUsedBeginDateItem.setStartDate(currentInventoryBeginDateMin);
-    fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
+    //fuelUsedBeginDateItem.setValue(currentInventoryBeginDateMin);//setStartDate(currentInventoryBeginDateMin);
+    //fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
     fuelUsedBeginDateItem.setValidators(validateDateRange);
     fuelUsedBeginDateItem.setValidateOnChange(Boolean.TRUE);
     fuelUsedBeginDateItem.setRequired(Boolean.TRUE);
 
     DateItem fuelUsedEndDateItem = new DateItem();
     fuelUsedEndDateItem.setName("fuelUsedEndDate");
-    fuelUsedEndDateItem.setStartDate(currentInventoryBeginDateMin);
-    fuelUsedEndDateItem.setEndDate(currentInventoryEndDateMax);
+    //fuelUsedEndDateItem.setValue(currentInventoryEndDateMax);//StartDate(currentInventoryBeginDateMin);
+    //fuelUsedEndDateItem.setDefaultValue();//setEndDate(currentInventoryEndDateMax);
     fuelUsedEndDateItem.setValidators(validateDateRange);
     fuelUsedEndDateItem.setValidateOnChange(Boolean.TRUE);
     fuelUsedEndDateItem.setRequired(Boolean.TRUE);
@@ -2616,8 +3916,22 @@ private void initMobileCombustionEditForm() {
     //IntegerItem organizationId = new IntegerItem();
     //organizationId.setName("organizationId");
 
-    mobileCombustionForm.setItems(fuelSourceDescriptionItem ,vehicleTypeItem, vehicleYearItem, fuelTypeItem, fuelQuantityItem, fuelUnitItem, milesTravelledItem, bioFuelPercentItem,ethanolPercentItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
+    //mobileCombustionForm.setItems(fuelSourceDescriptionItem ,vehicleTypeItem, vehicleYearItem, fuelTypeItem, fuelQuantityItem, fuelUnitItem, milesTravelledItem, bioFuelPercentItem,ethanolPercentItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
 
+    //final List<FormItem> mobileCombustionFormItems = new ArrayList<FormItem>();
+    mobileCombustionFormItems.add(fuelSourceDescriptionItem);
+    mobileCombustionFormItems.add(vehicleTypeItem);
+    mobileCombustionFormItems.add(vehicleYearItem);
+    mobileCombustionFormItems.add(fuelTypeItem);
+    mobileCombustionFormItems.add(fuelQuantityItem);
+    mobileCombustionFormItems.add(fuelUnitItem);
+    mobileCombustionFormItems.add(milesTravelledItem);
+    mobileCombustionFormItems.add(bioFuelPercentItem);
+    mobileCombustionFormItems.add(ethanolPercentItem);
+    mobileCombustionFormItems.add(fuelUsedBeginDateItem);
+    mobileCombustionFormItems.add(fuelUsedEndDateItem);
+/*
+    //-Comment for dataGrid - below
     final IButton mobileCombustionCancelButton = new IButton();
     final IButton mobileCombustionSaveButton = new IButton();
 
@@ -2625,13 +3939,17 @@ private void initMobileCombustionEditForm() {
     mobileCombustionSaveButton.setTooltip("Save this Mobile Combustion Source");
     mobileCombustionSaveButton.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent clickEvent) {
-        Record mobileCombustionFormRecord = mobileCombustionForm.getValuesAsRecord();
-        Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
-        mobileCombustionFormRecord.setAttribute("organizationId", organizationIdValue);
-        mobileCombustionDataGrid.updateData(mobileCombustionFormRecord);
-        mobileCombustionForm.clearValues();
-        mobileCombustionForm.markForRedraw();
-        mobileCombustionFormWindow.hide();
+        if (mobileCombustionForm.validate()) {
+            Record mobileCombustionFormRecord = mobileCombustionForm.getValuesAsRecord();
+            Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
+            mobileCombustionFormRecord.setAttribute("organizationId", organizationIdValue);
+            mobileCombustionDataGrid.updateData(mobileCombustionFormRecord);
+            mobileCombustionForm.clearValues();
+            mobileCombustionForm.markForRedraw();
+            mobileCombustionFormWindow.hide();
+        } else {
+            SC.say("Please provide proper information");
+        }
       }
     });
 
@@ -2666,196 +3984,1370 @@ private void initMobileCombustionEditForm() {
     //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
     //mobileCombustionFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
     mobileCombustionFormWindow.addItem(dialog);
+ * 
+ */
  }
+private void initMobileCombustionEditForm_OLD() {
 
-private void emissionsSummaryTab() {
+    mobileCombustionForm.setCellPadding(5);
+    mobileCombustionForm.setWidth("100%");
 
-        emissionsSummaryVLayout.setWidth100();
-        emissionsSummaryVLayout.setHeight100();
-        
-        emissionsSummaryDetailViewer.setDataSource(emissionsSummaryDS);
-        //emissionsSummaryDetailViewer.setTitle("Emissions Summary Details:");
-        //emissionsSummaryDetailViewer.setGroupTitle("Emissions Summary Details:");
+//-- setValidators for the forms for common types.
+    initializeValidators();
 
-        //Detail viewer label
-        emissionsSummaryDetailViewerLabel.setHeight(15);
-        emissionsSummaryDetailViewerLabel.setWidth100();
-        emissionsSummaryDetailViewerLabel.setAlign(Alignment.LEFT);
-        //emissionsSummaryDetailViewerLabel.setShowEdges(true);
-        //emissionsSummaryDetailViewerLabel.setBackgroundColor("#EFFBFB");
-        emissionsSummaryDetailViewerLabel.setStyleName("labels");
+//-- Form fields  -------------------------------------------------------------------
+    TextItem fuelSourceDescriptionItem = new TextItem("fuelSourceDescription");
+    fuelSourceDescriptionItem.setTitle("Fuel Source Description");
+    fuelSourceDescriptionItem.setSelectOnFocus(true);
+    fuelSourceDescriptionItem.setWrapTitle(false);
+    fuelSourceDescriptionItem.setDefaultValue("Source");
+    fuelSourceDescriptionItem.setRequired(Boolean.TRUE);
+    //TextItem vehicleTypeItem = new TextItem("vehicleType");
+    //TextItem vehicleYearItem = new TextItem("vehicleYear");
 
-        //detailViewerVLayout.addMember(emissionsSummaryDetailViewerLabel);
-        //detailViewerVLayout.addMember(emissionsSummaryDetailViewer);
-        //middleBottomHLayout.addMember(detailViewerVLayout);
+    final SelectItem vehicleTypeItem = new SelectItem();
+    vehicleTypeItem.setName("vehicleType");
+    //vehicleTypeItem.setPickListWidth(310);
+    vehicleTypeItem.setTitle("Vehicle Type");
+    vehicleTypeItem.setOptionDataSource(vehicleType_EPADS);
+    vehicleTypeItem.setRequired(Boolean.TRUE);
+    //vehicleTypeItem.fetchData();
+    //vehicleTypeItem.setDefaultToFirstOption(Boolean.TRUE);
+    
+    vehicleTypeItem.addChangedHandler(new ChangedHandler() {
+        public void onChanged(ChangedEvent event) {
 
-        //HLayout detailViewerHeader = new HLayout();
-        //detailViewerHeader.addMember(emissionsSummaryDetailViewerLabel);
+            mobileCombustionForm.clearValue("vehicleYear");
+            mobileCombustionForm.clearValue("fuelType");            
+            Record selectedFuelTypeRecord = vehicleTypeItem.getSelectedRecord();
+            mobileCombustionForm.setValue("fuelUnit", selectedFuelTypeRecord.getAttributeAsString("fuelUnit"));
 
-        //final VLayout emissionsSummaryVLayout = new VLayout();
-        Label emissionSummaryDataLabel = new Label("Current Emissions Summary");
-        emissionSummaryDataLabel.setHeight(20);
-        emissionsSummaryVLayout.addMember(emissionSummaryDataLabel);
+            /*
+            dataForm.clearValue("vehicleYear");
+            dataForm.clearValue("fuelType");
+            Record selectedFuelTypeRecord = vehicleTypeItem.getSelectedRecord();
+            dataForm.setValue("fuelUnit", selectedFuelTypeRecord.getAttributeAsString("fuelUnit"));
+             *
+             */
+        }
+    });
+   
+    final SelectItem vehicleYearItem = new SelectItem(){
+        @Override
+        protected Criteria getPickListFilterCriteria() {
+            String vehicleType = (String) vehicleTypeItem.getValue();
+            Criteria criteria = new Criteria("vehicleType", vehicleType);
+            return criteria;
+        }
+    };    
+ 
+    vehicleYearItem.setName("vehicleYear");
+    //vehicleYearItem.setPickListWidth(310);
+    vehicleYearItem.setTitle("Vehicle Year");
+    vehicleYearItem.setOptionDataSource(eF_CH4N2O_MobileCombustion_EPADS);
 
-        emissionsSummaryDataGrid.setWidth100();
-        emissionsSummaryDataGrid.setHeight100();
-        emissionsSummaryDataGrid.setAutoFetchData(Boolean.FALSE);
-        emissionsSummaryDataGrid.setDataSource(emissionsSummaryDS);
+    //final SelectItem fuelTypeItem = new SelectItem();
 
-        ListGridField organizationIdField2 = new ListGridField("organizationId", "Organization Id");
-        organizationIdField2.setType(ListGridFieldType.INTEGER);
+    final SelectItem fuelTypeItem = new SelectItem() {
+        @Override
+        protected Criteria getPickListFilterCriteria() {
+            String vehicleType = (String) vehicleTypeItem.getValue();
+            Criteria criteria = new Criteria("vehicleType", vehicleType);
+            return criteria;
+        }
+    };
 
-        DetailViewerField directEmissionsField = new DetailViewerField("directEmissions", "Direct Emissions");
-        //directEmissionsField.
-        //DetailViewerField.setType(ListGridFieldType.FLOAT);
+    fuelTypeItem.setName("fuelType");
+    //fuelTypeItem.setPickListWidth(310);
+    fuelTypeItem.setTitle("Fuel Type");
+    fuelTypeItem.setOptionDataSource(vehicleType_EPADS);
+    
+    final StaticTextItem fuelUnitItem = new StaticTextItem();
+    fuelUnitItem.setName("fuelUnit");
+    fuelUnitItem.setTitle("Fuel Unit");
+    //fuelUnitItem.setPickListWidth(250);
+    //fuelUnitItem.setOptionDataSource(vehicleType_EPADS);
 
-        DetailViewerField stationaryCombustionEmissionsField = new DetailViewerField("stationaryCombustionEmissions", "Stationary Combustion Emissions");
-        //stationaryCombustionEmissionsField.setType(DetailViewerField.FLOAT);
+    FloatItem fuelQuantityItem = new FloatItem();
+    fuelQuantityItem.setName("fuelQuantity");
+    fuelQuantityItem.setValidators(floatValidator);
+    fuelQuantityItem.setValidateOnExit(Boolean.TRUE);
+    fuelQuantityItem.setValidateOnChange(Boolean.TRUE);
+    fuelQuantityItem.setRequired(Boolean.TRUE);
 
-        DetailViewerField mobileCombustionEmissionsField = new DetailViewerField("mobileCombustionEmissions", "Mobile Source Emissions");
-        //mobileCombustionEmissionsField.setType(ListGridFieldType.FLOAT);
+    FloatItem milesTravelledItem = new FloatItem();
+    milesTravelledItem.setName("milesTravelled");
+    milesTravelledItem.setValidators(floatValidator);
+    milesTravelledItem.setValidateOnExit(Boolean.TRUE);
+    milesTravelledItem.setValidateOnChange(Boolean.TRUE);
+    milesTravelledItem.setRequired(Boolean.TRUE);
 
-        DetailViewerField refridgerationAirConditioningEmissionsField = new DetailViewerField("refridgerationAirConditioningEmissions", "Refridgeration And Ac Emissions");
-        //refridgerationAirConditioningEmissionsField.setType(ListGridFieldType.FLOAT);
+    RequiredIfValidator ifBiofuelPctRequiredValidator = new RequiredIfValidator();
+    ifBiofuelPctRequiredValidator.setExpression(new RequiredIfFunction() {
+        public boolean execute(FormItem formItem, Object value) {
+            String valueStr = (String) mobileCombustionForm.getItem("fuelType").getValue();
+            //String valueStr = (String) dataForm.getItem("fuelType").getValue();
+            if (valueStr !=  null){
+                if (valueStr.contains("Biodiesel")){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        }
+    });
+    ifBiofuelPctRequiredValidator.setErrorMessage("Please provide biofuel percent Value");
 
-        DetailViewerField fireSuppressantEmissionsField = new DetailViewerField("fireSuppressantEmissions", "Fire Suppressant Emissions");
-        //fireSuppressantEmissionsField.setType(ListGridFieldType.FLOAT);
+    FloatItem bioFuelPercentItem = new FloatItem();
+    bioFuelPercentItem.setName("bioFuelPercent");
+    bioFuelPercentItem.setValidators(floatValidator);
+    bioFuelPercentItem.setValidateOnExit(Boolean.TRUE);
+    bioFuelPercentItem.setValidateOnChange(Boolean.TRUE);
+    bioFuelPercentItem.setValidators(ifBiofuelPctRequiredValidator);
 
-        DetailViewerField wasteStreamCombustionEmissionsField = new DetailViewerField("wasteStreamCombustionEmissions", "WasteStream Combustion Emissions");
-        //wasteStreamCombustionEmissionsField.setType(ListGridFieldType.FLOAT);
+    RequiredIfValidator ifEthanolPctRequiredValidator = new RequiredIfValidator();
+    ifEthanolPctRequiredValidator.setExpression(new RequiredIfFunction() {
+        public boolean execute(FormItem formItem, Object value) {
+            String valueStr = (String) mobileCombustionForm.getItem("fuelType").getValue();
+            //String valueStr = (String) dataForm.getItem("fuelType").getValue();
+            if (valueStr !=  null){
+                if (valueStr.contains("Ethanol")){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        }
+    });
+    ifEthanolPctRequiredValidator.setErrorMessage("Please provide ethanol percent Value");
 
-        DetailViewerField  purchasedElectricityEmissionsField = new DetailViewerField("purchasedElectricityEmissions", "Purchased Electricity Emissions");
-        //purchasedElectricityEmissionsField.setType(ListGridFieldType.FLOAT);
+    FloatItem ethanolPercentItem = new FloatItem();
+    ethanolPercentItem.setName("ethanolPercent");
+    ethanolPercentItem.setValidators(floatValidator);
+    ethanolPercentItem.setValidateOnExit(Boolean.TRUE);
+    ethanolPercentItem.setValidateOnChange(Boolean.TRUE);
+    ethanolPercentItem.setValidators(ifEthanolPctRequiredValidator);
 
-        DetailViewerField purchasedSteamEmissionsField = new DetailViewerField("purchasedSteamEmissions", "Purchased Steam Emissions");
-       //purchasedSteamEmissionsField.setType(ListGridFieldType.FLOAT);
+    DateItem fuelUsedBeginDateItem = new DateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    fuelUsedBeginDateItem.setStartDate(currentInventoryBeginDateMin);
+    fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
+    fuelUsedBeginDateItem.setValidators(validateDateRange);
+    fuelUsedBeginDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedBeginDateItem.setValidateOnChange(Boolean.TRUE);
 
-        DetailViewerField employeeBusinessTravelByVehicleEmissionsField = new DetailViewerField("employeeBusinessTravelByVehicleEmissions", "Employee Business Travel By Vehicle Emissions");
-        //employeeBusinessTravelByVehicleEmissionsField.setType(ListGridFieldType.FLOAT);
+    DateItem fuelUsedEndDateItem = new DateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+    fuelUsedEndDateItem.setDateFormatter(DateDisplayFormat.TOSTRING);
+    fuelUsedEndDateItem.setStartDate(currentInventoryBeginDateMin);
+    fuelUsedEndDateItem.setEndDate(currentInventoryEndDateMax);
+    fuelUsedEndDateItem.setValidators(validateDateRange);
+    fuelUsedEndDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedEndDateItem.setValidateOnChange(Boolean.TRUE);
 
-        DetailViewerField employeeBusinessTravelByRailEmissionsField = new DetailViewerField("employeeBusinessTravelByRailEmissions", "Employee Business Travel By Rail Emissions");
-        //employeeBusinessTravelByRailEmissionsField.setType(ListGridFieldType.FLOAT);
+    /*
+    DateItem fuelUsedBeginDateItem = new DateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    fuelUsedBeginDateItem.setStartDate(currentInventoryBeginDateMin); //setValue(currentInventoryBeginDateMin);//
+    fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
+    fuelUsedBeginDateItem.setValidators(validateDateRange);
+    fuelUsedBeginDateItem.setValidateOnChange(Boolean.TRUE);
+    fuelUsedBeginDateItem.setRequired(Boolean.TRUE);
 
-        DetailViewerField employeeBusinessTravelByBusEmissionsField = new DetailViewerField("employeeBusinessTravelByBusEmissions", "Employee Business Travel By Bus Emissions");
-        //employeeBusinessTravelByBusEmissionsField.setType(ListGridFieldType.FLOAT);
+    DateItem fuelUsedEndDateItem = new DateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+    fuelUsedEndDateItem.setStartDate(currentInventoryBeginDateMin); //setValue(currentInventoryBeginDateMin);//
+    fuelUsedEndDateItem.setDefaultValue(currentInventoryEndDateMax);//setEndDate(currentInventoryEndDateMax);
+    fuelUsedEndDateItem.setValidators(validateDateRange);
+    fuelUsedEndDateItem.setValidateOnChange(Boolean.TRUE);
+    fuelUsedEndDateItem.setRequired(Boolean.TRUE);
+*/
+    //IntegerItem organizationId = new IntegerItem();
+    //organizationId.setName("organizationId");
 
-        DetailViewerField employeeBusinessTravelByAirEmissionsField = new DetailViewerField("employeeBusinessTravelByAirEmissions", "Employee Business Travel By Air Emissions");
-        //employeeBusinessTravelByAirEmissionsField.setType(ListGridFieldType.FLOAT);
+    mobileCombustionForm.setItems(fuelSourceDescriptionItem ,vehicleTypeItem, vehicleYearItem, fuelTypeItem, fuelQuantityItem, fuelUnitItem, milesTravelledItem, bioFuelPercentItem,ethanolPercentItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
 
-        DetailViewerField employeeCommutingByVehicleEmissionsField = new DetailViewerField("employeeCommutingByVehicleEmissions", "Employee Commuting By Vehicle Emissions");
-        //employeeCommutingByVehicleEmissionsField.setType(ListGridFieldType.FLOAT);
+    /*
+    //final List<FormItem> mobileCombustionFormItems = new ArrayList<FormItem>();
+    mobileCombustionFormItems.add(fuelSourceDescriptionItem);
+    mobileCombustionFormItems.add(vehicleTypeItem);
+    mobileCombustionFormItems.add(vehicleYearItem);
+    mobileCombustionFormItems.add(fuelTypeItem);
+    mobileCombustionFormItems.add(fuelQuantityItem);
+    mobileCombustionFormItems.add(fuelUnitItem);
+    mobileCombustionFormItems.add(milesTravelledItem);
+    mobileCombustionFormItems.add(bioFuelPercentItem);
+    mobileCombustionFormItems.add(ethanolPercentItem);
+    mobileCombustionFormItems.add(fuelUsedBeginDateItem);
+    mobileCombustionFormItems.add(fuelUsedEndDateItem);
+    */
 
-        DetailViewerField employeeCommutingByBusEmissionsField = new DetailViewerField("employeeCommutingByBusEmissions", "Employee Commuting By Bus Emissions");
-        //employeeCommutingByBusEmissionsField.setType(ListGridFieldType.FLOAT);
+    setIbLFormWindow("Please enter mobile combustion source information:", mobileCombustionForm,
+                      mobileCombustionFormWindow, mobileCombustionDataGrid );
 
-        DetailViewerField productTransportByVehicleEmissionsField = new DetailViewerField("productTransportByVehicleEmissions", "Product Transport By Vehicle Emissions");
-        //productTransportByVehicleEmissionsField.setType(ListGridFieldType.FLOAT);
-
-        DetailViewerField productTransportByHeavyDutyTrucksEmissionsField = new DetailViewerField("productTransportByHeavyDutyTrucksEmissions", "Product Transport By Heavy Duty Trucks Emissions");
-        //productTransportByHeavyDutyTrucksEmissionsField.setType(ListGridFieldType.FLOAT);
-
-        DetailViewerField productTransportByRailEmissionsField = new DetailViewerField("productTransportByRailEmissions", "Product Transport By Rail Emissions");
-        //productTransportByRailEmissionsField.setType(ListGridFieldType.FLOAT);
-
-        DetailViewerField productTransportByWaterAirEmissionsField = new DetailViewerField("productTransportByWaterAirEmissions", "Product Transport By Water/Air Emissions");
-        //productTransportByWaterAirEmissionsField.setType(ListGridFieldType.FLOAT);
-
-        DetailViewerField biomassStationaryCombustionEmissionsField = new DetailViewerField("biomassStationaryCombustionEmissions", "Biomass Stationary Combustion Emissions");
-        //biomassStationaryCombustionEmissionsField.setType(ListGridFieldType.FLOAT);
-
-        DetailViewerField biomassMobileCombustionEmissionsField = new DetailViewerField("biomassMobileCombustionEmissions", "Biomass Mobile Source Emissions");
-        //biomassMobileCombustionEmissionsField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField totalEmissionsField = new ListGridField("totalEmissions", "Total Emissions");
-        totalEmissionsField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField programTypeField = new ListGridField("programType", "Program Type");
-        programTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField emissionsBeginDateField = new ListGridField("emissionsBeginDate", "Emissions Begin Date");
-        emissionsBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField emissionsEndDateField = new ListGridField("emissionsEndDate", "Emissions End Date");
-        emissionsEndDateField.setType(ListGridFieldType.DATE);
 /*
-        emissionsSummaryDataGrid.setFields(organizationIdField2, programTypeField, emissionsBeginDateField, emissionsEndDateField, directEmissionsField,
-        					stationaryCombustionEmissionsField, mobileCombustionEmissionsField, refridgerationAirConditioningEmissionsField,
-        					fireSuppressantEmissionsField, wasteStreamCombustionEmissionsField, purchasedElectricityEmissionsField,
-                                                purchasedSteamEmissionsField, employeeBusinessTravelByVehicleEmissionsField,
-                                                employeeBusinessTravelByRailEmissionsField,employeeBusinessTravelByBusEmissionsField,
-                                                employeeBusinessTravelByAirEmissionsField,employeeCommutingByVehicleEmissionsField,
-                                                employeeCommutingByBusEmissionsField,productTransportByVehicleEmissionsField,
-                                                productTransportByHeavyDutyTrucksEmissionsField,productTransportByRailEmissionsField,
-                                                productTransportByWaterAirEmissionsField,
-                                                biomassStationaryCombustionEmissionsField, biomassMobileCombustionEmissionsField,
-                                                totalEmissionsField);
+    final IButton mobileCombustionCancelButton = new IButton();
+    final IButton mobileCombustionSaveButton = new IButton();
+
+    mobileCombustionSaveButton.setTitle("SAVE");
+    mobileCombustionSaveButton.setTooltip("Save this Mobile Combustion Source");
+    mobileCombustionSaveButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        if (mobileCombustionForm.validate()) {
+            Record mobileCombustionFormRecord = mobileCombustionForm.getValuesAsRecord();
+            Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
+            mobileCombustionFormRecord.setAttribute("organizationId", organizationIdValue);
+            mobileCombustionDataGrid.updateData(mobileCombustionFormRecord);
+            mobileCombustionForm.clearValues();
+            //mobileCombustionForm.markForRedraw();
+            mobileCombustionFormWindow.hide();
+        } else {
+            SC.say("Please provide proper information");
+        }
+      }
+    });
+
+    mobileCombustionCancelButton.setTitle("CANCEL");
+    mobileCombustionCancelButton.setTooltip("Cancel");
+    mobileCombustionCancelButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        mobileCombustionFormWindow.hide();
+      }
+    });
+
+    HLayout buttons = new HLayout(10);
+    buttons.setAlign(Alignment.CENTER);
+    buttons.addMember(mobileCombustionCancelButton);
+    buttons.addMember(mobileCombustionSaveButton);
+
+    VLayout dialog = new VLayout(10);
+    dialog.setPadding(10);
+    dialog.addMember(mobileCombustionForm);
+    dialog.addMember(buttons);
+    mobileCombustionFormWindow.setShowShadow(true);
+    //mobileCombustionFormWindow.setShowTitle(false);
+    mobileCombustionFormWindow.setIsModal(true);
+    mobileCombustionFormWindow.setPadding(20);
+    mobileCombustionFormWindow.setWidth(500);
+    mobileCombustionFormWindow.setHeight(425);
+    mobileCombustionFormWindow.setShowMinimizeButton(false);
+    mobileCombustionFormWindow.setShowCloseButton(true);
+    mobileCombustionFormWindow.setShowModalMask(true);
+    mobileCombustionFormWindow.centerInPage();
+    mobileCombustionFormWindow.setTitle("Please enter mobile combustion source information:");
+    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
+    //mobileCombustionFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
+    mobileCombustionFormWindow.addItem(dialog);
  *
  */
-        emissionsSummaryDataGrid.setFields(programTypeField, emissionsBeginDateField, emissionsEndDateField,totalEmissionsField);
-        //emissionsSummaryDataGrid.setOverflow(Overflow.VISIBLE);
-        //emissionsSummaryDataGrid.setAutoWidth();
+ }
+private void mobileCombustionTab_OLD() {
+        mobileCombustionLayout.setWidth100();
+        mobileCombustionLayout.setHeight100();
 
-        emissionsSummaryVLayout.addMember(emissionsSummaryDataGrid);
+        VLayout mobileCombustionTabLayout = new VLayout(15);
+        mobileCombustionTabLayout.setWidth100();
+        mobileCombustionTabLayout.setHeight100();
 
-        //emissionsSummaryDetailViewer.setFields(stationaryCombustionEmissionsField);
-        
-        emissionsSummaryDetailViewer.setFields(directEmissionsField,
-        					stationaryCombustionEmissionsField, mobileCombustionEmissionsField, refridgerationAirConditioningEmissionsField,
-        					fireSuppressantEmissionsField, wasteStreamCombustionEmissionsField, purchasedElectricityEmissionsField,
-                                                purchasedSteamEmissionsField, employeeBusinessTravelByVehicleEmissionsField,
-                                                employeeBusinessTravelByRailEmissionsField,employeeBusinessTravelByBusEmissionsField,
-                                                employeeBusinessTravelByAirEmissionsField,employeeCommutingByVehicleEmissionsField,
-                                                employeeCommutingByBusEmissionsField,productTransportByVehicleEmissionsField,
-                                                productTransportByHeavyDutyTrucksEmissionsField,productTransportByRailEmissionsField,
-                                                productTransportByWaterAirEmissionsField,
-                                                biomassStationaryCombustionEmissionsField, biomassMobileCombustionEmissionsField
-                                                );
+        Label mobileCombustionDataLabel = new Label("Current mobile combustion sources");
+        mobileCombustionDataLabel.setHeight(15);
+        mobileCombustionDataLabel.setWidth100();
+        mobileCombustionDataLabel.setAlign(Alignment.LEFT);
+        mobileCombustionDataLabel.setStyleName("labels");
 
-        //set the Width and height of emissionsSummaryLayout
-	//middleVLayout.addChild(emissionsSummaryLayout);
-        //emissionsSummaryLayout.setWidth100();
-        //emissionsSummaryLayout.setHeight(200);
+        //mobileCombustionTabLayout.addMember(mobileCombustionDataLabel);
+/*
+//--ListGrid setup
+        mobileCombustionDataGrid.setWidth100();
+        //mobileCombustionDataGrid.setHeight(200);
+        mobileCombustionDataGrid.setHeight100();
+        mobileCombustionDataGrid.setShowRecordComponents(true);
+        mobileCombustionDataGrid.setShowRecordComponentsByCell(true);
+        mobileCombustionDataGrid.setCanRemoveRecords(true);
+        //mobileCombustionDataGrid.setShowAllRecords(true);
+        mobileCombustionDataGrid.setAutoFetchData(Boolean.FALSE);
+        //mobileCombustionDataGrid.setCanEdit(Boolean.TRUE);
+        mobileCombustionDataGrid.setDataSource(mobileCombustionInfoDS);
+        mobileCombustionDataGrid.setCanHover(true);
+        mobileCombustionDataGrid.setShowHover(true);
+        mobileCombustionDataGrid.setShowHoverComponents(true);
+        //mobileCombustionDataGrid.setCanExpandRecords(true);
+        //mobileCombustionDataGrid.setExpansionMode(ExpansionMode.DETAILS);
+        mobileCombustionDataGrid.addRecordDoubleClickHandler(new RecordDoubleClickHandler() {
+            public void onRecordDoubleClick(RecordDoubleClickEvent event) {
+                mobileCombustionForm.editRecord(event.getRecord());
+                mobileCombustionFormWindow.show();
+            }
+        });
+*/
+        //mobileCombustionDataGrid.setS
+//--Only fetch data that is related to THE organization
+        //Record organizationRecord= organizationForm.getValuesAsRecord();
+        //mobileCombustionDataGrid.fetchRelatedData(organizationRecord,organizationDS);
 
-//--Chart example
-        /*
-        PieChart pie = new PieChart(createTable(), createOptions());
-        Widget panel = new Widget();
-        panel.add(pie);
-         *
-         */
+        //mobileCombustionDataGrid.fetchData();
 
-        emissionsSummaryDataGrid.addRecordClickHandler(new RecordClickHandler() {
-            public void onRecordClick(RecordClickEvent event) {
-                //emissionsSummaryDetailViewer.reset();
-                //--remove existing child from middleMiddleHLayout
-                
-                Canvas[] children2 = detailViewerVLayout.getChildren();
-                if (children2.length>0){
-                    for (int i=0; i < children2.length; i++){
-                        detailViewerVLayout.removeChild(children2[i]);
-                    }
-                }                
+//        ListGridField organizationNameField = new ListGridField("name", "Organization Name");
+//        organizationNameField.setType(ListGridFieldType.TEXT);
 
-                emissionsSummaryDetailViewer.viewSelectedData(emissionsSummaryDataGrid);
-                detailViewerVLayout.addMember(emissionsSummaryDetailViewerLabel);
-                detailViewerVLayout.addMember(emissionsSummaryDetailViewer);
-                middleBottomHLayout.addMember(detailViewerVLayout);
-                //middleBottomHLayout.addMember(panel);
-                middleBottomHLayout.show();
+        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
+        organizationIdField.setType(ListGridFieldType.INTEGER);
+        organizationIdField.setHidden(true);
 
+        ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField vehicleTypeField = new ListGridField("vehicleType", "Vehicle Type");
+        vehicleTypeField.setType(ListGridFieldType.TEXT);
+        vehicleTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
+
+        DetailViewerField vehicleYearField = new DetailViewerField("vehicleYear", "Vehicle Year");
+        //vehicleYearField.setType(ListGridFieldType.TEXT);
+
+        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
+        fuelTypeField.setType(ListGridFieldType.TEXT);
+        fuelTypeField.setWidth(FUEL_TYPE_FIELD_WIDTH);
+
+        ListGridField fuelQuantityField = new ListGridField("fuelQuantity", "Fuel Quantity");
+        fuelQuantityField.setType(ListGridFieldType.FLOAT);
+        fuelQuantityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+        fuelQuantityField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
             }
         });
 
-        final Tab emissionsSummaryTab = new Tab("Emissions Summary");
-        emissionsSummaryTab.setPane(emissionsSummaryVLayout);
+        ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
+        fuelUnitField.setType(ListGridFieldType.TEXT);
+        fuelUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
+
+        DetailViewerField milesTravelledField = new DetailViewerField("milesTravelled", "Miles Travelled");
+        //milesTravelledField.setType(ListGridFieldType.FLOAT);
+
+        milesTravelledField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+
+        DetailViewerField bioFuelPercentField = new DetailViewerField("bioFuelPercent", "Biofuel Percent");
+        //bioFuelPercentField.setType(ListGridFieldType.FLOAT);
+        bioFuelPercentField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+
+        DetailViewerField ethanolPercentField = new DetailViewerField("ethanolPercent", "Ethanol Percent");
+        //ethanolPercentField.setType(ListGridFieldType.FLOAT);
+        ethanolPercentField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
+        editButtonField.setAlign(Alignment.CENTER);
+        editButtonField.setWidth(EDIT_BUTTON_FIELD_WIDTH);
+
+        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
+        removeButtonField.setWidth(REMOVE_BUTTON_FIELD_WIDTH);
+
+        //removeButtonField.setWidth(100);
+        //mobileCombustionDataGrid.setFields(sourceDescriptionField, vehicleTypeField,vehicleYearField, organizationIdField, fuelTypeField, fuelQuantityField, fuelUnitField, milesTravelledField, bioFuelPercentField, ethanolPercentField,fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
+        mobileCombustionDataGrid.setFields(sourceDescriptionField, vehicleTypeField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField);
+        //mobileCombustionDataGrid.setFields(sourceDescriptionField, vehicleTypeField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField , removeButtonField);
+
+        //-Make a list of Fields to be be used in ListGrid for mobileCombustion
+/*
+        //List<ListGridField> mobileCombustionListGridFields = new ArrayList<ListGridField>();
+        mobileCombustionListGridFields.add(sourceDescriptionField);
+        mobileCombustionListGridFields.add(vehicleTypeField);
+        mobileCombustionListGridFields.add(fuelTypeField);
+        mobileCombustionListGridFields.add(fuelQuantityField);
+        mobileCombustionListGridFields.add(fuelUnitField);
+        mobileCombustionListGridFields.add(fuelUsedBeginDateField);
+        mobileCombustionListGridFields.add(fuelUsedEndDateField);
+        mobileCombustionListGridFields.add(editButtonField);
+        mobileCombustionListGridFields.add(removeButtonField);
+*/
+
+/*
+//--Getting rid of displaying detailViewer at the bottom
+        List<DetailViewerField> items = new ArrayList<DetailViewerField>();
+        items.add(vehicleYearField);
+        items.add(milesTravelledField);
+        items.add(bioFuelPercentField);
+        items.add(ethanolPercentField);
+
+        final DetailViewerField[] fitems = new DetailViewerField[items.size()];
+        items.toArray(fitems);
+
+        mobileCombustionDataGrid.addRecordClickHandler(new RecordClickHandler() {
+            public void onRecordClick(RecordClickEvent event) {
+                //emissionsSummaryDetailViewer.reset();
+                //--remove existing child from middleMiddleHLayout
+                displayDetailInfo(mobileCombustionDataGrid, fitems);
+
+            }
+        });
+*/
+        //detailViewerFieldList = {bioFuelPercentField, ethanolPercentField};
+
+        //mobileCombustionDataGrid.setOverflow(Overflow.VISIBLE);
+        //mobileCombustionDataGrid.setAutoWidth();
+
+        //mobileCombustionTabLayout.addMember(mobileCombustionDataGrid);
+
+        IButton newMobileCombustionButton = new IButton(ADD_NEW_SOURCE_TEXT);
+        newMobileCombustionButton.setWidth(ADD_BUTTON_WIDTH);
+        //newMobileCombustionButton.sets
+        newMobileCombustionButton.setIcon("addIcon.jpg");
+
+        newMobileCombustionButton.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent event) {
+                mobileCombustionForm.editNewRecord();
+                mobileCombustionFormWindow.show();
+            }
+        });
+
+        HLayout gridButtonLayout = new HLayout(10);
+        gridButtonLayout.addMember(mobileCombustionDataLabel);
+        gridButtonLayout.addMember(newMobileCombustionButton);
+//        gridButtonLayout.addMember(editMobileCombustionButton);
+//        gridButtonLayout.addMember(removeMobileCombustionButton);
+        mobileCombustionTabLayout.addMember(gridButtonLayout);
+        mobileCombustionTabLayout.addMember(mobileCombustionDataGrid);
+
+//--Defining Mobile Combustion tab
+        final Tab mobileCombustionTab = new Tab("Mobile Combustion");
+        mobileCombustionTab.setPane(mobileCombustionTabLayout);
 
 //---Adding Mobile Combustion tab to tabSet
-        tabSet.addTab(emissionsSummaryTab);
+        mobileCombustionTabSet.addTab(mobileCombustionTab);
+        mobileCombustionLayout.addMember(mobileCombustionTabSet);
 
+}
+private void mobileCombustionTab_2() {
+  /*
+        mobileCombustionLayout.setWidth100();
+        mobileCombustionLayout.setHeight100();
 
- }
+        VLayout mobileCombustionTabLayout = new VLayout(15);
+        mobileCombustionTabLayout.setWidth100();
+        mobileCombustionTabLayout.setHeight100();
 
-private void refridgerationAirConditioningTab() {
+        Label mobileCombustionDataLabel = new Label("Current mobile combustion sources");
+        mobileCombustionDataLabel.setHeight(15);
+        mobileCombustionDataLabel.setWidth100();
+        mobileCombustionDataLabel.setAlign(Alignment.LEFT);
+        mobileCombustionDataLabel.setStyleName("labels");
+*/
+        //mobileCombustionTabLayout.addMember(mobileCombustionDataLabel);
+/*
+//--ListGrid setup
+        mobileCombustionDataGrid.setWidth100();
+        //mobileCombustionDataGrid.setHeight(200);
+        mobileCombustionDataGrid.setHeight100();
+        mobileCombustionDataGrid.setShowRecordComponents(true);
+        mobileCombustionDataGrid.setShowRecordComponentsByCell(true);
+        //mobileCombustionDataGrid.setCanRemoveRecords(true);
+        //mobileCombustionDataGrid.setShowAllRecords(true);
+        mobileCombustionDataGrid.setAutoFetchData(Boolean.FALSE);
+        mobileCombustionDataGrid.setCanEdit(Boolean.TRUE);
+        mobileCombustionDataGrid.setDataSource(mobileCombustionInfoDS);
+        mobileCombustionDataGrid.setCanHover(true);
+        mobileCombustionDataGrid.setShowHover(true);
+        //mobileCombustionDataGrid.setShowHoverComponents(true);
+*/
+        //mobileCombustionDataGrid.setS
+//--Only fetch data that is related to THE organization
+        //Record organizationRecord= organizationForm.getValuesAsRecord();
+        //mobileCombustionDataGrid.fetchRelatedData(organizationRecord,organizationDS);
+
+        //mobileCombustionDataGrid.fetchData();
+
+//        ListGridField organizationNameField = new ListGridField("name", "Organization Name");
+//        organizationNameField.setType(ListGridFieldType.TEXT);
+
+        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
+        organizationIdField.setType(ListGridFieldType.INTEGER);
+        organizationIdField.setHidden(true);
+
+        ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField vehicleTypeField = new ListGridField("vehicleType", "Vehicle Type");
+        vehicleTypeField.setType(ListGridFieldType.TEXT);
+        vehicleTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
+
+        DetailViewerField vehicleYearField = new DetailViewerField("vehicleYear", "Vehicle Year");
+        //vehicleYearField.setType(ListGridFieldType.TEXT);
+
+        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
+        fuelTypeField.setType(ListGridFieldType.TEXT);
+        fuelTypeField.setWidth(FUEL_TYPE_FIELD_WIDTH);
+
+        ListGridField fuelQuantityField = new ListGridField("fuelQuantity", "Fuel Quantity");
+        fuelQuantityField.setType(ListGridFieldType.FLOAT);
+        fuelQuantityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+        fuelQuantityField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+
+        ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
+        fuelUnitField.setType(ListGridFieldType.TEXT);
+        fuelUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
+
+        DetailViewerField milesTravelledField = new DetailViewerField("milesTravelled", "Miles Travelled");
+        //milesTravelledField.setType(ListGridFieldType.FLOAT);
+
+        milesTravelledField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+
+        DetailViewerField bioFuelPercentField = new DetailViewerField("bioFuelPercent", "Biofuel Percent");
+        //bioFuelPercentField.setType(ListGridFieldType.FLOAT);
+        bioFuelPercentField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+
+        DetailViewerField ethanolPercentField = new DetailViewerField("ethanolPercent", "Ethanol Percent");
+        //ethanolPercentField.setType(ListGridFieldType.FLOAT);
+        ethanolPercentField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
+        editButtonField.setAlign(Alignment.CENTER);
+        editButtonField.setWidth(EDIT_BUTTON_FIELD_WIDTH);
+
+        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
+        removeButtonField.setWidth(REMOVE_BUTTON_FIELD_WIDTH);
+
+        //removeButtonField.setWidth(100);
+
+        //mobileCombustionDataGrid.setFields(sourceDescriptionField, vehicleTypeField,vehicleYearField, organizationIdField, fuelTypeField, fuelQuantityField, fuelUnitField, milesTravelledField, bioFuelPercentField, ethanolPercentField,fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
+        //mobileCombustionDataGrid.setFields(sourceDescriptionField, vehicleTypeField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
+
+        //-Make a list of Fields to be be used in ListGrid for mobileCombustion
+
+        //List<ListGridField> mobileCombustionListGridFields = new ArrayList<ListGridField>();
+        mobileCombustionListGridFields.add(sourceDescriptionField);
+        mobileCombustionListGridFields.add(vehicleTypeField);
+        mobileCombustionListGridFields.add(fuelTypeField);
+        mobileCombustionListGridFields.add(fuelQuantityField);
+        mobileCombustionListGridFields.add(fuelUnitField);
+        mobileCombustionListGridFields.add(fuelUsedBeginDateField);
+        mobileCombustionListGridFields.add(fuelUsedEndDateField);
+        //mobileCombustionListGridFields.add(editButtonField);
+        //mobileCombustionListGridFields.add(removeButtonField);
+
+/*
+//--Getting rid of displaying detailViewer at the bottom
+        List<DetailViewerField> items = new ArrayList<DetailViewerField>();
+        items.add(vehicleYearField);
+        items.add(milesTravelledField);
+        items.add(bioFuelPercentField);
+        items.add(ethanolPercentField);
+
+        final DetailViewerField[] fitems = new DetailViewerField[items.size()];
+        items.toArray(fitems);
+
+        mobileCombustionDataGrid.addRecordClickHandler(new RecordClickHandler() {
+            public void onRecordClick(RecordClickEvent event) {
+                //emissionsSummaryDetailViewer.reset();
+                //--remove existing child from middleMiddleHLayout
+                displayDetailInfo(mobileCombustionDataGrid, fitems);
+
+            }
+        });
+*/
+        //detailViewerFieldList = {bioFuelPercentField, ethanolPercentField};
+
+        //mobileCombustionDataGrid.setOverflow(Overflow.VISIBLE);
+        //mobileCombustionDataGrid.setAutoWidth();
+
+        //mobileCombustionTabLayout.addMember(mobileCombustionDataGrid);
+
+/*
+        IButton newMobileCombustionButton = new IButton(ADD_NEW_SOURCE_TEXT);
+        newMobileCombustionButton.setWidth(ADD_BUTTON_WIDTH);
+        //newMobileCombustionButton.sets
+        newMobileCombustionButton.setIcon("addIcon.jpg");
+
+        newMobileCombustionButton.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent event) {
+                mobileCombustionForm.editNewRecord();
+                mobileCombustionFormWindow.show();
+            }
+        });
+
+        HLayout gridButtonLayout = new HLayout(10);
+        gridButtonLayout.addMember(mobileCombustionDataLabel);
+        gridButtonLayout.addMember(newMobileCombustionButton);
+//        gridButtonLayout.addMember(editMobileCombustionButton);
+//        gridButtonLayout.addMember(removeMobileCombustionButton);
+        mobileCombustionTabLayout.addMember(gridButtonLayout);
+        mobileCombustionTabLayout.addMember(mobileCombustionDataGrid);
+
+//--Defining Mobile Combustion tab
+        final Tab mobileCombustionTab = new Tab("Mobile Combustion");
+        mobileCombustionTab.setPane(mobileCombustionTabLayout);
+
+//---Adding Mobile Combustion tab to tabSet
+        mobileCombustionTabSet.addTab(mobileCombustionTab);
+        mobileCombustionLayout.addMember(mobileCombustionTabSet);
+*/
+
+}
+
+private void initStationaryCombustionEditForm_2() {
+/*
+    stationaryCombustionForm.setCellPadding(5);
+    stationaryCombustionForm.setWidth("100%");
+ *
+ */
+    //stationaryCombustionForm.setTitle("Please enter stationary combustion Source information:");
+
+//-- setValidators for the forms for common types.
+    //initializeValidators();
+
+//-- Form fields  -------------------------------------------------------------------
+    /*
+    TextItem fuelSourceDescription = new TextItem("fuelSourceDescription");
+    fuelSourceDescription.setTitle("Fuel Source Description");
+    fuelSourceDescription.setSelectOnFocus(true);
+    fuelSourceDescription.setWrapTitle(false);
+    fuelSourceDescription.setDefaultValue("[Enter Source Description]");
+    fuelSourceDescription.setRequired(Boolean.TRUE);
+    //fuelSourceDescription
+    */
+
+    FuelSourceDescriptionItem fuelSourceDescriptionItem = new FuelSourceDescriptionItem();
+    fuelSourceDescriptionItem.setName("fuelSourceDescription");
+    final SelectItem fuelTypeItem = new SelectItem();
+    fuelTypeItem.setName("fuelType");
+    //fuelTypeItem.setPickListWidth(310);
+    fuelTypeItem.setTitle("Fuel Type");
+    fuelTypeItem.setOptionDataSource(eF_StationaryCombustion_EPADS);
+    fuelTypeItem.setRequired(Boolean.TRUE);
+
+    fuelTypeItem.addChangedHandler(new ChangedHandler() {
+        public void onChanged(ChangedEvent event) {
+            //stationaryCombustionForm.clearValue("fuelUnit");
+            Record selectedFuelTypeRecord = fuelTypeItem.getSelectedRecord();
+            dataForm.setValue("fuelUnit", selectedFuelTypeRecord.getAttributeAsString("fuelUnit"));
+        }
+    });
+
+    final StaticTextItem fuelUnitItem = new StaticTextItem("fuelUnit");
+/*
+    final SelectItem fuelUnitItem = new SelectItem() {
+        @Override
+        protected Criteria getPickListFilterCriteria() {
+            String fuelType = (String) fuelTypeItem.getValue();
+            Criteria criteria = new Criteria("fuelType", fuelType);
+            return criteria;
+        }
+    };
+  */
+
+    //fuelUnitItem.setName("fuelUnit");
+    fuelUnitItem.setTitle("Fuel Unit");
+    //fuelUnitItem.setPickListWidth(250);
+    //fuelUnitItem.setOptionDataSource(eF_StationaryCombustion_EPADS);
+
+    //TextItem testTextItem = new TextItem("fuelUnit2");
+///*
+
+ //*/
+
+    /*
+    FloatItem fuelQuantityItem = new FloatItem();
+    fuelQuantityItem.setName("fuelQuantity");
+    fuelQuantityItem.setValidators(floatValidator);
+    fuelQuantityItem.setValidateOnExit(Boolean.TRUE);
+    fuelQuantityItem.setValidateOnChange(Boolean.TRUE);
+    fuelQuantityItem.setRequired(Boolean.TRUE);
+    */
+
+    FuelQuantityItem fuelQuantityItem = new FuelQuantityItem();
+
+    DateItem fuelUsedBeginDateItem = new DateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    fuelUsedBeginDateItem.setWidth("*");
+    //fuelUsedBeginDateItem.setStartDate(currentInventoryBeginDateMin);
+    //fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
+    //fuelUsedBeginDateItem.setAttribute("dateFormatter", displayDateFormatter);
+    fuelUsedBeginDateItem.setValidators(validateDateRange);
+
+    fuelUsedBeginDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedBeginDateItem.setValidateOnChange(Boolean.TRUE);
+    fuelUsedBeginDateItem.setRequired(Boolean.TRUE);
+    //fuelUsedBeginDateItem.setUseTextField(Boolean.TRUE);
+    //fuelUsedBeginDateItem.setValue(currentInventoryBeginDateMin);
+    //fuelUsedBeginDateItem.setDefaultValue(currentInventoryBeginDateMin);
+
+    /*
+    FuelUsedDateItem fuelUsedBeginDateItem = new FuelUsedDateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    */
+
+    DateItem fuelUsedEndDateItem = new DateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+    fuelUsedEndDateItem.setWidth("*");
+    //fuelUsedEndDateItem.setStartDate(currentInventoryBeginDateMin);
+    //fuelUsedEndDateItem.setEndDate(currentInventoryEndDateMax);
+    //fuelUsedEndDateItem.setAttribute("dateFormatter", displayDateFormatter);
+    fuelUsedEndDateItem.setValidators(validateDateRange);
+    //fuelUsedEndDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedEndDateItem.setValidateOnChange(Boolean.TRUE);
+    fuelUsedEndDateItem.setRequired(Boolean.TRUE);
+    //fuelUsedEndDateItem.setValue(currentInventoryEndDateMax);
+
+/*
+    FuelUsedDateItem fuelUsedEndDateItem = new FuelUsedDateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+*/
+    //SC.say("currentInventoryEndDateMax : "+currentInventoryEndDateMax);
+    //Record organizationSelectFormRecord = UserOrganizationHeader.organizationSelectForm.getValuesAsRecord();
+    //Integer currentOrganizationId = organizationSelectFormRecord.getAttributeAsInt("id");
+
+    //IntegerItem organizationId = new IntegerItem();
+    //organizationId.setName("organizationId");
+    //SC.say("currentOrganizationId " + currentOrganizationId);
+    //organizationId.setValue(currentOrganizationId);
+
+//    organizationId.setValue(currentOrganizationId);
+//    Integer currentOrganizationId = (Integer)organizationForm.getItem("id").getValue();
+
+    //stationaryCombustionForm.setItems(fuelSourceDescriptionItem, fuelTypeItem, fuelQuantityItem, fuelUnitItem, fuelUsedBeginDateItem, fuelUsedEndDateItem);
+
+    //final List<FormItem> stationaryCombustionFormItems = new ArrayList<FormItem>();
+    stationaryCombustionFormItems.add(fuelSourceDescriptionItem);
+    stationaryCombustionFormItems.add(fuelTypeItem);
+    stationaryCombustionFormItems.add(fuelQuantityItem);
+    stationaryCombustionFormItems.add(fuelUnitItem);
+    stationaryCombustionFormItems.add(fuelUsedBeginDateItem);
+    stationaryCombustionFormItems.add(fuelUsedEndDateItem);
+
+/*
+    HashMap formDefaultValue = new HashMap();
+    formDefaultValue.put("fuelUsedBeginDate", currentInventoryBeginDateMin);
+    stationaryCombustionForm.setValues(formDefaultValue);
+*/
+/*
+    final IButton stationaryCombustionCancelButton = new IButton();
+    final IButton stationaryCombustionSaveButton = new IButton();
+
+    stationaryCombustionSaveButton.setTitle("SAVE");
+    stationaryCombustionSaveButton.setTooltip("Save this Stationary Combustion Source");
+    stationaryCombustionSaveButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        if ((!stationaryCombustionForm.getErrors().isEmpty()) || !stationaryCombustionForm.validate()){
+            SC.say("Please clear errors before submitting this information!");
+        }
+        else {
+            Record stationaryCombustionFormRecord = stationaryCombustionForm.getValuesAsRecord();
+            Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
+            //String organizationNameValue = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
+            stationaryCombustionFormRecord.setAttribute("organizationId", organizationIdValue);
+            stationaryCombustionDataGrid.updateData(stationaryCombustionFormRecord);
+            //stationaryCombustionForm.clearValues();
+            stationaryCombustionForm.markForRedraw();
+            stationaryCombustionFormWindow.hide();
+        }
+      }
+    });
+
+    stationaryCombustionCancelButton.setTitle("CANCEL");
+    stationaryCombustionCancelButton.setTooltip("Cancel");
+    stationaryCombustionCancelButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        stationaryCombustionForm.clearValues();
+        stationaryCombustionFormWindow.hide();
+      }
+    });
+
+    HLayout buttons = new HLayout(10);
+    buttons.setAlign(Alignment.CENTER);
+    buttons.addMember(stationaryCombustionCancelButton);
+    buttons.addMember(stationaryCombustionSaveButton);
+
+    VLayout dialog = new VLayout(10);
+    dialog.setPadding(10);
+    dialog.addMember(stationaryCombustionForm);
+    dialog.addMember(buttons);
+    stationaryCombustionFormWindow.setShowShadow(true);
+    //stationaryCombustionFormWindow.setShowTitle(false);
+    stationaryCombustionFormWindow.setIsModal(true);
+    stationaryCombustionFormWindow.setPadding(20);
+    stationaryCombustionFormWindow.setWidth(500);
+    stationaryCombustionFormWindow.setHeight(260);
+    stationaryCombustionFormWindow.setShowMinimizeButton(false);
+    stationaryCombustionFormWindow.setShowCloseButton(true);
+    stationaryCombustionFormWindow.setShowModalMask(true);
+    stationaryCombustionFormWindow.centerInPage();
+    stationaryCombustionFormWindow.setTitle("Please enter stationary combustion source information:");
+    //stationaryCombustionFormWindow.setStyleName("labels");
+    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
+    //stationaryCombustionFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
+    stationaryCombustionFormWindow.addItem(dialog);
+ *
+ */
+}
+private void stationaryCombustionTab_OLD() {
+        stationaryCombustionLayout.setWidth100();
+        stationaryCombustionLayout.setHeight100();
+
+        VLayout stationaryCombustionTabLayout = new VLayout(15);
+
+        stationaryCombustionTabLayout.setWidth100();
+        stationaryCombustionTabLayout.setHeight100();
+
+        Label stationaryCombustionDataLabel = new Label("Current stationary combustion sources");
+        stationaryCombustionDataLabel.setHeight(15);
+        stationaryCombustionDataLabel.setWidth100();
+        stationaryCombustionDataLabel.setAlign(Alignment.LEFT);
+        stationaryCombustionDataLabel.setStyleName("labels");
+
+        //stationaryCombustionTabLayout.addMember(stationaryCombustionDataLabel);
+
+       /*
+//--ListGrid setup
+        stationaryCombustionDataGrid.setWidth100();
+        //stationaryCombustionDataGrid.setHeight(200);
+        stationaryCombustionDataGrid.setHeight100();
+        stationaryCombustionDataGrid.setShowRecordComponents(true);
+        stationaryCombustionDataGrid.setShowRecordComponentsByCell(true);
+        //stationaryCombustionDataGrid.setCanRemoveRecords(true);
+        //stationaryCombustionDataGrid.setShowAllRecords(true);
+        stationaryCombustionDataGrid.setAutoFetchData(Boolean.FALSE);
+        stationaryCombustionDataGrid.setDataSource(stationaryCombustionInfoDS);
+        //stationaryCombustionDataGrid.setHeaderBackgroundColor("#4096EE");
+*/
+        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
+        organizationIdField.setType(ListGridFieldType.INTEGER);
+        organizationIdField.setHidden(true);
+
+        ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
+        fuelTypeField.setType(ListGridFieldType.TEXT);
+        fuelTypeField.setWidth(FUEL_TYPE_FIELD_WIDTH);
+
+        FloatListGridField fuelQuantityField = new FloatListGridField("fuelQuantity", "Fuel Quantity");
+        //fuelQuantityField.setType(ListGridFieldType.FLOAT);
+        fuelQuantityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        /*
+        fuelQuantityField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+        */
+
+        ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
+        fuelUnitField.setType(ListGridFieldType.TEXT);
+        fuelUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+        //fuelUsedBeginDateField.setAttribute("dateFormatter", displayDateFormatter);
+
+        //fuelUsedBeginDateField.setAlign(Alignment.LEFT);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+        //fuelUsedEndDateField.setAlign(Alignment.LEFT);
+        //fuelUsedEndDateField.setAttribute("dateFormatter", displayDateFormatter);
+
+        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
+        //editButtonField.setAlign(Alignment.CENTER);
+        editButtonField.setWidth(EDIT_BUTTON_FIELD_WIDTH);
+
+        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
+        removeButtonField.setWidth(REMOVE_BUTTON_FIELD_WIDTH);
+        //removeButtonField.setWidth(100);
+
+        //stationaryCombustionDataGrid.setFields(sourceDescriptionField, organizationIdField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField,editButtonField, removeButtonField);
+        stationaryCombustionDataGrid.setFields(sourceDescriptionField, organizationIdField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField);
+
+        //stationaryCombustionTabLayout.addMember(stationaryCombustionDataGrid);
+
+        IButton newStationaryCombustionButton = new IButton(ADD_NEW_SOURCE_TEXT);
+        newStationaryCombustionButton.setWidth(ADD_BUTTON_WIDTH);
+        newStationaryCombustionButton.setIcon(ADD_ICON_IMAGE);
+
+        newStationaryCombustionButton.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
+                stationaryCombustionForm.editNewRecord();
+                stationaryCombustionForm.setValues(getInitialValues());
+                stationaryCombustionFormWindow.show();
+            }
+        });
+
+        HLayout gridButtonLayout = new HLayout(10);
+        gridButtonLayout.addMember(stationaryCombustionDataLabel);
+        gridButtonLayout.addMember(newStationaryCombustionButton);
+//        gridButtonLayout.addMember(editStationaryCombustionButton);
+//        gridButtonLayout.addMember(removeStationaryCombustionButton);
+        stationaryCombustionTabLayout.addMember(gridButtonLayout);
+        stationaryCombustionTabLayout.addMember(stationaryCombustionDataGrid);
+
+//--Initialize stuff for Emissions Summary
+
+// For now commented below just to see how dynamic content management will work for one module at a time display.
+//--Defining Stationary Combustion tab
+        final Tab stationaryCombustionTab = new Tab("Stationary Combustion");
+        stationaryCombustionTab.setPane(stationaryCombustionTabLayout);
+
+//---Adding Stationary Combustion tab to topTab
+        stationaryCombustionTabSet.addTab(stationaryCombustionTab);
+        stationaryCombustionLayout.addMember(stationaryCombustionTabSet);
+
+}
+private void initStationaryCombustionEditForm_OLD() {
+
+    stationaryCombustionForm.setCellPadding(5);
+    stationaryCombustionForm.setWidth("100%");
+    //stationaryCombustionForm.setTitle("Please enter stationary combustion Source information:");
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+//-- Form fields  -------------------------------------------------------------------
+    /*
+    TextItem fuelSourceDescription = new TextItem("fuelSourceDescription");
+    fuelSourceDescription.setTitle("Fuel Source Description");
+    fuelSourceDescription.setSelectOnFocus(true);
+    fuelSourceDescription.setWrapTitle(false);
+    fuelSourceDescription.setDefaultValue("[Enter Source Description]");
+    fuelSourceDescription.setRequired(Boolean.TRUE);
+    //fuelSourceDescription
+    */
+
+    FuelSourceDescriptionItem fuelSourceDescription = new FuelSourceDescriptionItem();
+    fuelSourceDescription.setName("fuelSourceDescription");
+    final SelectItem fuelTypeItem = new SelectItem();
+    fuelTypeItem.setName("fuelType");
+    //fuelTypeItem.setPickListWidth(310);
+    fuelTypeItem.setTitle("Fuel Type");
+    fuelTypeItem.setOptionDataSource(eF_StationaryCombustion_EPADS);
+    fuelTypeItem.setRequired(Boolean.TRUE);
+
+    fuelTypeItem.addChangedHandler(new ChangedHandler() {
+        public void onChanged(ChangedEvent event) {
+            //stationaryCombustionForm.clearValue("fuelUnit");
+            Record selectedFuelTypeRecord = fuelTypeItem.getSelectedRecord();
+            stationaryCombustionForm.setValue("fuelUnit", selectedFuelTypeRecord.getAttributeAsString("fuelUnit"));
+        }
+    });
+
+    final StaticTextItem fuelUnitItem = new StaticTextItem("fuelUnit");
+
+    /*
+    final SelectItem fuelUnitItem = new SelectItem() {
+        @Override
+        protected Criteria getPickListFilterCriteria() {
+            String fuelType = (String) fuelTypeItem.getValue();
+            Criteria criteria = new Criteria("fuelType", fuelType);
+            return criteria;
+        }
+    };
+    */
+
+    //fuelUnitItem.setName("fuelUnit");
+    fuelUnitItem.setTitle("Fuel Unit");
+    //fuelUnitItem.setPickListWidth(250);
+    //fuelUnitItem.setOptionDataSource(eF_StationaryCombustion_EPADS);
+
+    //TextItem testTextItem = new TextItem("fuelUnit2");
+///*
+
+ //*/
+
+    /*
+    FloatItem fuelQuantityItem = new FloatItem();
+    fuelQuantityItem.setName("fuelQuantity");
+    fuelQuantityItem.setValidators(floatValidator);
+    fuelQuantityItem.setValidateOnExit(Boolean.TRUE);
+    fuelQuantityItem.setValidateOnChange(Boolean.TRUE);
+    fuelQuantityItem.setRequired(Boolean.TRUE);
+    */
+
+    FuelQuantityItem fuelQuantityItem = new FuelQuantityItem();
+
+/*
+    RelativeDateItem fuelUsedBeginDateItem = new RelativeDateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    fuelUsedBeginDateItem.setValue(currentInventoryBeginDateMin);
+    fuelUsedBeginDateItem.setOperator(OperatorId.GREATER_OR_EQUAL);
+    fuelUsedBeginDateItem.setDateFormatter(DateDisplayFormat.valueOf("MMM d, yyyy"));
+
+    RelativeDateItem fuelUsedEndDateItem = new RelativeDateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+    fuelUsedEndDateItem.setValue(currentInventoryEndDateMax);
+    fuelUsedEndDateItem.setOperator(OperatorId.LESS_OR_EQUAL);
+    fuelUsedEndDateItem.setDateFormatter(DateDisplayFormat.valueOf("MMM d, yyyy"));
+*/
+
+    DateItem fuelUsedBeginDateItem = new DateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    fuelUsedBeginDateItem.setStartDate(currentInventoryBeginDateMin);
+    fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
+    //fuelUsedBeginDateItem.setCriteriaField("emissionPeriodDate");
+    //fuelUsedBeginDateItem.setOperator(OperatorId.GREATER_OR_EQUAL);
+    fuelUsedBeginDateItem.setValidators(validateDateRange);
+    fuelUsedBeginDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedBeginDateItem.setValidateOnChange(Boolean.TRUE);
+
+    DateItem fuelUsedEndDateItem = new DateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+    fuelUsedEndDateItem.setStartDate(currentInventoryBeginDateMin);
+    fuelUsedEndDateItem.setEndDate(currentInventoryEndDateMax);
+    //fuelUsedEndDateItem.setCriteriaField("emissionPeriodDate");
+    //fuelUsedEndDateItem.setOperator(OperatorId.LESS_OR_EQUAL);
+    fuelUsedEndDateItem.setValidators(validateDateRange);
+    fuelUsedEndDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedEndDateItem.setValidateOnChange(Boolean.TRUE);
+
+/*
+    DateItem fuelUsedBeginDateItem = new DateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    fuelUsedBeginDateItem.setWidth("*");
+    fuelUsedBeginDateItem.setStartDate(currentInventoryBeginDateMin);
+    fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
+    //fuelUsedBeginDateItem.setAttribute("dateFormatter", displayDateFormatter);
+    fuelUsedBeginDateItem.setValidators(validateDateRange);
+
+    fuelUsedBeginDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedBeginDateItem.setValidateOnChange(Boolean.TRUE);
+    fuelUsedBeginDateItem.setRequired(Boolean.TRUE);
+    //fuelUsedBeginDateItem.setUseTextField(Boolean.TRUE);
+    //fuelUsedBeginDateItem.setValue(currentInventoryBeginDateMin);
+    //fuelUsedBeginDateItem.setDefaultValue(currentInventoryBeginDateMin);
+*/
+    /*
+    FuelUsedDateItem fuelUsedBeginDateItem = new FuelUsedDateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    */
+    /*
+    DateItem fuelUsedEndDateItem = new DateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+    fuelUsedEndDateItem.setWidth("*");
+    //fuelUsedEndDateItem.setStartDate(currentInventoryBeginDateMin);
+    //fuelUsedEndDateItem.setEndDate(currentInventoryEndDateMax);
+    //fuelUsedEndDateItem.setAttribute("dateFormatter", displayDateFormatter);
+    fuelUsedEndDateItem.setValidators(validateDateRange);
+    //fuelUsedEndDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedEndDateItem.setValidateOnChange(Boolean.TRUE);
+    fuelUsedEndDateItem.setRequired(Boolean.TRUE);
+    //fuelUsedEndDateItem.setValue(currentInventoryEndDateMax);
+    */
+/*
+    FuelUsedDateItem fuelUsedEndDateItem = new FuelUsedDateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+*/
+    //SC.say("currentInventoryEndDateMax : "+currentInventoryEndDateMax);
+    //Record organizationSelectFormRecord = UserOrganizationHeader.organizationSelectForm.getValuesAsRecord();
+    //Integer currentOrganizationId = organizationSelectFormRecord.getAttributeAsInt("id");
+
+    //IntegerItem organizationId = new IntegerItem();
+    //organizationId.setName("organizationId");
+    //SC.say("currentOrganizationId " + currentOrganizationId);
+    //organizationId.setValue(currentOrganizationId);
+
+//    organizationId.setValue(currentOrganizationId);
+//    Integer currentOrganizationId = (Integer)organizationForm.getItem("id").getValue();
+
+    stationaryCombustionForm.setItems(fuelSourceDescription, fuelTypeItem, fuelQuantityItem, fuelUnitItem, fuelUsedBeginDateItem, fuelUsedEndDateItem);
+/*
+    HashMap formDefaultValue = new HashMap();
+    formDefaultValue.put("fuelUsedBeginDate", currentInventoryBeginDateMin);
+    stationaryCombustionForm.setValues(formDefaultValue);
+*/
+    final IButton stationaryCombustionCancelButton = new IButton();
+    final IButton stationaryCombustionSaveButton = new IButton();
+
+    stationaryCombustionSaveButton.setTitle("SAVE");
+    stationaryCombustionSaveButton.setTooltip("Save this Stationary Combustion Source");
+    stationaryCombustionSaveButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        if ((!stationaryCombustionForm.getErrors().isEmpty()) || !stationaryCombustionForm.validate()){
+            SC.say("Please clear errors before submitting this information!");
+        }
+        else {
+            Record stationaryCombustionFormRecord = stationaryCombustionForm.getValuesAsRecord();
+            Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
+            //String organizationNameValue = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
+            stationaryCombustionFormRecord.setAttribute("organizationId", organizationIdValue);
+            stationaryCombustionDataGrid.updateData(stationaryCombustionFormRecord);
+            //stationaryCombustionForm.clearValues();
+            stationaryCombustionForm.markForRedraw();
+            stationaryCombustionFormWindow.hide();
+        }
+      }
+    });
+
+    stationaryCombustionCancelButton.setTitle("CANCEL");
+    stationaryCombustionCancelButton.setTooltip("Cancel");
+    stationaryCombustionCancelButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent clickEvent) {
+        stationaryCombustionForm.clearValues();
+        stationaryCombustionFormWindow.hide();
+      }
+    });
+
+    HLayout buttons = new HLayout(10);
+    buttons.setAlign(Alignment.CENTER);
+    buttons.addMember(stationaryCombustionCancelButton);
+    buttons.addMember(stationaryCombustionSaveButton);
+
+    VLayout dialog = new VLayout(10);
+    dialog.setPadding(10);
+    dialog.addMember(stationaryCombustionForm);
+    dialog.addMember(buttons);
+    stationaryCombustionFormWindow.setShowShadow(true);
+    //stationaryCombustionFormWindow.setShowTitle(false);
+    stationaryCombustionFormWindow.setIsModal(true);
+    stationaryCombustionFormWindow.setPadding(20);
+    stationaryCombustionFormWindow.setWidth(500);
+    stationaryCombustionFormWindow.setHeight(260);
+    stationaryCombustionFormWindow.setShowMinimizeButton(false);
+    stationaryCombustionFormWindow.setShowCloseButton(true);
+    stationaryCombustionFormWindow.setShowModalMask(true);
+    stationaryCombustionFormWindow.centerInPage();
+    stationaryCombustionFormWindow.setTitle("Please enter stationary combustion source information:");
+    //stationaryCombustionFormWindow.setStyleName("labels");
+    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
+    //stationaryCombustionFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
+    stationaryCombustionFormWindow.addItem(dialog);
+}
+private void stationaryCombustionTab_2() {
+    /*
+        stationaryCombustionLayout.setWidth100();
+        stationaryCombustionLayout.setHeight100();
+
+        VLayout stationaryCombustionTabLayout = new VLayout(15);
+
+        stationaryCombustionTabLayout.setWidth100();
+        stationaryCombustionTabLayout.setHeight100();
+
+        Label stationaryCombustionDataLabel = new Label("Current stationary combustion sources");
+        stationaryCombustionDataLabel.setHeight(15);
+        stationaryCombustionDataLabel.setWidth100();
+        stationaryCombustionDataLabel.setAlign(Alignment.LEFT);
+        stationaryCombustionDataLabel.setStyleName("labels");
+*/
+        //stationaryCombustionTabLayout.addMember(stationaryCombustionDataLabel);
+/*
+//--ListGrid setup
+        stationaryCombustionDataGrid.setWidth100();
+        //stationaryCombustionDataGrid.setHeight(200);
+        stationaryCombustionDataGrid.setHeight100();
+        stationaryCombustionDataGrid.setShowRecordComponents(true);
+        stationaryCombustionDataGrid.setShowRecordComponentsByCell(true);
+        //stationaryCombustionDataGrid.setCanRemoveRecords(true);
+        //stationaryCombustionDataGrid.setShowAllRecords(true);
+        stationaryCombustionDataGrid.setAutoFetchData(Boolean.FALSE);
+        stationaryCombustionDataGrid.setDataSource(stationaryCombustionInfoDS);
+        //stationaryCombustionDataGrid.setHeaderBackgroundColor("#4096EE");
+*/
+        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
+        organizationIdField.setType(ListGridFieldType.INTEGER);
+        organizationIdField.setHidden(true);
+
+        ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
+        fuelTypeField.setType(ListGridFieldType.TEXT);
+        fuelTypeField.setWidth(FUEL_TYPE_FIELD_WIDTH);
+
+        FloatListGridField fuelQuantityField = new FloatListGridField("fuelQuantity", "Fuel Quantity");
+        //fuelQuantityField.setType(ListGridFieldType.FLOAT);
+        fuelQuantityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        
+        fuelQuantityField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+        
+
+        ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
+        fuelUnitField.setType(ListGridFieldType.TEXT);
+        fuelUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+        //fuelUsedBeginDateField.setAttribute("dateFormatter", displayDateFormatter);
+
+        //fuelUsedBeginDateField.setAlign(Alignment.LEFT);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+        //fuelUsedEndDateField.setAlign(Alignment.LEFT);
+        //fuelUsedEndDateField.setAttribute("dateFormatter", displayDateFormatter);
+
+        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
+        //editButtonField.setAlign(Alignment.CENTER);
+        editButtonField.setWidth(EDIT_BUTTON_FIELD_WIDTH);
+
+        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
+        removeButtonField.setWidth(REMOVE_BUTTON_FIELD_WIDTH);
+        //removeButtonField.setWidth(100);
+
+        //stationaryCombustionDataGrid.setFields(sourceDescriptionField, organizationIdField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField,editButtonField, removeButtonField);
+
+        //stationaryCombustionTabLayout.addMember(stationaryCombustionDataGrid);
+        stationaryCombustionListGridFields.add(sourceDescriptionField);
+        stationaryCombustionListGridFields.add(organizationIdField);
+        stationaryCombustionListGridFields.add(fuelTypeField);
+        stationaryCombustionListGridFields.add(fuelQuantityField);
+        stationaryCombustionListGridFields.add(fuelUnitField);
+        stationaryCombustionListGridFields.add(fuelUsedBeginDateField);
+        stationaryCombustionListGridFields.add(fuelUsedEndDateField);
+        //stationaryCombustionListGridFields.add(editButtonField);
+        //stationaryCombustionListGridFields.add(removeButtonField);
+/*
+        IButton newStationaryCombustionButton = new IButton(ADD_NEW_SOURCE_TEXT);
+        newStationaryCombustionButton.setWidth(ADD_BUTTON_WIDTH);
+        newStationaryCombustionButton.setIcon(ADD_ICON_IMAGE);
+
+        newStationaryCombustionButton.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
+                stationaryCombustionForm.editNewRecord();
+                stationaryCombustionForm.setValues(getInitialValues());
+                stationaryCombustionFormWindow.show();
+            }
+        });
+
+        HLayout gridButtonLayout = new HLayout(10);
+        gridButtonLayout.addMember(stationaryCombustionDataLabel);
+        gridButtonLayout.addMember(newStationaryCombustionButton);
+//        gridButtonLayout.addMember(editStationaryCombustionButton);
+//        gridButtonLayout.addMember(removeStationaryCombustionButton);
+        stationaryCombustionTabLayout.addMember(gridButtonLayout);
+        stationaryCombustionTabLayout.addMember(stationaryCombustionDataGrid);
+
+//--Initialize stuff for Emissions Summary
+
+// For now commented below just to see how dynamic content management will work for one module at a time display.
+//--Defining Stationary Combustion tab
+        final Tab stationaryCombustionTab = new Tab("Stationary Combustion");
+        stationaryCombustionTab.setPane(stationaryCombustionTabLayout);
+
+//---Adding Stationary Combustion tab to topTab
+        stationaryCombustionTabSet.addTab(stationaryCombustionTab);
+        stationaryCombustionLayout.addMember(stationaryCombustionTabSet);
+*/
+}
+
+private void refridgerationAirConditioningTab_OLD() {
 
         VLayout refridgerationAirConditioningLayout_1 = new VLayout(15);
         VLayout refridgerationAirConditioningLayout_2 = new VLayout(15);
@@ -2925,69 +5417,77 @@ private void refridgerationAirConditioningTab() {
 
         ListGridField gasTypeField = new ListGridField("gasType", "Gas Type");
         gasTypeField.setType(ListGridFieldType.TEXT);
+        gasTypeField.setWidth(GAS_TYPE_FIELD_WIDTH);
 
 //-- Material Balance fields
-        ListGridField inventoryChangeField = new ListGridField("inventoryChange", "Inventory Change");
-        inventoryChangeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField inventoryChangeField = new FloatListGridField("inventoryChange", "Inventory Change");
+        inventoryChangeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-        ListGridField transferredAmountField = new ListGridField("transferredAmount", "Transferred Amount");
-        transferredAmountField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField transferredAmountField = new FloatListGridField("transferredAmount", "Transferred Amount");
+        transferredAmountField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-        ListGridField capacityChangeField = new ListGridField("capacityChange", "Capacity Change");
-        capacityChangeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField capacityChangeField = new FloatListGridField("capacityChange", "Capacity Change");
+        capacityChangeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
 //--Simplified Material Balance fields
-        ListGridField newUnitsChargeField = new ListGridField("newUnitsCharge", "New Units Charge");
-        newUnitsChargeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField newUnitsChargeField = new FloatListGridField("newUnitsCharge", "New Units Charge");
+        newUnitsChargeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-        ListGridField newUnitsCapacityField = new ListGridField("newUnitsCapacity", "New Units Capacity");
-        newUnitsCapacityField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField newUnitsCapacityField = new FloatListGridField("newUnitsCapacity", "New Units Capacity");
+        newUnitsCapacityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-        ListGridField existingUnitsRechargeField = new ListGridField("existingUnitsRecharge", "Existing Units Recharge");
-        existingUnitsRechargeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField existingUnitsRechargeField = new FloatListGridField("existingUnitsRecharge", "Existing Units Recharge");
+        existingUnitsRechargeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-        ListGridField disposedUnitsCapacityField = new ListGridField("disposedUnitsCapacity", "Disposed Units Capacity");
-        disposedUnitsCapacityField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField disposedUnitsCapacityField = new FloatListGridField("disposedUnitsCapacity", "Disposed Units Capacity");
+        disposedUnitsCapacityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-        ListGridField disposedUnitsRecoveredField = new ListGridField("disposedUnitsRecovered", "Disposed Units Recovered");
-        disposedUnitsRecoveredField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField disposedUnitsRecoveredField = new FloatListGridField("disposedUnitsRecovered", "Disposed Units Recovered");
+        disposedUnitsRecoveredField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-//--Screening Method fields
+ //--Screening Method fields
         ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
         sourceDescriptionField.setType(ListGridFieldType.TEXT);
 
         ListGridField typeOfEquipmentField = new ListGridField("typeOfEquipment", "Type  Of Equipment");
         typeOfEquipmentField.setType(ListGridFieldType.TEXT);
+        typeOfEquipmentField.setWidth(EQUIPMENT_TYPE_FIELD_WIDTH);
 
-        ListGridField sourceNewUnitsChargeField = new ListGridField("sourceNewUnitsCharge", "Source New Units Charge");
-        sourceNewUnitsChargeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField sourceNewUnitsChargeField = new FloatListGridField("sourceNewUnitsCharge", "Source New Units Charge");
+        sourceNewUnitsChargeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-        ListGridField operatingUnitsCapacityField = new ListGridField("operatingUnitsCapacity", "Operating Units Capacity");
-        operatingUnitsCapacityField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField operatingUnitsCapacityField = new FloatListGridField("operatingUnitsCapacity", "Operating Units Capacity");
+        operatingUnitsCapacityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-        ListGridField sourceDisposedUnitsCapacityField = new ListGridField("sourceDisposedUnitsCapacity", "Source Disposed Units Capacity");
-        sourceDisposedUnitsCapacityField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField sourceDisposedUnitsCapacityField = new FloatListGridField("sourceDisposedUnitsCapacity", "Source Disposed Units Capacity");
+        sourceDisposedUnitsCapacityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
-        ListGridField timeInYearsUsedField = new ListGridField("timeInYearsUsed", "Time In Years Used");
-        timeInYearsUsedField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField timeInYearsUsedField = new FloatListGridField("timeInYearsUsed", "Time In Years Used");
+        timeInYearsUsedField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
         ListGridField methodTypeField = new ListGridField("methodType", "Method Type");
         methodTypeField.setType(ListGridFieldType.TEXT);
+        methodTypeField.setHidden(true);
 
         ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
         fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
 
         ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
         fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
 
         ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
         editButtonField.setAlign(Alignment.CENTER);
+        editButtonField.setWidth(EDIT_BUTTON_FIELD_WIDTH);
 
         ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
+        removeButtonField.setWidth(REMOVE_BUTTON_FIELD_WIDTH);
+
         //removeButtonField.setWidth(100);
 
 //-- Material Balance Method
-        refridgerationAirConditioningDataGrid_1.setFields(methodTypeField, organizationIdField, gasTypeField,inventoryChangeField, transferredAmountField, capacityChangeField, fuelUsedBeginDateField, fuelUsedEndDateField, editButtonField, removeButtonField);
+        refridgerationAirConditioningDataGrid_1.setFields(methodTypeField, organizationIdField, sourceDescriptionField, gasTypeField,inventoryChangeField, transferredAmountField, capacityChangeField, fuelUsedBeginDateField, fuelUsedEndDateField, editButtonField, removeButtonField);
 
         Label materialBalanceMethodLabel = new Label("Current refridgeration & air conditioning sources");
         materialBalanceMethodLabel.setHeight(LABEL_HEIGHT);
@@ -2996,14 +5496,17 @@ private void refridgerationAirConditioningTab() {
         materialBalanceMethodLabel.setStyleName("labels");
 
         //refridgerationAirConditioningLayout.addMember(materialBalanceMethodLabel);
-        
+
         IButton newRefridgerationAirConditioningButton_1 = new IButton(ADD_NEW_SOURCE_TEXT);
         newRefridgerationAirConditioningButton_1.setWidth(ADD_BUTTON_WIDTH);
         newRefridgerationAirConditioningButton_1.setIcon(ADD_ICON_IMAGE);
 
         newRefridgerationAirConditioningButton_1.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
                 refridgerationAirConditioningForm_1.editNewRecord();
+                refridgerationAirConditioningForm_1.setValues(getInitialValues());
                 refridgerationAirConditioningFormWindow_1.show();
             }
         });
@@ -3019,14 +5522,14 @@ private void refridgerationAirConditioningTab() {
         materialBalanceSection.addItem(refridgerationAirConditioningDataGrid_1);
         */
 //-- Simplified Material Balance Method
-        refridgerationAirConditioningDataGrid_2.setFields(methodTypeField, organizationIdField, gasTypeField,newUnitsChargeField, newUnitsCapacityField, inventoryChangeField, existingUnitsRechargeField, disposedUnitsCapacityField, disposedUnitsRecoveredField,  fuelUsedBeginDateField, fuelUsedEndDateField, editButtonField, removeButtonField);
+        refridgerationAirConditioningDataGrid_2.setFields(methodTypeField, organizationIdField, sourceDescriptionField, gasTypeField,newUnitsChargeField, newUnitsCapacityField, inventoryChangeField, existingUnitsRechargeField, disposedUnitsCapacityField, disposedUnitsRecoveredField,  fuelUsedBeginDateField, fuelUsedEndDateField, editButtonField, removeButtonField);
 
         Label simplifiedMaterialBalanceMethodLabel = new Label("Current refridgeration & air conditioning sources");
         simplifiedMaterialBalanceMethodLabel.setHeight(LABEL_HEIGHT);
         simplifiedMaterialBalanceMethodLabel.setWidth100();
         simplifiedMaterialBalanceMethodLabel.setAlign(Alignment.LEFT);
         simplifiedMaterialBalanceMethodLabel.setStyleName("labels");
-        //refridgerationAirConditioningLayout.addMember(simplifiedMaterialBalanceMethodLabel);        
+        //refridgerationAirConditioningLayout.addMember(simplifiedMaterialBalanceMethodLabel);
 
         IButton newRefridgerationAirConditioningButton_2 = new IButton(ADD_NEW_SOURCE_TEXT);
         newRefridgerationAirConditioningButton_2.setWidth(ADD_BUTTON_WIDTH);
@@ -3034,7 +5537,10 @@ private void refridgerationAirConditioningTab() {
 
         newRefridgerationAirConditioningButton_2.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
                 refridgerationAirConditioningForm_2.editNewRecord();
+                refridgerationAirConditioningForm_2.setValues(getInitialValues());
                 refridgerationAirConditioningFormWindow_2.show();
             }
         });
@@ -3044,14 +5550,14 @@ private void refridgerationAirConditioningTab() {
         gridButtonLayout_2.addMember(newRefridgerationAirConditioningButton_2);
         refridgerationAirConditioningLayout_2.addMember(gridButtonLayout_2);
         refridgerationAirConditioningLayout_2.addMember(refridgerationAirConditioningDataGrid_2);
-        
+
         /*
         SectionStackSection simplifiedMaterialBalanceSection = new SectionStackSection("simplifiedMaterialBalance");
         simplifiedMaterialBalanceSection.addItem(gridButtonLayout_2);
         simplifiedMaterialBalanceSection.addItem(refridgerationAirConditioningDataGrid_2);
         */
 //-- Screening Method
-        refridgerationAirConditioningDataGrid_3.setFields(methodTypeField, organizationIdField, gasTypeField,sourceDescriptionField, typeOfEquipmentField, sourceNewUnitsChargeField,operatingUnitsCapacityField, sourceDisposedUnitsCapacityField, timeInYearsUsedField, fuelUsedBeginDateField, fuelUsedEndDateField, editButtonField, removeButtonField);
+        refridgerationAirConditioningDataGrid_3.setFields(methodTypeField, organizationIdField, sourceDescriptionField, gasTypeField, typeOfEquipmentField, sourceNewUnitsChargeField,operatingUnitsCapacityField, sourceDisposedUnitsCapacityField, timeInYearsUsedField, fuelUsedBeginDateField, fuelUsedEndDateField, editButtonField, removeButtonField);
 
         Label screeningMethodLabel = new Label("Current refridgeration & air conditioning sources");
         screeningMethodLabel.setHeight(LABEL_HEIGHT);
@@ -3060,14 +5566,17 @@ private void refridgerationAirConditioningTab() {
         screeningMethodLabel.setStyleName("labels");
 
         //refridgerationAirConditioningLayout.addMember(screeningMethodLabel);
-        
+
         IButton newRefridgerationAirConditioningButton_3 = new IButton(ADD_NEW_SOURCE_TEXT);
         newRefridgerationAirConditioningButton_3.setWidth(ADD_BUTTON_WIDTH);
         newRefridgerationAirConditioningButton_3.setIcon(ADD_ICON_IMAGE);
 
         newRefridgerationAirConditioningButton_3.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
                 refridgerationAirConditioningForm_3.editNewRecord();
+                refridgerationAirConditioningForm_3.setValues(getInitialValues());
                 refridgerationAirConditioningFormWindow_3.show();
             }
         });
@@ -3106,6 +5615,7 @@ private void refridgerationAirConditioningTab() {
         refridgerationAirConditioningTabSet.addTab(refridgerationAirConditioningTab_3);
 
         refridgerationAirConditioningLayout.addMember(refridgerationAirConditioningTabSet);
+
  }
 private void initRefridgerationAirConditioningEditForm_1() {
 
@@ -3114,9 +5624,8 @@ private void initRefridgerationAirConditioningEditForm_1() {
 
     //-- setValidators for the forms for common types.
     initializeValidators();
-    
-//-- Form_1 fields  -------------------------------------------------------------------
 
+//-- Form_1 fields  -------------------------------------------------------------------
 
     IntegerItem organizationId = new IntegerItem();
     organizationId.setName("organizationId");
@@ -3173,7 +5682,7 @@ private void initRefridgerationAirConditioningEditForm_1() {
     final IButton refridgerationAirConditioningSaveButton = new IButton();
 
     refridgerationAirConditioningSaveButton.setTitle("SAVE");
-    refridgerationAirConditioningSaveButton.setTooltip("Save this Mobile Combustion Source");
+    refridgerationAirConditioningSaveButton.setTooltip("Save this Combustion Source");
     refridgerationAirConditioningSaveButton.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent clickEvent) {
         Record refridgerationAirConditioningFormRecord = refridgerationAirConditioningForm_1.getValuesAsRecord();
@@ -3212,6 +5721,7 @@ private void initRefridgerationAirConditioningEditForm_1() {
     //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
     //refridgerationAirConditioningFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
     refridgerationAirConditioningFormWindow_1.addItem(dialog);
+
  }
 private void initRefridgerationAirConditioningEditForm_2() {
 
@@ -3242,7 +5752,7 @@ private void initRefridgerationAirConditioningEditForm_2() {
     disposedUnitsCapacityItem.setName("disposedUnitsCapacity");
 
     FloatItem disposedUnitsRecoveredItem = new FloatItem();
-    disposedUnitsRecoveredItem.setName("disposedUnitsRecovered");    
+    disposedUnitsRecoveredItem.setName("disposedUnitsRecovered");
 
     DateItem fuelUsedBeginDateItem = new DateItem();
     fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
@@ -3324,7 +5834,7 @@ private void initRefridgerationAirConditioningEditForm_3() {
     typeOfEquipmentItem.setName("typeOfEquipment");
     typeOfEquipmentItem.setTitle("Type Of Equipment");
     typeOfEquipmentItem.setOptionDataSource(equipmentCapacityRange_EPADS);
-    
+
     FloatItem sourceNewUnitsChargeItem = new FloatItem();
     sourceNewUnitsChargeItem.setName("sourceNewUnitsCharge");
 
@@ -3394,7 +5904,7 @@ private void initRefridgerationAirConditioningEditForm_3() {
     refridgerationAirConditioningFormWindow_3.addItem(dialog);
  }
 
-private void fireSuppressionTab() {
+private void fireSuppressionTab_OLD() {
 
         VLayout fireSuppressionLayout_1 = new VLayout(15);
         VLayout fireSuppressionLayout_2 = new VLayout(15);
@@ -3457,30 +5967,30 @@ private void fireSuppressionTab() {
         gasTypeField.setType(ListGridFieldType.TEXT);
 
 //-- Material Balance fields
-        ListGridField inventoryChangeField = new ListGridField("inventoryChange", "Inventory Change");
-        inventoryChangeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField inventoryChangeField = new FloatListGridField("inventoryChange", "Inventory Change");
+        //inventoryChangeField.setType(ListGridFieldType.FLOAT);
 
-        ListGridField transferredAmountField = new ListGridField("transferredAmount", "Transferred Amount");
-        transferredAmountField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField transferredAmountField = new FloatListGridField("transferredAmount", "Transferred Amount");
+        //transferredAmountField.setType(ListGridFieldType.FLOAT);
 
-        ListGridField capacityChangeField = new ListGridField("capacityChange", "Capacity Change");
-        capacityChangeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField capacityChangeField = new FloatListGridField("capacityChange", "Capacity Change");
+        //capacityChangeField.setType(ListGridFieldType.FLOAT);
 
 //--Simplified Material Balance fields
-        ListGridField newUnitsChargeField = new ListGridField("newUnitsCharge", "New Units Charge");
-        newUnitsChargeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField newUnitsChargeField = new FloatListGridField("newUnitsCharge", "New Units Charge");
+        //newUnitsChargeField.setType(ListGridFieldType.FLOAT);
 
-        ListGridField newUnitsCapacityField = new ListGridField("newUnitsCapacity", "New Units Capacity");
-        newUnitsCapacityField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField newUnitsCapacityField = new FloatListGridField("newUnitsCapacity", "New Units Capacity");
+        //newUnitsCapacityField.setType(ListGridFieldType.FLOAT);
 
-        ListGridField existingUnitsRechargeField = new ListGridField("existingUnitsRecharge", "Existing Units Recharge");
-        existingUnitsRechargeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField existingUnitsRechargeField = new FloatListGridField("existingUnitsRecharge", "Existing Units Recharge");
+        //existingUnitsRechargeField.setType(ListGridFieldType.FLOAT);
 
-        ListGridField disposedUnitsCapacityField = new ListGridField("disposedUnitsCapacity", "Disposed Units Capacity");
-        disposedUnitsCapacityField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField disposedUnitsCapacityField = new FloatListGridField("disposedUnitsCapacity", "Disposed Units Capacity");
+        //disposedUnitsCapacityField.setType(ListGridFieldType.FLOAT);
 
-        ListGridField disposedUnitsRecoveredField = new ListGridField("disposedUnitsRecovered", "Disposed Units Recovered");
-        disposedUnitsRecoveredField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField disposedUnitsRecoveredField = new FloatListGridField("disposedUnitsRecovered", "Disposed Units Recovered");
+        //disposedUnitsRecoveredField.setType(ListGridFieldType.FLOAT);
 
 //--Screening Method fields
         ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
@@ -3489,14 +5999,15 @@ private void fireSuppressionTab() {
         ListGridField typeOfEquipmentField = new ListGridField("typeOfEquipment", "Type  Of Equipment");
         typeOfEquipmentField.setType(ListGridFieldType.TEXT);
 
-        ListGridField sourceNewUnitsChargeField = new ListGridField("sourceNewUnitsCharge", "Source New Units Charge");
-        sourceNewUnitsChargeField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField sourceNewUnitsChargeField = new FloatListGridField("sourceNewUnitsCharge", "Source New Units Charge");
+        //sourceNewUnitsChargeField.setType(ListGridFieldType.FLOAT);
 
-        ListGridField operatingUnitsCapacityField = new ListGridField("operatingUnitsCapacity", "Operating Units Capacity");
-        operatingUnitsCapacityField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField operatingUnitsCapacityField = new FloatListGridField("operatingUnitsCapacity", "Operating Units Capacity");
+        //operatingUnitsCapacityField.setType(ListGridFieldType.FLOAT);
 
         ListGridField methodTypeField = new ListGridField("methodType", "Method Type");
         methodTypeField.setType(ListGridFieldType.TEXT);
+        methodTypeField.setHidden(true);
 
         ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
         fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
@@ -3518,7 +6029,7 @@ private void fireSuppressionTab() {
         materialBalanceMethodLabel.setWidth100();
         materialBalanceMethodLabel.setAlign(Alignment.LEFT);
         materialBalanceMethodLabel.setStyleName("labels");
-        
+
         //fireSuppressionLayout.addMember(materialBalanceMethodLabel);
 
         IButton newFireSuppressionButton_1 = new IButton(ADD_NEW_SOURCE_TEXT);
@@ -3527,7 +6038,10 @@ private void fireSuppressionTab() {
 
         newFireSuppressionButton_1.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
                 fireSuppressionForm_1.editNewRecord();
+                fireSuppressionForm_1.setValues(getInitialValues());
                 fireSuppressionFormWindow_1.show();
             }
         });
@@ -3558,7 +6072,10 @@ private void fireSuppressionTab() {
 
         newFireSuppressionButton_2.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
                 fireSuppressionForm_2.editNewRecord();
+                fireSuppressionForm_2.setValues(getInitialValues());
                 fireSuppressionFormWindow_2.show();
             }
         });
@@ -3590,7 +6107,10 @@ private void fireSuppressionTab() {
 
         newFireSuppressionButton_3.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
                 fireSuppressionForm_3.editNewRecord();
+                fireSuppressionForm_3.setValues(getInitialValues());
                 fireSuppressionFormWindow_3.show();
             }
         });
@@ -3891,7 +6411,7 @@ private void initFireSuppressionEditForm_3() {
     fireSuppressionFormWindow_3.addItem(dialog);
  }
 
-private void purchasedElectricityTab() {
+private void purchasedElectricityTab_OLD() {
 
         purchasedElectricityLayout.setWidth100();
         purchasedElectricityLayout.setHeight100();
@@ -3929,8 +6449,8 @@ private void purchasedElectricityTab() {
         ListGridField eGRIDSubregionField = new ListGridField("eGRIDSubregion", "eGRID Subregion");
         eGRIDSubregionField.setType(ListGridFieldType.TEXT);
 
-        ListGridField purchasedElectricityField = new ListGridField("purchasedElectricity", "Purchased Electricity");
-        purchasedElectricityField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField purchasedElectricityField = new FloatListGridField("purchasedElectricity", "Purchased Electricity");
+        //purchasedElectricityField.setType(ListGridFieldType.FLOAT);
 
         ListGridField purchasedElectricityUnitField = new ListGridField("purchasedElectricityUnit", "Purchased Electricity Unit");
         purchasedElectricityUnitField.setType(ListGridFieldType.TEXT);
@@ -3947,7 +6467,7 @@ private void purchasedElectricityTab() {
         ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
         //removeButtonField.setWidth(100);
 
-        purchasedElectricityDataGrid.setFields(organizationIdField, sourceDescriptionField, eGRIDSubregionField, purchasedElectricityUnitField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
+        purchasedElectricityDataGrid.setFields(organizationIdField, sourceDescriptionField, eGRIDSubregionField, purchasedElectricityField, purchasedElectricityUnitField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
 
         //purchasedElectricityDetailsLayout.addMember(purchasedElectricityDataGrid);
 
@@ -3957,8 +6477,12 @@ private void purchasedElectricityTab() {
 
         newPurchasedElectricityButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
                 purchasedElectricityForm.editNewRecord();
+                purchasedElectricityForm.setValues(getInitialValues());
                 purchasedElectricityFormWindow.show();
+
             }
         });
 
@@ -3977,7 +6501,7 @@ private void purchasedElectricityTab() {
         purchasedElectricityTabSet.addTab(purchasedElectricityTab);
         purchasedElectricityLayout.addMember(purchasedElectricityTabSet);
 }
-private void initPurchasedElectricityEditForm() {
+private void initPurchasedElectricityEditForm_OLD() {
 
     purchasedElectricityForm.setCellPadding(5);
     purchasedElectricityForm.setWidth("100%");
@@ -4056,7 +6580,7 @@ private void initPurchasedElectricityEditForm() {
     purchasedElectricityFormWindow.addItem(dialog);
  }
 
-private void purchasedSteamTab() {
+private void purchasedSteamTab_OLD() {
 
         purchasedSteamLayout.setWidth100();
         purchasedSteamLayout.setHeight100();
@@ -4064,7 +6588,7 @@ private void purchasedSteamTab() {
         VLayout purchasedSteamDetailsLayout = new VLayout(15);
         purchasedSteamDetailsLayout.setWidth100();
         purchasedSteamDetailsLayout.setHeight100();
-        
+
         Label purchasedSteamDataLabel = new Label("Current purchased Steam Sources");
         purchasedSteamDataLabel.setHeight(LABEL_HEIGHT);
         purchasedSteamDataLabel.setWidth100();
@@ -4094,38 +6618,103 @@ private void purchasedSteamTab() {
         ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
         fuelTypeField.setType(ListGridFieldType.TEXT);
 
-        ListGridField boilerEfficiencyPercentField = new ListGridField("boilerEfficiencyPercent", "boilerEfficiency Percent");
-        boilerEfficiencyPercentField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField boilerEfficiencyPercentField = new FloatListGridField("boilerEfficiencyPercent", "boilerEfficiency Percent");
+        //boilerEfficiencyPercentField.setType(ListGridFieldType.FLOAT);
         boilerEfficiencyPercentField.setDefaultValue(80);
         //boilerEfficiencyPercentField.setEdit(Boolean.FALSE);
+        /*
+        boilerEfficiencyPercentField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+        */
 
-        ListGridField purchasedSteamField = new ListGridField("purchasedSteam", "Purchased Steam");
+        FloatListGridField purchasedSteamField = new FloatListGridField("purchasedSteam", "Purchased Steam");
+        /*
         purchasedSteamField.setType(ListGridFieldType.FLOAT);
+        purchasedSteamField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+        */
 
         ListGridField purchasedSteamUnitField = new ListGridField("purchasedSteamUnit", "Purchased Steam Unit");
         purchasedSteamUnitField.setType(ListGridFieldType.TEXT);
         purchasedSteamUnitField.setDefaultValue("mmBtu");
 
-        ListGridField supplierCO2MultiplierField = new ListGridField("supplierCO2Multiplier", "Supplier CO2 Emission Factor");
-        supplierCO2MultiplierField.setType(ListGridFieldType.FLOAT);
+        FloatDetailViewerField supplierCO2MultiplierField = new FloatDetailViewerField("supplierCO2Multiplier", "Supplier CO2 Emission Factor");
+        /*
+        //supplierCO2MultiplierField.setType(ListGridFieldType.FLOAT);
+        supplierCO2MultiplierField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+        */
 
-        ListGridField supplierCO2MultiplierUnitField = new ListGridField("supplierCO2MultiplierUnit", "Supplier CO2 Emission Factor Unit");
-        supplierCO2MultiplierUnitField.setType(ListGridFieldType.TEXT);
-        supplierCO2MultiplierUnitField.setDefaultValue("lb/mmBtu");
+        DetailViewerField supplierCO2MultiplierUnitField = new DetailViewerField("supplierCO2MultiplierUnit", "Supplier CO2 Emission Factor Unit");
+        //supplierCO2MultiplierUnitField.setType(ListGridFieldType.TEXT);
+        supplierCO2MultiplierUnitField.setValue("lb/mmBtu");
 
-        ListGridField supplierCH4MultiplierField = new ListGridField("supplierCH4Multiplier", "Supplier CH4 Emission Factor");
-        supplierCH4MultiplierField.setType(ListGridFieldType.FLOAT);
+        FloatDetailViewerField supplierCH4MultiplierField = new FloatDetailViewerField("supplierCH4Multiplier", "Supplier CH4 Emission Factor");
+        /*
+        //supplierCH4MultiplierField.setType(ListGridFieldType.FLOAT);
+        supplierCH4MultiplierField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+        */
 
-        ListGridField supplierCH4MultiplierUnitField = new ListGridField("supplierCH4MultiplierUnit", "Supplier CH4 Emission Factor Unit");
-        supplierCH4MultiplierUnitField.setType(ListGridFieldType.TEXT);
-        supplierCH4MultiplierUnitField.setDefaultValue("lb/mmBtu");
+        DetailViewerField supplierCH4MultiplierUnitField = new DetailViewerField("supplierCH4MultiplierUnit", "Supplier CH4 Emission Factor Unit");
+        //supplierCH4MultiplierUnitField.setType(ListGridFieldType.TEXT);
+        supplierCH4MultiplierUnitField.setValue("lb/mmBtu");
 
-        ListGridField supplierN2OMultiplierField = new ListGridField("supplierN2OMultiplier", "Supplier N2O Emission Factor");
-        supplierN2OMultiplierField.setType(ListGridFieldType.FLOAT);
+        FloatDetailViewerField supplierN2OMultiplierField = new FloatDetailViewerField("supplierN2OMultiplier", "Supplier N2O Emission Factor");
+        /*
+        //supplierN2OMultiplierField.setType(ListGridFieldType.FLOAT);
+        supplierN2OMultiplierField.setDetailFormatter(new DetailFormatter() {
+            public String format(Object value, Record record, DetailViewerField field) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+        */
 
-        ListGridField supplierN2OMultiplierUnitField = new ListGridField("supplierN2OMultiplierUnit", "Supplier N2O Emission Factor Unit");
-        supplierN2OMultiplierUnitField.setType(ListGridFieldType.TEXT);
-        supplierN2OMultiplierUnitField.setDefaultValue("lb/mmBtu");
+        DetailViewerField supplierN2OMultiplierUnitField = new DetailViewerField("supplierN2OMultiplierUnit", "Supplier N2O Emission Factor Unit");
+        //supplierN2OMultiplierUnitField.setType(ListGridFieldType.TEXT);
+        supplierN2OMultiplierUnitField.setValue("lb/mmBtu");
 
         ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
         fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
@@ -4138,14 +6727,40 @@ private void purchasedSteamTab() {
 
         ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
         //removeButtonField.setWidth(100);
-
+        /*
         purchasedSteamDataGrid.setFields(organizationIdField, sourceDescriptionField, fuelTypeField,boilerEfficiencyPercentField,
                                          purchasedSteamField,purchasedSteamUnitField,supplierCO2MultiplierField,
                                          supplierCO2MultiplierUnitField,supplierCH4MultiplierField,supplierCH4MultiplierUnitField,
                                          supplierN2OMultiplierField,supplierN2OMultiplierUnitField, fuelUsedBeginDateField,
                                          fuelUsedEndDateField ,editButtonField, removeButtonField);
+        */
+
+        purchasedSteamDataGrid.setFields(organizationIdField, sourceDescriptionField, fuelTypeField, boilerEfficiencyPercentField,
+                                         purchasedSteamField,purchasedSteamUnitField, fuelUsedBeginDateField,
+                                         fuelUsedEndDateField ,editButtonField, removeButtonField);
 
         //purchasedSteamDetailsLayout.addMember(purchasedSteamDataGrid);
+
+        List<DetailViewerField> items = new ArrayList<DetailViewerField>();
+        items.add(supplierCO2MultiplierField);
+        items.add(supplierCO2MultiplierUnitField);
+        items.add(supplierCH4MultiplierField);
+        items.add(supplierCH4MultiplierUnitField);
+
+        items.add(supplierN2OMultiplierField);
+        items.add(supplierN2OMultiplierUnitField);
+
+        final DetailViewerField[] fitems = new DetailViewerField[items.size()];
+        items.toArray(fitems);
+
+        purchasedSteamDataGrid.addRecordClickHandler(new RecordClickHandler() {
+            public void onRecordClick(RecordClickEvent event) {
+                //emissionsSummaryDetailViewer.reset();
+                //--remove existing child from middleMiddleHLayout
+                displayDetailInfo(purchasedSteamDataGrid, fitems);
+
+            }
+        });
 
         IButton newPurchasedSteamButton = new IButton(ADD_NEW_SOURCE_TEXT);
         newPurchasedSteamButton.setWidth(ADD_BUTTON_WIDTH);
@@ -4153,7 +6768,10 @@ private void purchasedSteamTab() {
 
         newPurchasedSteamButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
+                //-- setValidators for the forms for common types.
+                initializeValidators();
                 purchasedSteamForm.editNewRecord();
+                purchasedSteamForm.setValues(getInitialValues());
                 purchasedSteamFormWindow.show();
             }
         });
@@ -4173,7 +6791,7 @@ private void purchasedSteamTab() {
         purchasedSteamTabSet.addTab(purchasedSteamTab);
         purchasedSteamLayout.addMember(purchasedSteamTabSet);
 }
-private void initPurchasedSteamEditForm() {
+private void initPurchasedSteamEditForm_OLD() {
 
     purchasedSteamForm.setCellPadding(5);
     purchasedSteamForm.setWidth("100%");
@@ -4277,29 +6895,365 @@ private void initPurchasedSteamEditForm() {
     purchasedSteamFormWindow.addItem(dialog);
  }
 
-//--employeeBusinessTravelByVehicle
-private void employeeBusinessTravelByVehicleTab() {
+public static ListGridField[] getMobileCombustionListGridFields() {
 
-        VLayout employeeBusinessTravelByVehicleLayout = new VLayout(15);
+    //-Define all the Mobile Combustion List Grid Fields
+        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
+        organizationIdField.setType(ListGridFieldType.INTEGER);
+        organizationIdField.setHidden(true);
 
-        Label employeeBusinessTravelByVehicleDataLabel = new Label("Current Sources of Employee Business Travel By Vehicle");
-        employeeBusinessTravelByVehicleDataLabel.setHeight(LABEL_HEIGHT);
-        employeeBusinessTravelByVehicleDataLabel.setWidth100();
-        employeeBusinessTravelByVehicleDataLabel.setAlign(Alignment.LEFT);
-        employeeBusinessTravelByVehicleDataLabel.setStyleName("labels");
-        //employeeBusinessTravelByVehicleLayout.addMember(employeeBusinessTravelByVehicleDataLabel);
+        ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
 
-//--ListGrid setup
-        employeeBusinessTravelByVehicleDataGrid.setWidth100();
-        //employeeBusinessTravelByVehicleDataGrid.setHeight(200);
-        employeeBusinessTravelByVehicleDataGrid.setHeight100();
-        employeeBusinessTravelByVehicleDataGrid.setShowRecordComponents(true);
-        employeeBusinessTravelByVehicleDataGrid.setShowRecordComponentsByCell(true);
-        //employeeBusinessTravelByVehicleDataGrid.setCanRemoveRecords(true);
-        //employeeBusinessTravelByVehicleDataGrid.setShowAllRecords(true);
-        employeeBusinessTravelByVehicleDataGrid.setAutoFetchData(Boolean.FALSE);
-        employeeBusinessTravelByVehicleDataGrid.setDataSource(optionalSourceInfoDS);
+        ListGridField vehicleTypeField = new ListGridField("vehicleType", "Vehicle Type");
+        vehicleTypeField.setType(ListGridFieldType.TEXT);
+        vehicleTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
 
+        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
+        fuelTypeField.setType(ListGridFieldType.TEXT);
+        fuelTypeField.setWidth(FUEL_TYPE_FIELD_WIDTH);
+                
+        FloatListGridField fuelQuantityField = new FloatListGridField("fuelQuantity", "Fuel Quantity");
+        //fuelQuantityField.setType(ListGridFieldType.FLOAT);
+        fuelQuantityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+/*
+        fuelQuantityField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+*/
+        ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
+        fuelUnitField.setType(ListGridFieldType.TEXT);
+        fuelUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(vehicleTypeField);
+        listGridFieldList.add(fuelTypeField);
+        listGridFieldList.add(fuelQuantityField);
+        listGridFieldList.add(fuelUnitField);
+        listGridFieldList.add(fuelUsedBeginDateField);
+        listGridFieldList.add(fuelUsedEndDateField);
+
+        //return mobileCombustionListGridFields;
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+
+}
+public static ListGridField[] getStationaryCombustionListGridFields(){
+
+        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
+        organizationIdField.setType(ListGridFieldType.INTEGER);
+        organizationIdField.setHidden(true);
+
+        ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
+        fuelTypeField.setType(ListGridFieldType.TEXT);
+        fuelTypeField.setWidth(FUEL_TYPE_FIELD_WIDTH);
+                
+
+        FloatListGridField fuelQuantityField = new FloatListGridField("fuelQuantity", "Fuel Quantity");
+        //fuelQuantityField.setType(ListGridFieldType.FLOAT);
+        fuelQuantityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        /*
+        fuelQuantityField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    NumberFormat nf = NumberFormat.getFormat("#,##0.00");
+                    return nf.format(((Number) value).doubleValue());
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+        */
+
+        ListGridField fuelUnitField = new ListGridField("fuelUnit", "Fuel Unit");
+        fuelUnitField.setType(ListGridFieldType.TEXT);
+        fuelUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+        //fuelUsedBeginDateField.setAttribute("dateFormatter", displayDateFormatter);
+
+        //fuelUsedBeginDateField.setAlign(Alignment.LEFT);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+        //fuelUsedEndDateField.setAlign(Alignment.LEFT);
+        //fuelUsedEndDateField.setAttribute("dateFormatter", displayDateFormatter);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(organizationIdField);
+        listGridFieldList.add(fuelTypeField);
+        listGridFieldList.add(fuelQuantityField);
+        listGridFieldList.add(fuelUnitField);
+        listGridFieldList.add(fuelUsedBeginDateField);
+        listGridFieldList.add(fuelUsedEndDateField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getRefridgerationAirConditioningListGridFields_1() {
+
+        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField gasTypeField = new ListGridField("gasType", "Gas Type");
+        //gasTypeField.setType(ListGridFieldType.TEXT);
+        gasTypeField.setWidth(GAS_TYPE_FIELD_WIDTH);
+
+        FloatListGridField inventoryChangeField = new FloatListGridField("inventoryChange", "Inventory Change");
+        inventoryChangeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        FloatListGridField transferredAmountField = new FloatListGridField("transferredAmount", "Transferred Amount");
+        transferredAmountField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        FloatListGridField capacityChangeField = new FloatListGridField("capacityChange", "Capacity Change");
+        capacityChangeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(gasTypeField);
+        listGridFieldList.add(inventoryChangeField);
+        listGridFieldList.add(transferredAmountField);
+        listGridFieldList.add(capacityChangeField);
+        listGridFieldList.add(fuelUsedBeginDateField);
+        listGridFieldList.add(fuelUsedEndDateField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+
+}
+public static ListGridField[] getRefridgerationAirConditioningListGridFields_2() {
+
+        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField gasTypeField = new ListGridField("gasType", "Gas Type");
+        //gasTypeField.setType(ListGridFieldType.TEXT);
+        gasTypeField.setWidth(GAS_TYPE_FIELD_WIDTH);
+
+        FloatListGridField newUnitsChargeField = new FloatListGridField("newUnitsCharge", "New Units Charge");
+        newUnitsChargeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        FloatListGridField newUnitsCapacityField = new FloatListGridField("newUnitsCapacity", "New Units Capacity");
+        newUnitsCapacityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        FloatListGridField existingUnitsRechargeField = new FloatListGridField("existingUnitsRecharge", "Existing Units Recharge");
+        existingUnitsRechargeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        FloatListGridField disposedUnitsCapacityField = new FloatListGridField("disposedUnitsCapacity", "Disposed Units Capacity");
+        disposedUnitsCapacityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        FloatListGridField disposedUnitsRecoveredField = new FloatListGridField("disposedUnitsRecovered", "Disposed Units Recovered");
+        disposedUnitsRecoveredField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(gasTypeField);
+        listGridFieldList.add(newUnitsChargeField);
+        listGridFieldList.add(newUnitsCapacityField);
+        listGridFieldList.add(existingUnitsRechargeField);
+        listGridFieldList.add(disposedUnitsCapacityField);
+        listGridFieldList.add(disposedUnitsRecoveredField);
+        listGridFieldList.add(fuelUsedBeginDateField);
+        listGridFieldList.add(fuelUsedEndDateField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+
+}
+public static ListGridField[] getRefridgerationAirConditioningListGridFields_3(String typeOfData) {
+
+        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField gasTypeField = new ListGridField("gasType", "Gas Type");
+        //gasTypeField.setType(ListGridFieldType.TEXT);
+        gasTypeField.setWidth(GAS_TYPE_FIELD_WIDTH);
+
+        ListGridField typeOfEquipmentField = new ListGridField("typeOfEquipment", "Type  Of Equipment");
+        typeOfEquipmentField.setType(ListGridFieldType.TEXT);
+        typeOfEquipmentField.setWidth(EQUIPMENT_TYPE_FIELD_WIDTH);
+
+        FloatListGridField sourceNewUnitsChargeField = new FloatListGridField("sourceNewUnitsCharge", "Source New Units Charge");
+        sourceNewUnitsChargeField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        FloatListGridField operatingUnitsCapacityField = new FloatListGridField("operatingUnitsCapacity", "Operating Units Capacity");
+        operatingUnitsCapacityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        FloatListGridField sourceDisposedUnitsCapacityField = new FloatListGridField("sourceDisposedUnitsCapacity", "Source Disposed Units Capacity");
+        sourceDisposedUnitsCapacityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        FloatListGridField timeInYearsUsedField = new FloatListGridField("timeInYearsUsed", "Time In Years Used");
+        timeInYearsUsedField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(gasTypeField);
+        listGridFieldList.add(typeOfEquipmentField);
+        listGridFieldList.add(sourceNewUnitsChargeField);
+        listGridFieldList.add(operatingUnitsCapacityField);
+        
+        if (typeOfData.equalsIgnoreCase("RefridgerationAirConditioning")) {
+            listGridFieldList.add(sourceDisposedUnitsCapacityField);
+            listGridFieldList.add(timeInYearsUsedField);
+        }
+        
+        listGridFieldList.add(fuelUsedBeginDateField);
+        listGridFieldList.add(fuelUsedEndDateField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+
+}
+public static ListGridField[] getPurchasedElecricityListGridFields() {
+
+        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField eGRIDSubregionField = new ListGridField("eGRIDSubregion", "eGRID Subregion");
+        eGRIDSubregionField.setType(ListGridFieldType.TEXT);
+        eGRIDSubregionField.setWidth(eGRIDSubregion_FIELD_WIDTH);
+
+        FloatListGridField purchasedElectricityField = new FloatListGridField("purchasedElectricity", "Purchased Electricity");
+        purchasedElectricityField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        ListGridField purchasedElectricityUnitField = new ListGridField("purchasedElectricityUnit", "Purchased Electricity Unit");
+        purchasedElectricityUnitField.setWidth(purchasedElectricityUnit_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(eGRIDSubregionField);
+        listGridFieldList.add(purchasedElectricityField);
+        listGridFieldList.add(purchasedElectricityUnitField);
+        listGridFieldList.add(fuelUsedBeginDateField);
+        listGridFieldList.add(fuelUsedEndDateField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+
+}
+public static ListGridField[] getPurchasedSteamListGridFields() {
+        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
+        fuelTypeField.setType(ListGridFieldType.TEXT);
+        fuelTypeField.setWidth(FUEL_TYPE_FIELD_WIDTH);
+
+        FloatListGridField boilerEfficiencyPercentField = new FloatListGridField("boilerEfficiencyPercent", "boilerEfficiency Percent");
+        //boilerEfficiencyPercentField.setType(ListGridFieldType.FLOAT);
+        boilerEfficiencyPercentField.setDefaultValue(80);
+        boilerEfficiencyPercentField.setWidth(boilerEfficiencyPercent_WIDTH);
+
+        FloatListGridField purchasedSteamField = new FloatListGridField("purchasedSteam", "Purchased Steam");
+        purchasedSteamField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        ListGridField purchasedSteamUnitField = new ListGridField("purchasedSteamUnit", "Purchased Steam Unit");
+        purchasedSteamUnitField.setType(ListGridFieldType.TEXT);
+        purchasedSteamUnitField.setDefaultValue("mmBtu");
+        purchasedSteamUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(fuelTypeField);
+        listGridFieldList.add(boilerEfficiencyPercentField);
+        listGridFieldList.add(purchasedSteamField);
+	listGridFieldList.add(purchasedSteamUnitField);
+        listGridFieldList.add(fuelUsedBeginDateField);
+        listGridFieldList.add(fuelUsedEndDateField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getOptionalSourceListGridFields(String typeOfData) {
 
         ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
         organizationIdField.setType(ListGridFieldType.INTEGER);
@@ -4311,1413 +7265,745 @@ private void employeeBusinessTravelByVehicleTab() {
 
         ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
         sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
 
         ListGridField vehicleTypeField = new ListGridField("vehicleType", "Vehicle Type");
         vehicleTypeField.setType(ListGridFieldType.TEXT);
+        vehicleTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
 
-        ListGridField passengerMilesField = new ListGridField("passengerMiles", "Passenger Miles");
-        passengerMilesField.setType(ListGridFieldType.FLOAT);
+        FloatListGridField passengerMilesField = new FloatListGridField("passengerMiles", "Passenger Miles");
+        passengerMilesField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+        ListGridField railTypeField = new ListGridField("railType", "Rail Type");
+        railTypeField.setType(ListGridFieldType.TEXT);
+        railTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
+
+        ListGridField busTypeField = new ListGridField("busType", "Bus Type");
+        busTypeField.setType(ListGridFieldType.TEXT);
+        busTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
+
+        ListGridField airTravelTypeField = new ListGridField("airTravelType", "Air Travel Type");
+        airTravelTypeField.setType(ListGridFieldType.TEXT);
+        airTravelTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
+
+        ListGridField transportTypeField = new ListGridField("transportType", "Transport Type");
+        transportTypeField.setType(ListGridFieldType.TEXT);
+        transportTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
+
+        FloatListGridField tonMilesField = new FloatListGridField("tonMiles", "Ton Miles");
+        tonMilesField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
 
         ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
         fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
 
         ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
         fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
 
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(optionalSourceTypeField);
+        listGridFieldList.add(sourceDescriptionField);
+        
+        if (typeOfData.equalsIgnoreCase("employeeBusinessTravelByVehicle")){
+            listGridFieldList.add(vehicleTypeField);
+            listGridFieldList.add(passengerMilesField);
+        } else if (typeOfData.equalsIgnoreCase("employeeBusinessTravelByRail")){
+            listGridFieldList.add(railTypeField);
+            listGridFieldList.add(passengerMilesField);
+        } else if (typeOfData.equalsIgnoreCase("employeeBusinessTravelByBus")){
+            listGridFieldList.add(busTypeField);
+            listGridFieldList.add(passengerMilesField);
+        } else if (typeOfData.equalsIgnoreCase("employeeBusinessTravelByAir")){
+            listGridFieldList.add(airTravelTypeField);
+            listGridFieldList.add(passengerMilesField);
+        } else if (typeOfData.equalsIgnoreCase("employeeCommutingByVehicle")){
+            listGridFieldList.add(vehicleTypeField);
+            listGridFieldList.add(passengerMilesField);
+        } else if (typeOfData.equalsIgnoreCase("employeeCommutingByRail")){
+            listGridFieldList.add(railTypeField);
+            listGridFieldList.add(passengerMilesField);
+        } else if (typeOfData.equalsIgnoreCase("employeeCommutingByBus")){
+            listGridFieldList.add(busTypeField);
+            listGridFieldList.add(passengerMilesField);
+        } else if (typeOfData.equalsIgnoreCase("productTransportByVehicle")){
+            listGridFieldList.add(vehicleTypeField);
+            listGridFieldList.add(passengerMilesField);
+        } else if (typeOfData.equalsIgnoreCase("productTransportByHeavyDutyTrucks")){
+            listGridFieldList.add(transportTypeField);
+            listGridFieldList.add(tonMilesField);
+        } else if (typeOfData.equalsIgnoreCase("productTransportByRail")){
+            listGridFieldList.add(transportTypeField);
+            listGridFieldList.add(tonMilesField);
+        } else if (typeOfData.equalsIgnoreCase("productTransportByWaterAir")){
+            listGridFieldList.add(transportTypeField);
+            listGridFieldList.add(tonMilesField);
+        }
 
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
+        listGridFieldList.add(fuelUsedBeginDateField);
+        listGridFieldList.add(fuelUsedEndDateField);
 
-        employeeBusinessTravelByVehicleDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, vehicleTypeField,passengerMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
 
-        //employeeBusinessTravelByVehicleLayout.addMember(employeeBusinessTravelByVehicleDataGrid);
+	return listGridFieldArray;
 
-        IButton newEmployeeBusinessTravelByVehicleButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newEmployeeBusinessTravelByVehicleButton.setWidth(ADD_BUTTON_WIDTH);
-        newEmployeeBusinessTravelByVehicleButton.setIcon(ADD_ICON_IMAGE);
+}
+public static ListGridField[] getWasteStreamCombustionListGridFields() {
+    
+        ListGridField sourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
+        sourceDescriptionField.setType(ListGridFieldType.TEXT);
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
 
-        newEmployeeBusinessTravelByVehicleButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                employeeBusinessTravelByVehicleForm.editNewRecord();
-                employeeBusinessTravelByVehicleFormWindow.show();
+	FloatListGridField amountOfWasterStreamGasCombustedField =
+            new FloatListGridField("amountOfWasterStreamGasCombusted", "Amount Of Waster Stream Gas Combusted");
+        amountOfWasterStreamGasCombustedField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+	ListGridField amountOfWasterStreamGasCombustedUnitField =
+            new ListGridField("amountOfWasterStreamGasCombustedUnit", "Amount Of Waster Stream Gas Combusted Unit");
+        amountOfWasterStreamGasCombustedUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
+
+	FloatListGridField totalNumberOfMolesPerUnitVolumentField =
+            new FloatListGridField("totalNumberOfMolesPerUnitVolument", "Total Number Of Moles Per Unit Volument");
+        totalNumberOfMolesPerUnitVolumentField.setWidth(FUEL_QUANTITY_FIELD_WIDTH);
+
+	ListGridField totalNumberOfMolesPerUnitVolumentUnitField =
+            new ListGridField("totalNumberOfMolesPerUnitVolumentUnit", "Amount Of Waster Stream Gas Combusted Unit");
+        totalNumberOfMolesPerUnitVolumentUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
+
+        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
+        fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
+        fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(amountOfWasterStreamGasCombustedField);
+        listGridFieldList.add(amountOfWasterStreamGasCombustedUnitField);
+        listGridFieldList.add(totalNumberOfMolesPerUnitVolumentField);
+	listGridFieldList.add(totalNumberOfMolesPerUnitVolumentUnitField);
+        listGridFieldList.add(fuelUsedBeginDateField);
+        listGridFieldList.add(fuelUsedEndDateField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public void setIbLFormWindow(String windowTitleString, DynamicForm df, Window dfw, ListGrid dg) {
+
+        final DynamicForm dataForm = df;
+        final Window dataFormWindow = dfw;
+        final ListGrid dataGrid = dg;
+        
+        dataForm.setCellPadding(5);
+        dataForm.setWidth("100%");
+
+        final IButton cancelButton = new IButton();
+        final IButton saveButton = new IButton();
+
+        saveButton.setTitle("SAVE");
+        //saveButton.setTooltip("Save this Stationary Combustion Source");
+        saveButton.addClickHandler(new ClickHandler() {
+          public void onClick(ClickEvent clickEvent) {
+            if ((!dataForm.getErrors().isEmpty()) || !dataForm.validate()){
+                SC.say("Please clear errors before submitting this information!");
             }
+            else {
+                Record formRecord = dataForm.getValuesAsRecord();
+                Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
+                formRecord.setAttribute("organizationId", organizationIdValue);
+                dataGrid.updateData(formRecord);
+                dataForm.markForRedraw();
+                dataFormWindow.hide();
+            }
+          }
         });
 
-        HLayout gridButtonLayout = new HLayout(10);
+        cancelButton.setTitle("CANCEL");
+        //cancelButton.setTooltip("Cancel");
+        cancelButton.addClickHandler(new ClickHandler() {
+          public void onClick(ClickEvent clickEvent) {
+            dataForm.clearValues();
+            dataFormWindow.hide();
+          }
+        });
 
-        gridButtonLayout.addMember(employeeBusinessTravelByVehicleDataLabel);
-        gridButtonLayout.addMember(newEmployeeBusinessTravelByVehicleButton);
-        employeeBusinessTravelByVehicleLayout.addMember(gridButtonLayout);
-        employeeBusinessTravelByVehicleLayout.addMember(employeeBusinessTravelByVehicleDataGrid);
+        HLayout buttons = new HLayout(10);
+        buttons.setAlign(Alignment.CENTER);
+        buttons.addMember(cancelButton);
+        buttons.addMember(saveButton);
 
-//--Defining employeeBusinessTravel By Vehicle
-        final Tab employeeBusinessTravelByVehicleTab = new Tab("Employee Business Travel By Vehicle");
-        employeeBusinessTravelByVehicleTab.setPane(employeeBusinessTravelByVehicleLayout);
+        VLayout dialog = new VLayout(10);
+        dialog.setPadding(25);
+        dialog.addMember(dataForm);
+        dialog.addMember(buttons);
+        //dialog.setAlign(Alignment.CENTER);
 
-//---Adding employeeBusinessTravel By Vehicle tab to tabSet
-        employeeBusinessTravelTabSet.addTab(employeeBusinessTravelByVehicleTab);
-            //tabSet.addTab(employeeBusinessTravelTabSet);
-        //tabSet.addTab(employeeBusinessTravelByVehicleTab);
-}
-private void initEmployeeBusinessTravelByVehicleEditForm() {
+        dataFormWindow.setShowShadow(true);
+        dataFormWindow.setIsModal(true);
+        dataFormWindow.setPadding(25);
+        //dataFormWindow.setMinWidth(500);
+        //dataFormWindow.setMinHeight(260);
+        //dataFormWindow.setOverflow(Overflow.VISIBLE);
+        //dataFormWindow.setAutoWidth();
+        //dataFormWindow.setAutoHeight();
+        dataFormWindow.setMinWidth(200);
+        dataFormWindow.setMinHeight(200);
+        dataFormWindow.setAutoSize(Boolean.TRUE);
+        dataFormWindow.setShowMinimizeButton(false);
+        dataFormWindow.setShowCloseButton(true);
+        dataFormWindow.setShowModalMask(true);
+        //dataFormWindow.centerInPage();
+        dataFormWindow.setAutoCenter(Boolean.TRUE);
+        dataFormWindow.setTitle(windowTitleString);
+        dataFormWindow.setStyleName("labels");
+        dataFormWindow.addItem(dialog);
+        dataFormWindow.setDefaultLayoutAlign(Alignment.CENTER);
+  }
 
-    employeeBusinessTravelByVehicleForm.setCellPadding(5);
-    employeeBusinessTravelByVehicleForm.setWidth("100%");
+public FormItem[] getMobileCombustionFormFields() {
+
+    //-Define all the Mobile Combustion Form Fields
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
 
 //-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
+    TextItem fuelSourceDescriptionItem = new TextItem("fuelSourceDescription");
+    fuelSourceDescriptionItem.setTitle("Fuel Source Description");
+    fuelSourceDescriptionItem.setSelectOnFocus(true);
+    fuelSourceDescriptionItem.setWrapTitle(false);
+    fuelSourceDescriptionItem.setDefaultValue("Source");
+    fuelSourceDescriptionItem.setRequired(Boolean.TRUE);
+    //TextItem vehicleTypeItem = new TextItem("vehicleType");
+    //TextItem vehicleYearItem = new TextItem("vehicleYear");
 
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
+    final SelectItem vehicleTypeItem = new SelectItem();
+    vehicleTypeItem.setName("vehicleType");
+    //vehicleTypeItem.setPickListWidth(310);
+    vehicleTypeItem.setTitle("Vehicle Type");
+    vehicleTypeItem.setOptionDataSource(vehicleType_EPADS);
+    vehicleTypeItem.setRequired(Boolean.TRUE);
+    //vehicleTypeItem.fetchData();
+    //vehicleTypeItem.setDefaultToFirstOption(Boolean.TRUE);
 
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
+    vehicleTypeItem.addChangedHandler(new ChangedHandler() {
+        public void onChanged(ChangedEvent event) {
+            mobileCombustionForm.clearValue("vehicleYear");
+            mobileCombustionForm.clearValue("fuelType");
+            Record selectedFuelTypeRecord = vehicleTypeItem.getSelectedRecord();
+            mobileCombustionForm.setValue("fuelUnit", selectedFuelTypeRecord.getAttributeAsString("fuelUnit"));
+        }
+    });
+
+    final SelectItem vehicleYearItem = new SelectItem(){
+        @Override
+        protected Criteria getPickListFilterCriteria() {
+            String vehicleType = (String) vehicleTypeItem.getValue();
+            Criteria criteria = new Criteria("vehicleType", vehicleType);
+            return criteria;
+        }
+    };
+
+    vehicleYearItem.setName("vehicleYear");
+    //vehicleYearItem.setPickListWidth(310);
+    vehicleYearItem.setTitle("Vehicle Year");
+    vehicleYearItem.setOptionDataSource(eF_CH4N2O_MobileCombustion_EPADS);
+
+    //final SelectItem fuelTypeItem = new SelectItem();
+
+    final SelectItem fuelTypeItem = new SelectItem() {
+        @Override
+        protected Criteria getPickListFilterCriteria() {
+            String vehicleType = (String) vehicleTypeItem.getValue();
+            Criteria criteria = new Criteria("vehicleType", vehicleType);
+            return criteria;
+        }
+    };
+
+    fuelTypeItem.setName("fuelType");
+    //fuelTypeItem.setPickListWidth(310);
+    fuelTypeItem.setTitle("Fuel Type");
+    fuelTypeItem.setOptionDataSource(vehicleType_EPADS);
+
+    final StaticTextItem fuelUnitItem = new StaticTextItem();
+    fuelUnitItem.setName("fuelUnit");
+    fuelUnitItem.setTitle("Fuel Unit");
+    //fuelUnitItem.setPickListWidth(250);
+    //fuelUnitItem.setOptionDataSource(vehicleType_EPADS);
+
+    IblFloatItem fuelQuantityItem = new IblFloatItem("fuelQuantity");
+    IblFloatItem milesTravelledItem = new IblFloatItem("milesTravelled");
+
+    /*
+    FloatItem fuelQuantityItem = new FloatItem();
+    fuelQuantityItem.setName("fuelQuantity");
+    fuelQuantityItem.setValidators(floatValidator);
+    fuelQuantityItem.setValidateOnExit(Boolean.TRUE);
+    fuelQuantityItem.setValidateOnChange(Boolean.TRUE);
+    fuelQuantityItem.setRequired(Boolean.TRUE);
+
+    FloatItem milesTravelledItem = new FloatItem();
+    milesTravelledItem.setName("milesTravelled");
+    milesTravelledItem.setValidators(floatValidator);
+    milesTravelledItem.setValidateOnExit(Boolean.TRUE);
+    milesTravelledItem.setValidateOnChange(Boolean.TRUE);
+    milesTravelledItem.setRequired(Boolean.TRUE);
+    */
+    
+    RequiredIfValidator ifBiofuelPctRequiredValidator = new RequiredIfValidator();
+    ifBiofuelPctRequiredValidator.setExpression(new RequiredIfFunction() {
+        public boolean execute(FormItem formItem, Object value) {
+            String valueStr = (String) mobileCombustionForm.getItem("fuelType").getValue();
+            //String valueStr = (String) dataForm.getItem("fuelType").getValue();
+            if (valueStr !=  null){
+                if (valueStr.contains("Biodiesel")){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        }
+    });
+    ifBiofuelPctRequiredValidator.setErrorMessage("Please provide biofuel percent Value");
+
+    IblFloatItem bioFuelPercentItem = new IblFloatItem("bioFuelPercent");
+    /*
+    FloatItem bioFuelPercentItem = new FloatItem();
+    bioFuelPercentItem.setName("bioFuelPercent");
+    bioFuelPercentItem.setValidators(floatValidator);
+    bioFuelPercentItem.setValidateOnExit(Boolean.TRUE);
+    bioFuelPercentItem.setValidateOnChange(Boolean.TRUE);
+    bioFuelPercentItem.setValidators(ifBiofuelPctRequiredValidator);
+    */
+
+    RequiredIfValidator ifEthanolPctRequiredValidator = new RequiredIfValidator();
+    ifEthanolPctRequiredValidator.setExpression(new RequiredIfFunction() {
+        public boolean execute(FormItem formItem, Object value) {
+            String valueStr = (String) mobileCombustionForm.getItem("fuelType").getValue();
+            //String valueStr = (String) dataForm.getItem("fuelType").getValue();
+            if (valueStr !=  null){
+                if (valueStr.contains("Ethanol")){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        }
+    });
+    ifEthanolPctRequiredValidator.setErrorMessage("Please provide ethanol percent Value");
+
+    IblFloatItem ethanolPercentItem = new IblFloatItem("ethanolPercent");
+
+    /*
+    FloatItem ethanolPercentItem = new FloatItem();
+    ethanolPercentItem.setName("ethanolPercent");
+    ethanolPercentItem.setValidators(floatValidator);
+    ethanolPercentItem.setValidateOnExit(Boolean.TRUE);
+    ethanolPercentItem.setValidateOnChange(Boolean.TRUE);
+    ethanolPercentItem.setValidators(ifEthanolPctRequiredValidator);
+    */
+
+    IblDateItem fuelUsedBeginDateItem = new IblDateItem("fuelUsedBeginDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+    IblDateItem fuelUsedEndDateItem = new IblDateItem("fuelUsedEndDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+
+/*
+    DateItem fuelUsedBeginDateItem = new DateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    fuelUsedBeginDateItem.setStartDate(currentInventoryBeginDateMin);
+    fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
+    fuelUsedBeginDateItem.setValidators(validateDateRange);
+    fuelUsedBeginDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedBeginDateItem.setValidateOnChange(Boolean.TRUE);
+
+    DateItem fuelUsedEndDateItem = new DateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+    fuelUsedEndDateItem.setDateFormatter(DateDisplayFormat.TOSTRING);
+    fuelUsedEndDateItem.setStartDate(currentInventoryBeginDateMin);
+    fuelUsedEndDateItem.setEndDate(currentInventoryEndDateMax);
+    fuelUsedEndDateItem.setValidators(validateDateRange);
+    fuelUsedEndDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedEndDateItem.setValidateOnChange(Boolean.TRUE);
+*/
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(fuelSourceDescriptionItem);
+    formItemList.add(vehicleTypeItem);
+    formItemList.add(vehicleYearItem);
+    formItemList.add(fuelTypeItem);
+    formItemList.add(fuelQuantityItem);
+    formItemList.add(fuelUnitItem);
+    formItemList.add(milesTravelledItem);
+    formItemList.add(bioFuelPercentItem);
+    formItemList.add(ethanolPercentItem);
+    formItemList.add(fuelUsedBeginDateItem);
+    formItemList.add(fuelUsedEndDateItem);
+
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getStationaryCombustionFormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    FuelSourceDescriptionItem fuelSourceDescriptionItem = new FuelSourceDescriptionItem();
+    fuelSourceDescriptionItem.setName("fuelSourceDescription");
+
+    final SelectItem fuelTypeItem = new SelectItem();
+    fuelTypeItem.setName("fuelType");
+    fuelTypeItem.setTitle("Fuel Type");
+    fuelTypeItem.setOptionDataSource(eF_StationaryCombustion_EPADS);
+    fuelTypeItem.setRequired(Boolean.TRUE);
+
+    fuelTypeItem.addChangedHandler(new ChangedHandler() {
+        public void onChanged(ChangedEvent event) {
+            //stationaryCombustionForm.clearValue("fuelUnit");
+            Record selectedFuelTypeRecord = fuelTypeItem.getSelectedRecord();
+            stationaryCombustionForm.setValue("fuelUnit", selectedFuelTypeRecord.getAttributeAsString("fuelUnit"));
+        }
+    });
+
+    final StaticTextItem fuelUnitItem = new StaticTextItem("fuelUnit");
+    fuelUnitItem.setTitle("Fuel Unit");
+
+    //FuelQuantityItem fuelQuantityItem = new FuelQuantityItem();
+    IblFloatItem fuelQuantityItem = new IblFloatItem("fuelQuantity");
+    
+    IblDateItem fuelUsedBeginDateItem = new IblDateItem("fuelUsedBeginDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);   
+    IblDateItem fuelUsedEndDateItem = new IblDateItem("fuelUsedEndDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+
+    //fuelUsedEndDateItem.setValidOperators(validOperators);
+
+/*
+    DateItem fuelUsedBeginDateItem = new DateItem();
+    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
+    fuelUsedBeginDateItem.setStartDate(currentInventoryBeginDateMin);
+    fuelUsedBeginDateItem.setEndDate(currentInventoryEndDateMax);
+    fuelUsedBeginDateItem.setValidators(validateDateRange);
+    fuelUsedBeginDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedBeginDateItem.setValidateOnChange(Boolean.TRUE);
+
+    DateItem fuelUsedEndDateItem = new DateItem();
+    fuelUsedEndDateItem.setName("fuelUsedEndDate");
+    fuelUsedEndDateItem.setStartDate(currentInventoryBeginDateMin);
+    fuelUsedEndDateItem.setEndDate(currentInventoryEndDateMax);
+    fuelUsedEndDateItem.setValidators(validateDateRange);
+    fuelUsedEndDateItem.setValidateOnExit(Boolean.TRUE);
+    fuelUsedEndDateItem.setValidateOnChange(Boolean.TRUE);
+*/
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(fuelSourceDescriptionItem);
+    formItemList.add(fuelTypeItem);
+    formItemList.add(fuelQuantityItem);
+    formItemList.add(fuelUnitItem);
+    formItemList.add(fuelUsedBeginDateItem);
+    formItemList.add(fuelUsedEndDateItem);
+
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getRefridgerationAirConditioningFormFields_1(String typeOfData) {
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    FuelSourceDescriptionItem fuelSourceDescriptionItem = new FuelSourceDescriptionItem();
+    fuelSourceDescriptionItem.setName("sourceDescription");
+
+    final SelectItem gasTypeItem = new SelectItem();
+    gasTypeItem.setName("gasType");
+    gasTypeItem.setTitle("Gas Type");
+    gasTypeItem.setOptionDataSource(gWP_RefridgerationAirConditioning_EPADS);
+    gasTypeItem.setPickListCriteria(new Criteria("fetchType", typeOfData));
+    gasTypeItem.setRequired(Boolean.TRUE);
+
+    IblFloatItem inventoryChangeItem = new IblFloatItem("inventoryChange");
+    IblFloatItem transferredAmountItem = new IblFloatItem("transferredAmount");
+    IblFloatItem capacityChangeItem = new IblFloatItem("capacityChange");
+
+    IblDateItem fuelUsedBeginDateItem = new IblDateItem("fuelUsedBeginDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+    IblDateItem fuelUsedEndDateItem = new IblDateItem("fuelUsedEndDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+
+
+    TextItem methodTypeItem = new TextItem("methodType");
+    methodTypeItem.setTitle("Method Type");
+
+    if (typeOfData.equalsIgnoreCase("RefridgerationAirConditioning")) {
+        methodTypeItem.setDefaultValue("Refridgeration Air Conditioning - Company-Wide Material Balance Method");
+    } else if (typeOfData.equalsIgnoreCase("FireSuppression")){
+        methodTypeItem.setDefaultValue("Fire Suppression - Company-Wide Material Balance Method");
+    }
+
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(fuelSourceDescriptionItem);
+    formItemList.add(gasTypeItem);
+    formItemList.add(inventoryChangeItem);
+    formItemList.add(transferredAmountItem);
+    formItemList.add(capacityChangeItem);
+    formItemList.add(fuelUsedBeginDateItem);
+    formItemList.add(fuelUsedEndDateItem);
+    formItemList.add(methodTypeItem);
+
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+    
+}
+public FormItem[] getRefridgerationAirConditioningFormFields_2(String typeOfData) {
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    FuelSourceDescriptionItem fuelSourceDescriptionItem = new FuelSourceDescriptionItem();
+    fuelSourceDescriptionItem.setName("sourceDescription");
+
+    final SelectItem gasTypeItem = new SelectItem();
+    gasTypeItem.setName("gasType");
+    gasTypeItem.setTitle("Gas Type");
+    gasTypeItem.setOptionDataSource(gWP_RefridgerationAirConditioning_EPADS);
+    gasTypeItem.setPickListCriteria(new Criteria("fetchType", typeOfData));
+    gasTypeItem.setRequired(Boolean.TRUE);
+
+    IblFloatItem newUnitsChargeItem = new IblFloatItem("newUnitsCharge");
+    IblFloatItem newUnitsCapacityItem = new IblFloatItem("newUnitsCapacity");
+    IblFloatItem existingUnitsRechargeItem = new IblFloatItem("existingUnitsRecharge");
+    IblFloatItem disposedUnitsCapacityItem = new IblFloatItem("disposedUnitsCapacity");
+    IblFloatItem disposedUnitsRecoveredItem = new IblFloatItem("disposedUnitsRecovered");
+
+    IblDateItem fuelUsedBeginDateItem = new IblDateItem("fuelUsedBeginDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+    IblDateItem fuelUsedEndDateItem = new IblDateItem("fuelUsedEndDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+
+    TextItem methodTypeItem = new TextItem("methodType");
+    methodTypeItem.setTitle("Method Type");
+    if (typeOfData.equalsIgnoreCase("RefridgerationAirConditioning")) {
+        methodTypeItem.setDefaultValue("Refridgeration Air Conditioning - Company-Wide Simplified Material Balance Method");
+    } else if (typeOfData.equalsIgnoreCase("FireSuppression")){
+        methodTypeItem.setDefaultValue("Fire Suppression - Company-Wide Simplified Material Balance Method");
+    }
+
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(fuelSourceDescriptionItem);
+    formItemList.add(gasTypeItem);
+    formItemList.add(newUnitsChargeItem);
+    formItemList.add(newUnitsCapacityItem);
+    formItemList.add(existingUnitsRechargeItem);
+    formItemList.add(disposedUnitsCapacityItem);
+    formItemList.add(disposedUnitsRecoveredItem);
+    formItemList.add(fuelUsedBeginDateItem);
+    formItemList.add(fuelUsedEndDateItem);
+    formItemList.add(methodTypeItem);
+
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getRefridgerationAirConditioningFormFields_3(String typeOfData) {
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    FuelSourceDescriptionItem fuelSourceDescriptionItem = new FuelSourceDescriptionItem();
+    fuelSourceDescriptionItem.setName("sourceDescription");
+
+    final SelectItem gasTypeItem = new SelectItem();
+    gasTypeItem.setName("gasType");
+    gasTypeItem.setTitle("Gas Type");
+    gasTypeItem.setOptionDataSource(gWP_RefridgerationAirConditioning_EPADS);
+    gasTypeItem.setPickListCriteria(new Criteria("fetchType", typeOfData));
+    gasTypeItem.setRequired(Boolean.TRUE);
+
+    final SelectItem typeOfEquipmentItem = new SelectItem();
+    typeOfEquipmentItem.setName("typeOfEquipment");
+    typeOfEquipmentItem.setTitle("Type Of Equipment");
+
+    if (typeOfData.equalsIgnoreCase("RefridgerationAirConditioning")) {
+        typeOfEquipmentItem.setOptionDataSource(equipmentCapacityRange_EPADS);
+    } else if (typeOfData.equalsIgnoreCase("FireSuppression")){
+        typeOfEquipmentItem.setValueMap("Fixed","Portable");
+    }
+
+    IblFloatItem sourceNewUnitsChargeItem = new IblFloatItem("sourceNewUnitsCharge");
+    IblFloatItem operatingUnitsCapacityItem = new IblFloatItem("operatingUnitsCapacity");
+    IblFloatItem sourceDisposedUnitsCapacityItem = new IblFloatItem("sourceDisposedUnitsCapacity");
+    IblFloatItem timeInYearsUsedItem = new IblFloatItem("timeInYearsUsed");
+
+    IblDateItem fuelUsedBeginDateItem = new IblDateItem("fuelUsedBeginDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+    IblDateItem fuelUsedEndDateItem = new IblDateItem("fuelUsedEndDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+
+    TextItem methodTypeItem = new TextItem("methodType");
+    methodTypeItem.setTitle("Method Type");
+    if (typeOfData.equalsIgnoreCase("RefridgerationAirConditioning")) {
+        methodTypeItem.setDefaultValue("Refridgeration Air Conditioning - Source Level Screening Method");
+    } else if (typeOfData.equalsIgnoreCase("FireSuppression")){
+        methodTypeItem.setDefaultValue("Fire Suppression - Source Level Screening Method");
+    }
+
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(fuelSourceDescriptionItem);
+    formItemList.add(gasTypeItem);
+    formItemList.add(typeOfEquipmentItem);
+    formItemList.add(sourceNewUnitsChargeItem);
+    formItemList.add(operatingUnitsCapacityItem);
+
+    if (typeOfData.equalsIgnoreCase("RefridgerationAirConditioning")){
+        formItemList.add(sourceDisposedUnitsCapacityItem);
+        formItemList.add(timeInYearsUsedItem);
+    }
+
+    formItemList.add(fuelUsedBeginDateItem);
+    formItemList.add(fuelUsedEndDateItem);
+    formItemList.add(methodTypeItem);
+
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getPurchasedElectricityFormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    FuelSourceDescriptionItem fuelSourceDescriptionItem = new FuelSourceDescriptionItem();
+    fuelSourceDescriptionItem.setName("sourceDescription");
+
+    final SelectItem eGRIDSubregionItem = new SelectItem();
+    eGRIDSubregionItem.setName("eGRIDSubregion");
+    eGRIDSubregionItem.setTitle("eGRID Subregion");
+    eGRIDSubregionItem.setOptionDataSource(theEF_PurchasedElectricity_EPADS);
+
+
+    IblFloatItem purchasedElectricityItem = new IblFloatItem("purchasedElectricity");
+
+    StaticTextItem purchasedElectricityUnitItem = new StaticTextItem("purchasedElectricityUnit");
+    purchasedElectricityUnitItem.setTitle("Purchased Electricity Unit");
+    purchasedElectricityUnitItem.setDefaultValue("kWh");
+
+    IblDateItem fuelUsedBeginDateItem = new IblDateItem("fuelUsedBeginDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+    IblDateItem fuelUsedEndDateItem = new IblDateItem("fuelUsedEndDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(fuelSourceDescriptionItem);
+    formItemList.add(eGRIDSubregionItem);
+    formItemList.add(purchasedElectricityItem);
+    formItemList.add(purchasedElectricityUnitItem);
+    formItemList.add(fuelUsedBeginDateItem);
+    formItemList.add(fuelUsedEndDateItem);
+
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getPurchasedSteamFormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    FuelSourceDescriptionItem fuelSourceDescriptionItem = new FuelSourceDescriptionItem();
+    fuelSourceDescriptionItem.setName("sourceDescription");
+
+    final SelectItem fuelTypeItem = new SelectItem();
+    fuelTypeItem.setName("fuelType");
+    fuelTypeItem.setTitle("Fuel Type");
+    fuelTypeItem.setOptionDataSource(theEF_PurchasedSteam_EPADS);
+
+    IblFloatItem boilerEfficiencyPercentItem = new IblFloatItem("boilerEfficiencyPercent");
+
+    IblFloatItem purchasedSteamItem = new IblFloatItem("purchasedSteam");
+    StaticTextItem purchasedSteamUnitItem = new StaticTextItem("purchasedSteamUnit");
+    purchasedSteamUnitItem.setTitle("Purchased Steam Unit");
+    purchasedSteamUnitItem.setDefaultValue("mmBtu");
+
+    IblFloatItem supplierCO2MultiplierItem = new IblFloatItem("supplierCO2Multiplier");
+    StaticTextItem supplierCO2MultiplierUnitItem = new StaticTextItem("supplierCO2MultiplierUnit");
+    supplierCO2MultiplierUnitItem.setTitle("Supplier CO2 Multiplier Unit");
+    supplierCO2MultiplierUnitItem.setDefaultValue("lb/mmBtu");
+
+    IblFloatItem supplierCH4MultiplierItem = new IblFloatItem("supplierCH4Multiplier");
+    StaticTextItem supplierCH4MultiplierUnitItem = new StaticTextItem("supplierCH4MultiplierUnit");
+    supplierCH4MultiplierUnitItem.setTitle("Supplier CH4 Multiplier Unit");
+    supplierCH4MultiplierUnitItem.setDefaultValue("lb/mmBtu");
+
+    IblFloatItem supplierN2OMultiplierItem = new IblFloatItem("supplierN2OMultiplier");
+    StaticTextItem supplierN2OMultiplierUnitItem = new StaticTextItem("supplierN2OMultiplierUnit");
+    supplierN2OMultiplierUnitItem.setTitle("Supplier N2O Multiplier Unit");
+    supplierN2OMultiplierUnitItem.setDefaultValue("lb/mmBtu");
+
+
+    IblDateItem fuelUsedBeginDateItem = new IblDateItem("fuelUsedBeginDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+    IblDateItem fuelUsedEndDateItem = new IblDateItem("fuelUsedEndDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(fuelSourceDescriptionItem);
+    formItemList.add(fuelTypeItem);
+    formItemList.add(boilerEfficiencyPercentItem);
+    formItemList.add(purchasedSteamItem);
+    formItemList.add(purchasedSteamUnitItem);
+    formItemList.add(supplierCO2MultiplierItem);
+    formItemList.add(supplierCO2MultiplierUnitItem);
+    formItemList.add(supplierCH4MultiplierItem);
+    formItemList.add(supplierCH4MultiplierUnitItem);
+    formItemList.add(supplierN2OMultiplierItem);
+    formItemList.add(supplierN2OMultiplierUnitItem);
+    formItemList.add(fuelUsedBeginDateItem);
+    formItemList.add(fuelUsedEndDateItem);
+
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getOptionalSourceFormFields(String typeOfData) {
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    FuelSourceDescriptionItem fuelSourceDescriptionItem = new FuelSourceDescriptionItem();
+    fuelSourceDescriptionItem.setName("sourceDescription");
 
     final SelectItem vehicleTypeItem = new SelectItem();
     vehicleTypeItem.setName("vehicleType");
     vehicleTypeItem.setTitle("vehicleType");
-    vehicleTypeItem.setOptionDataSource(theEF_VehicleType_EPADS);
-
-    FloatItem passengerMilesItem = new FloatItem();
-    passengerMilesItem.setName("passengerMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    employeeBusinessTravelByVehicleForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,vehicleTypeItem, passengerMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton employeeBusinessTravelByVehicleCancelButton = new IButton();
-    final IButton employeeBusinessTravelByVehicleSaveButton = new IButton();
-
-    employeeBusinessTravelByVehicleSaveButton.setTitle("SAVE");
-    employeeBusinessTravelByVehicleSaveButton.setTooltip("Save this Source");
-    employeeBusinessTravelByVehicleSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record employeeBusinessTravelByVehicleFormRecord = employeeBusinessTravelByVehicleForm.getValuesAsRecord();
-        employeeBusinessTravelByVehicleDataGrid.updateData(employeeBusinessTravelByVehicleFormRecord);
-        employeeBusinessTravelByVehicleFormWindow.hide();
-      }
-    });
-
-    employeeBusinessTravelByVehicleCancelButton.setTitle("CANCEL");
-    employeeBusinessTravelByVehicleCancelButton.setTooltip("Cancel");
-    employeeBusinessTravelByVehicleCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        employeeBusinessTravelByVehicleFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(employeeBusinessTravelByVehicleCancelButton);
-    buttons.addMember(employeeBusinessTravelByVehicleSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(employeeBusinessTravelByVehicleForm);
-    dialog.addMember(buttons);
-    employeeBusinessTravelByVehicleFormWindow.setShowShadow(true);
-    employeeBusinessTravelByVehicleFormWindow.setShowTitle(false);
-    employeeBusinessTravelByVehicleFormWindow.setIsModal(true);
-    employeeBusinessTravelByVehicleFormWindow.setPadding(20);
-    employeeBusinessTravelByVehicleFormWindow.setWidth(500);
-    employeeBusinessTravelByVehicleFormWindow.setHeight(350);
-    employeeBusinessTravelByVehicleFormWindow.setShowMinimizeButton(false);
-    employeeBusinessTravelByVehicleFormWindow.setShowCloseButton(true);
-    employeeBusinessTravelByVehicleFormWindow.setShowModalMask(true);
-    employeeBusinessTravelByVehicleFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //employeeBusinessTravelByVehicleFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    employeeBusinessTravelByVehicleFormWindow.addItem(dialog);
- }
-
-//--employeeBusinessTravelByRail
-private void employeeBusinessTravelByRailTab() {
-
-        VLayout employeeBusinessTravelByRailLayout = new VLayout(15);
-
-        Label employeeBusinessTravelByRailDataLabel = new Label("Current Sources of Employee Business Travel By Rail");
-        employeeBusinessTravelByRailDataLabel.setHeight(LABEL_HEIGHT);
-        employeeBusinessTravelByRailDataLabel.setWidth100();
-        employeeBusinessTravelByRailDataLabel.setAlign(Alignment.LEFT);
-        employeeBusinessTravelByRailDataLabel.setStyleName("labels");
-
-        //employeeBusinessTravelByRailLayout.addMember(employeeBusinessTravelByRailDataLabel);
-
-//--ListGrid setup
-        employeeBusinessTravelByRailDataGrid.setWidth100();
-        //employeeBusinessTravelByRailDataGrid.setHeight(200);
-        employeeBusinessTravelByRailDataGrid.setHeight100();
-        employeeBusinessTravelByRailDataGrid.setShowRecordComponents(true);
-        employeeBusinessTravelByRailDataGrid.setShowRecordComponentsByCell(true);
-        //employeeBusinessTravelByRailDataGrid.setCanRemoveRecords(true);
-        //employeeBusinessTravelByRailDataGrid.setShowAllRecords(true);
-        employeeBusinessTravelByRailDataGrid.setAutoFetchData(Boolean.FALSE);
-        employeeBusinessTravelByRailDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField railTypeField = new ListGridField("railType", "Rail Type");
-        railTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField passengerMilesField = new ListGridField("passengerMiles", "Passenger Miles");
-        passengerMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        employeeBusinessTravelByRailDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, railTypeField,passengerMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //employeeBusinessTravelByRailLayout.addMember(employeeBusinessTravelByRailDataGrid);
-
-        IButton newEmployeeBusinessTravelByRailButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newEmployeeBusinessTravelByRailButton.setWidth(ADD_BUTTON_WIDTH);
-        newEmployeeBusinessTravelByRailButton.setIcon(ADD_ICON_IMAGE);
-
-        newEmployeeBusinessTravelByRailButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                employeeBusinessTravelByRailForm.editNewRecord();
-                employeeBusinessTravelByRailFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-        gridButtonLayout.addMember(employeeBusinessTravelByRailDataLabel);
-        gridButtonLayout.addMember(newEmployeeBusinessTravelByRailButton);
-        employeeBusinessTravelByRailLayout.addMember(gridButtonLayout);
-        employeeBusinessTravelByRailLayout.addMember(employeeBusinessTravelByRailDataGrid);
-        
-//--Defining employeeBusinessTravel By Rail
-        final Tab employeeBusinessTravelByRailTab = new Tab("Employee Business Travel By Rail");
-        employeeBusinessTravelByRailTab.setPane(employeeBusinessTravelByRailLayout);
-
-//---Adding employeeBusinessTravel By Rail tab to tabSet
-        employeeBusinessTravelTabSet.addTab(employeeBusinessTravelByRailTab);
-        //tabSet.addTab(employeeBusinessTravelTabSet);
-        //tabSet.addTab(employeeBusinessTravelByRailTab);
-}
-private void initEmployeeBusinessTravelByRailEditForm() {
-
-    employeeBusinessTravelByRailForm.setCellPadding(5);
-    employeeBusinessTravelByRailForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
-
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
+    
 
     final SelectItem railTypeItem = new SelectItem();
     railTypeItem.setName("railType");
     railTypeItem.setTitle("railType");
     railTypeItem.setOptionDataSource(theEF_RailType_EPADS);
 
-    FloatItem passengerMilesItem = new FloatItem();
-    passengerMilesItem.setName("passengerMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    employeeBusinessTravelByRailForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,railTypeItem, passengerMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton employeeBusinessTravelByRailCancelButton = new IButton();
-    final IButton employeeBusinessTravelByRailSaveButton = new IButton();
-
-    employeeBusinessTravelByRailSaveButton.setTitle("SAVE");
-    employeeBusinessTravelByRailSaveButton.setTooltip("Save this Source");
-    employeeBusinessTravelByRailSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record employeeBusinessTravelByRailFormRecord = employeeBusinessTravelByRailForm.getValuesAsRecord();
-        employeeBusinessTravelByRailDataGrid.updateData(employeeBusinessTravelByRailFormRecord);
-        employeeBusinessTravelByRailFormWindow.hide();
-      }
-    });
-
-    employeeBusinessTravelByRailCancelButton.setTitle("CANCEL");
-    employeeBusinessTravelByRailCancelButton.setTooltip("Cancel");
-    employeeBusinessTravelByRailCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        employeeBusinessTravelByRailFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(employeeBusinessTravelByRailCancelButton);
-    buttons.addMember(employeeBusinessTravelByRailSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(employeeBusinessTravelByRailForm);
-    dialog.addMember(buttons);
-    employeeBusinessTravelByRailFormWindow.setShowShadow(true);
-    employeeBusinessTravelByRailFormWindow.setShowTitle(false);
-    employeeBusinessTravelByRailFormWindow.setIsModal(true);
-    employeeBusinessTravelByRailFormWindow.setPadding(20);
-    employeeBusinessTravelByRailFormWindow.setWidth(500);
-    employeeBusinessTravelByRailFormWindow.setHeight(350);
-    employeeBusinessTravelByRailFormWindow.setShowMinimizeButton(false);
-    employeeBusinessTravelByRailFormWindow.setShowCloseButton(true);
-    employeeBusinessTravelByRailFormWindow.setShowModalMask(true);
-    employeeBusinessTravelByRailFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //employeeBusinessTravelByRailFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    employeeBusinessTravelByRailFormWindow.addItem(dialog);
- }
-
-//--employeeBusinessTravelByBus
-private void employeeBusinessTravelByBusTab() {
-
-        VLayout employeeBusinessTravelByBusLayout = new VLayout(15);
-
-        Label employeeBusinessTravelByBusDataLabel = new Label("Current Sources of Employee Business Travel By Bus");
-        employeeBusinessTravelByBusDataLabel.setHeight(LABEL_HEIGHT);
-        employeeBusinessTravelByBusDataLabel.setWidth100();
-        employeeBusinessTravelByBusDataLabel.setAlign(Alignment.LEFT);
-        employeeBusinessTravelByBusDataLabel.setStyleName("labels");
-
-        //employeeBusinessTravelByBusLayout.addMember(employeeBusinessTravelByBusDataLabel);
-
-//--ListGrid setup
-        employeeBusinessTravelByBusDataGrid.setWidth100();
-        //employeeBusinessTravelByBusDataGrid.setHeight(200);
-        employeeBusinessTravelByBusDataGrid.setHeight100();
-        employeeBusinessTravelByBusDataGrid.setShowRecordComponents(true);
-        employeeBusinessTravelByBusDataGrid.setShowRecordComponentsByCell(true);
-        //employeeBusinessTravelByBusDataGrid.setCanRemoveRecords(true);
-        //employeeBusinessTravelByBusDataGrid.setShowAllRecords(true);
-        employeeBusinessTravelByBusDataGrid.setAutoFetchData(Boolean.FALSE);
-        employeeBusinessTravelByBusDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField busTypeField = new ListGridField("busType", "Bus Type");
-        busTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField passengerMilesField = new ListGridField("passengerMiles", "Passenger Miles");
-        passengerMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        employeeBusinessTravelByBusDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, busTypeField,passengerMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //employeeBusinessTravelByBusLayout.addMember(employeeBusinessTravelByBusDataGrid);
-
-        IButton newEmployeeBusinessTravelByBusButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newEmployeeBusinessTravelByBusButton.setWidth(ADD_BUTTON_WIDTH);
-        newEmployeeBusinessTravelByBusButton.setIcon(ADD_ICON_IMAGE);
-
-        newEmployeeBusinessTravelByBusButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                employeeBusinessTravelByBusForm.editNewRecord();
-                employeeBusinessTravelByBusFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-
-        gridButtonLayout.addMember(employeeBusinessTravelByBusDataLabel);
-        gridButtonLayout.addMember(newEmployeeBusinessTravelByBusButton);
-        employeeBusinessTravelByBusLayout.addMember(gridButtonLayout);
-        employeeBusinessTravelByBusLayout.addMember(employeeBusinessTravelByBusDataGrid);
-
-//--Defining employeeBusinessTravel By Bus
-        final Tab employeeBusinessTravelByBusTab = new Tab("Employee Business Travel By Bus");
-        employeeBusinessTravelByBusTab.setPane(employeeBusinessTravelByBusLayout);
-
-//---Adding employeeBusinessTravel By Bus tab to tabSet
-        employeeBusinessTravelTabSet.addTab(employeeBusinessTravelByBusTab);
-        //tabSet.addTab(employeeBusinessTravelTabSet);
-        //tabSet.addTab(employeeBusinessTravelByBusTab);
-}
-private void initEmployeeBusinessTravelByBusEditForm() {
-
-    employeeBusinessTravelByBusForm.setCellPadding(5);
-    employeeBusinessTravelByBusForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
-
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
-
     final SelectItem busTypeItem = new SelectItem();
     busTypeItem.setName("busType");
     busTypeItem.setTitle("busType");
     busTypeItem.setOptionDataSource(theEF_BusType_EPADS);
-
-    FloatItem passengerMilesItem = new FloatItem();
-    passengerMilesItem.setName("passengerMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    employeeBusinessTravelByBusForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,busTypeItem, passengerMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton employeeBusinessTravelByBusCancelButton = new IButton();
-    final IButton employeeBusinessTravelByBusSaveButton = new IButton();
-
-    employeeBusinessTravelByBusSaveButton.setTitle("SAVE");
-    employeeBusinessTravelByBusSaveButton.setTooltip("Save this Source");
-    employeeBusinessTravelByBusSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record employeeBusinessTravelByBusFormRecord = employeeBusinessTravelByBusForm.getValuesAsRecord();
-        employeeBusinessTravelByBusDataGrid.updateData(employeeBusinessTravelByBusFormRecord);
-        employeeBusinessTravelByBusFormWindow.hide();
-      }
-    });
-
-    employeeBusinessTravelByBusCancelButton.setTitle("CANCEL");
-    employeeBusinessTravelByBusCancelButton.setTooltip("Cancel");
-    employeeBusinessTravelByBusCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        employeeBusinessTravelByBusFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(employeeBusinessTravelByBusCancelButton);
-    buttons.addMember(employeeBusinessTravelByBusSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(employeeBusinessTravelByBusForm);
-    dialog.addMember(buttons);
-    employeeBusinessTravelByBusFormWindow.setShowShadow(true);
-    employeeBusinessTravelByBusFormWindow.setShowTitle(false);
-    employeeBusinessTravelByBusFormWindow.setIsModal(true);
-    employeeBusinessTravelByBusFormWindow.setPadding(20);
-    employeeBusinessTravelByBusFormWindow.setWidth(500);
-    employeeBusinessTravelByBusFormWindow.setHeight(350);
-    employeeBusinessTravelByBusFormWindow.setShowMinimizeButton(false);
-    employeeBusinessTravelByBusFormWindow.setShowCloseButton(true);
-    employeeBusinessTravelByBusFormWindow.setShowModalMask(true);
-    employeeBusinessTravelByBusFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //employeeBusinessTravelByBusFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    employeeBusinessTravelByBusFormWindow.addItem(dialog);
- }
-
-//--employeeBusinessTravelByAir
-private void employeeBusinessTravelByAirTab() {
-
-        VLayout employeeBusinessTravelByAirLayout = new VLayout(15);
-
-        Label employeeBusinessTravelByAirDataLabel = new Label("Current Sources of Employee Business Travel By Air");
-        employeeBusinessTravelByAirDataLabel.setHeight(LABEL_HEIGHT);
-        employeeBusinessTravelByAirDataLabel.setWidth100();
-        employeeBusinessTravelByAirDataLabel.setAlign(Alignment.LEFT);
-        employeeBusinessTravelByAirDataLabel.setStyleName("labels");
-
-        //employeeBusinessTravelByAirLayout.addMember(employeeBusinessTravelByAirDataLabel);
-
-//--ListGrid setup
-        employeeBusinessTravelByAirDataGrid.setWidth100();
-        //employeeBusinessTravelByAirDataGrid.setHeight(200);
-        employeeBusinessTravelByAirDataGrid.setHeight100();
-        employeeBusinessTravelByAirDataGrid.setShowRecordComponents(true);
-        employeeBusinessTravelByAirDataGrid.setShowRecordComponentsByCell(true);
-        //employeeBusinessTravelByAirDataGrid.setCanRemoveRecords(true);
-        //employeeBusinessTravelByAirDataGrid.setShowAllRecords(true);
-        employeeBusinessTravelByAirDataGrid.setAutoFetchData(Boolean.FALSE);
-        employeeBusinessTravelByAirDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        //optionalSourceTypeField.setDefaultValue("Employee Business Travel - By Air");
-        //optionalSourceTypeField.Edit(Boolean.FALSE);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField airTravelTypeField = new ListGridField("airTravelType", "Air Travel Type");
-        airTravelTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField passengerMilesField = new ListGridField("passengerMiles", "Passenger Miles");
-        passengerMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        employeeBusinessTravelByAirDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, airTravelTypeField,passengerMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //employeeBusinessTravelByAirLayout.addMember(employeeBusinessTravelByAirDataGrid);
-
-        IButton newEmployeeBusinessTravelByAirButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newEmployeeBusinessTravelByAirButton.setWidth(ADD_BUTTON_WIDTH);
-        newEmployeeBusinessTravelByAirButton.setIcon(ADD_ICON_IMAGE);
-
-        newEmployeeBusinessTravelByAirButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                employeeBusinessTravelByAirForm.editNewRecord();
-                employeeBusinessTravelByAirFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-        gridButtonLayout.addMember(employeeBusinessTravelByAirDataLabel);
-        gridButtonLayout.addMember(newEmployeeBusinessTravelByAirButton);
-        employeeBusinessTravelByAirLayout.addMember(gridButtonLayout);
-        employeeBusinessTravelByAirLayout.addMember(employeeBusinessTravelByAirDataGrid);
-
-//--Defining employeeBusinessTravel By Air
-        final Tab employeeBusinessTravelByAirTab = new Tab("Employee Business Travel By Air");
-        employeeBusinessTravelByAirTab.setPane(employeeBusinessTravelByAirLayout);
-
-//---Adding employeeBusinessTravel By Air tab to tabSet
-        employeeBusinessTravelTabSet.addTab(employeeBusinessTravelByAirTab);
-        //tabSet.addTab(employeeBusinessTravelTabSet);
-        //tabSet.addTab(employeeBusinessTravelByAirTab);
-}
-private void initEmployeeBusinessTravelByAirEditForm() {
-
-    employeeBusinessTravelByAirForm.setCellPadding(5);
-    employeeBusinessTravelByAirForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
-
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
 
     final SelectItem airTravelTypeItem = new SelectItem();
     airTravelTypeItem.setName("airTravelType");
     airTravelTypeItem.setTitle("airTravelType");
     airTravelTypeItem.setOptionDataSource(theEF_AirTravelType_EPADS);
 
-    FloatItem passengerMilesItem = new FloatItem();
-    passengerMilesItem.setName("passengerMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    employeeBusinessTravelByAirForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,airTravelTypeItem, passengerMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton employeeBusinessTravelByAirCancelButton = new IButton();
-    final IButton employeeBusinessTravelByAirSaveButton = new IButton();
-
-    employeeBusinessTravelByAirSaveButton.setTitle("SAVE");
-    employeeBusinessTravelByAirSaveButton.setTooltip("Save this Source");
-    employeeBusinessTravelByAirSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record employeeBusinessTravelByAirFormRecord = employeeBusinessTravelByAirForm.getValuesAsRecord();
-        employeeBusinessTravelByAirDataGrid.updateData(employeeBusinessTravelByAirFormRecord);
-        employeeBusinessTravelByAirFormWindow.hide();
-      }
-    });
-
-    employeeBusinessTravelByAirCancelButton.setTitle("CANCEL");
-    employeeBusinessTravelByAirCancelButton.setTooltip("Cancel");
-    employeeBusinessTravelByAirCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        employeeBusinessTravelByAirFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(employeeBusinessTravelByAirCancelButton);
-    buttons.addMember(employeeBusinessTravelByAirSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(employeeBusinessTravelByAirForm);
-    dialog.addMember(buttons);
-    employeeBusinessTravelByAirFormWindow.setShowShadow(true);
-    employeeBusinessTravelByAirFormWindow.setShowTitle(false);
-    employeeBusinessTravelByAirFormWindow.setIsModal(true);
-    employeeBusinessTravelByAirFormWindow.setPadding(20);
-    employeeBusinessTravelByAirFormWindow.setWidth(500);
-    employeeBusinessTravelByAirFormWindow.setHeight(350);
-    employeeBusinessTravelByAirFormWindow.setShowMinimizeButton(false);
-    employeeBusinessTravelByAirFormWindow.setShowCloseButton(true);
-    employeeBusinessTravelByAirFormWindow.setShowModalMask(true);
-    employeeBusinessTravelByAirFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //employeeBusinessTravelByAirFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    employeeBusinessTravelByAirFormWindow.addItem(dialog);
- }
-
-//--employeeCommutingByVehicle
-private void employeeCommutingByVehicleTab() {
-
-        VLayout employeeCommutingByVehicleLayout = new VLayout(15);
-
-        Label employeeCommutingByVehicleDataLabel = new Label("Current Sources of Employee Commuting By Vehicle");
-        employeeCommutingByVehicleDataLabel.setHeight(LABEL_HEIGHT);
-        employeeCommutingByVehicleDataLabel.setWidth100();
-        employeeCommutingByVehicleDataLabel.setAlign(Alignment.LEFT);
-        employeeCommutingByVehicleDataLabel.setStyleName("labels");
-
-        //employeeCommutingByVehicleLayout.addMember(employeeCommutingByVehicleDataLabel);
-
-//--ListGrid setup
-        employeeCommutingByVehicleDataGrid.setWidth100();
-        //employeeCommutingByVehicleDataGrid.setHeight(200);
-        employeeCommutingByVehicleDataGrid.setHeight100();
-        employeeCommutingByVehicleDataGrid.setShowRecordComponents(true);
-        employeeCommutingByVehicleDataGrid.setShowRecordComponentsByCell(true);
-        //employeeCommutingByVehicleDataGrid.setCanRemoveRecords(true);
-        //employeeCommutingByVehicleDataGrid.setShowAllRecords(true);
-        employeeCommutingByVehicleDataGrid.setAutoFetchData(Boolean.FALSE);
-        employeeCommutingByVehicleDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField vehicleTypeField = new ListGridField("vehicleType", "Vehicle Type");
-        vehicleTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField passengerMilesField = new ListGridField("passengerMiles", "Passenger Miles");
-        passengerMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-        employeeCommutingByVehicleDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, vehicleTypeField,passengerMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //employeeCommutingByVehicleLayout.addMember(employeeCommutingByVehicleDataGrid);
-
-        IButton newEmployeeCommutingByVehicleButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newEmployeeCommutingByVehicleButton.setWidth(ADD_BUTTON_WIDTH);
-        newEmployeeCommutingByVehicleButton.setIcon(ADD_ICON_IMAGE);
-
-        newEmployeeCommutingByVehicleButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                employeeCommutingByVehicleForm.editNewRecord();
-                employeeCommutingByVehicleFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-        gridButtonLayout.addMember(employeeCommutingByVehicleDataLabel);
-        gridButtonLayout.addMember(newEmployeeCommutingByVehicleButton);
-        employeeCommutingByVehicleLayout.addMember(gridButtonLayout);
-        employeeCommutingByVehicleLayout.addMember(employeeCommutingByVehicleDataGrid);
-//--Defining employeeCommutingByVehicle
-        final Tab employeeCommutingByVehicleTab = new Tab("Employee Commuting By Vehicle");
-        employeeCommutingByVehicleTab.setPane(employeeCommutingByVehicleLayout);
-
-//---Adding employeeCommutingByVehicle tab to tabSet
-        employeeCommutingTabSet.addTab(employeeCommutingByVehicleTab);
-        //tabSet.addTab(employeeCommutingTabSet);
-        //tabSet.addTab(employeeCommutingByVehicleTab);
-}
-private void initEmployeeCommutingByVehicleEditForm() {
-
-    employeeCommutingByVehicleForm.setCellPadding(5);
-    employeeCommutingByVehicleForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
-
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
-
-    final SelectItem vehicleTypeItem = new SelectItem();
-    vehicleTypeItem.setName("vehicleType");
-    vehicleTypeItem.setTitle("vehicleType");
-    vehicleTypeItem.setOptionDataSource(theEF_VehicleType_EPADS);
-
-    FloatItem passengerMilesItem = new FloatItem();
-    passengerMilesItem.setName("passengerMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    employeeCommutingByVehicleForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,vehicleTypeItem, passengerMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton employeeCommutingByVehicleCancelButton = new IButton();
-    final IButton employeeCommutingByVehicleSaveButton = new IButton();
-
-    employeeCommutingByVehicleSaveButton.setTitle("SAVE");
-    employeeCommutingByVehicleSaveButton.setTooltip("Save this Source");
-    employeeCommutingByVehicleSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record employeeCommutingByVehicleFormRecord = employeeCommutingByVehicleForm.getValuesAsRecord();
-        employeeCommutingByVehicleDataGrid.updateData(employeeCommutingByVehicleFormRecord);
-        employeeCommutingByVehicleFormWindow.hide();
-      }
-    });
-
-    employeeCommutingByVehicleCancelButton.setTitle("CANCEL");
-    employeeCommutingByVehicleCancelButton.setTooltip("Cancel");
-    employeeCommutingByVehicleCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        employeeCommutingByVehicleFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(employeeCommutingByVehicleCancelButton);
-    buttons.addMember(employeeCommutingByVehicleSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(employeeCommutingByVehicleForm);
-    dialog.addMember(buttons);
-    employeeCommutingByVehicleFormWindow.setShowShadow(true);
-    employeeCommutingByVehicleFormWindow.setShowTitle(false);
-    employeeCommutingByVehicleFormWindow.setIsModal(true);
-    employeeCommutingByVehicleFormWindow.setPadding(20);
-    employeeCommutingByVehicleFormWindow.setWidth(500);
-    employeeCommutingByVehicleFormWindow.setHeight(350);
-    employeeCommutingByVehicleFormWindow.setShowMinimizeButton(false);
-    employeeCommutingByVehicleFormWindow.setShowCloseButton(true);
-    employeeCommutingByVehicleFormWindow.setShowModalMask(true);
-    employeeCommutingByVehicleFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //employeeCommutingByVehicleFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    employeeCommutingByVehicleFormWindow.addItem(dialog);
- }
-
-//--employeeCommutingByRail
-private void employeeCommutingByRailTab() {
-
-        VLayout employeeCommutingByRailLayout = new VLayout(15);
-
-        Label employeeCommutingByRailDataLabel = new Label("Current Sources of Employee Commuting By Rail");
-        employeeCommutingByRailDataLabel.setHeight(LABEL_HEIGHT);
-        employeeCommutingByRailDataLabel.setWidth100();
-        employeeCommutingByRailDataLabel.setAlign(Alignment.LEFT);
-        employeeCommutingByRailDataLabel.setStyleName("labels");
-
-        //employeeCommutingByRailLayout.addMember(employeeCommutingByRailDataLabel);
-
-//--ListGrid setup
-        employeeCommutingByRailDataGrid.setWidth100();
-        //employeeCommutingByRailDataGrid.setHeight(200);
-        employeeCommutingByRailDataGrid.setHeight100();
-        employeeCommutingByRailDataGrid.setShowRecordComponents(true);
-        employeeCommutingByRailDataGrid.setShowRecordComponentsByCell(true);
-        //employeeCommutingByRailDataGrid.setCanRemoveRecords(true);
-        //employeeCommutingByRailDataGrid.setShowAllRecords(true);
-        employeeCommutingByRailDataGrid.setAutoFetchData(Boolean.FALSE);
-        employeeCommutingByRailDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField railTypeField = new ListGridField("railType", "Rail Type");
-        railTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField passengerMilesField = new ListGridField("passengerMiles", "Passenger Miles");
-        passengerMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        employeeCommutingByRailDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, railTypeField,passengerMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //employeeCommutingByRailLayout.addMember(employeeCommutingByRailDataGrid);
-
-        IButton newEmployeeCommutingByRailButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newEmployeeCommutingByRailButton.setWidth(ADD_BUTTON_WIDTH);
-        newEmployeeCommutingByRailButton.setIcon(ADD_ICON_IMAGE);
-
-        newEmployeeCommutingByRailButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                employeeCommutingByRailForm.editNewRecord();
-                employeeCommutingByRailFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-        gridButtonLayout.addMember(employeeCommutingByRailDataLabel);
-        gridButtonLayout.addMember(newEmployeeCommutingByRailButton);
-        employeeCommutingByRailLayout.addMember(gridButtonLayout);
-        employeeCommutingByRailLayout.addMember(employeeCommutingByRailDataGrid);
-
-//--Defining employeeCommutingByRail
-        final Tab employeeCommutingByRailTab = new Tab("Employee Commuting By Rail");
-        employeeCommutingByRailTab.setPane(employeeCommutingByRailLayout);
-
-//---Adding employeeCommutingByRail tab to tabSet
-       employeeCommutingTabSet.addTab(employeeCommutingByRailTab);
-        //tabSet.addTab(employeeCommutingTabSet);
-        //tabSet.addTab(employeeCommutingByRailTab);
-}
-private void initEmployeeCommutingByRailEditForm() {
-
-    employeeCommutingByRailForm.setCellPadding(5);
-    employeeCommutingByRailForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
-
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
-
-    final SelectItem railTypeItem = new SelectItem();
-    railTypeItem.setName("railType");
-    railTypeItem.setTitle("Rail Type");
-    railTypeItem.setOptionDataSource(theEF_RailType_EPADS);
-
-    FloatItem passengerMilesItem = new FloatItem();
-    passengerMilesItem.setName("passengerMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    employeeCommutingByRailForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,railTypeItem, passengerMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton employeeCommutingByRailCancelButton = new IButton();
-    final IButton employeeCommutingByRailSaveButton = new IButton();
-
-    employeeCommutingByRailSaveButton.setTitle("SAVE");
-    employeeCommutingByRailSaveButton.setTooltip("Save this Source");
-    employeeCommutingByRailSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record employeeCommutingByRailFormRecord = employeeCommutingByRailForm.getValuesAsRecord();
-        employeeCommutingByRailDataGrid.updateData(employeeCommutingByRailFormRecord);
-        employeeCommutingByRailFormWindow.hide();
-      }
-    });
-
-    employeeCommutingByRailCancelButton.setTitle("CANCEL");
-    employeeCommutingByRailCancelButton.setTooltip("Cancel");
-    employeeCommutingByRailCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        employeeCommutingByRailFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(employeeCommutingByRailCancelButton);
-    buttons.addMember(employeeCommutingByRailSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(employeeCommutingByRailForm);
-    dialog.addMember(buttons);
-    employeeCommutingByRailFormWindow.setShowShadow(true);
-    employeeCommutingByRailFormWindow.setShowTitle(false);
-    employeeCommutingByRailFormWindow.setIsModal(true);
-    employeeCommutingByRailFormWindow.setPadding(20);
-    employeeCommutingByRailFormWindow.setWidth(500);
-    employeeCommutingByRailFormWindow.setHeight(350);
-    employeeCommutingByRailFormWindow.setShowMinimizeButton(false);
-    employeeCommutingByRailFormWindow.setShowCloseButton(true);
-    employeeCommutingByRailFormWindow.setShowModalMask(true);
-    employeeCommutingByRailFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //employeeCommutingByRailFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    employeeCommutingByRailFormWindow.addItem(dialog);
- }
-
-//--employeeCommutingByBus
-private void employeeCommutingByBusTab() {
-
-        VLayout employeeCommutingByBusLayout = new VLayout(15);
-
-        Label employeeCommutingByBusDataLabel = new Label("Current Sources of Employee Commuting By Bus");
-        employeeCommutingByBusDataLabel.setHeight(LABEL_HEIGHT);
-        employeeCommutingByBusDataLabel.setWidth100();
-        employeeCommutingByBusDataLabel.setAlign(Alignment.LEFT);
-        employeeCommutingByBusDataLabel.setStyleName("labels");
-
-        //employeeCommutingByBusLayout.addMember(employeeCommutingByBusDataLabel);
-
-//--ListGrid setup
-        employeeCommutingByBusDataGrid.setWidth100();
-        //employeeCommutingByBusDataGrid.setHeight(200);
-        employeeCommutingByBusDataGrid.setHeight100();
-        employeeCommutingByBusDataGrid.setShowRecordComponents(true);
-        employeeCommutingByBusDataGrid.setShowRecordComponentsByCell(true);
-        //employeeCommutingByBusDataGrid.setCanRemoveRecords(true);
-        //employeeCommutingByBusDataGrid.setShowAllRecords(true);
-        employeeCommutingByBusDataGrid.setAutoFetchData(Boolean.FALSE);
-        employeeCommutingByBusDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField busTypeField = new ListGridField("busType", "Bus Type");
-        busTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField passengerMilesField = new ListGridField("passengerMiles", "Passenger Miles");
-        passengerMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        employeeCommutingByBusDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, busTypeField,passengerMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //employeeCommutingByBusLayout.addMember(employeeCommutingByBusDataGrid);
-
-        IButton newEmployeeCommutingByBusButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newEmployeeCommutingByBusButton.setWidth(ADD_BUTTON_WIDTH);
-        newEmployeeCommutingByBusButton.setIcon(ADD_ICON_IMAGE);
-
-        newEmployeeCommutingByBusButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                employeeCommutingByBusForm.editNewRecord();
-                employeeCommutingByBusFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-        gridButtonLayout.addMember(employeeCommutingByBusDataLabel);
-        gridButtonLayout.addMember(newEmployeeCommutingByBusButton);
-        employeeCommutingByBusLayout.addMember(gridButtonLayout);
-        employeeCommutingByBusLayout.addMember(employeeCommutingByBusDataGrid);
-
-//--Defining employeeCommutingByBus
-        final Tab employeeCommutingByBusTab = new Tab("Employee Commuting By Bus");
-        employeeCommutingByBusTab.setPane(employeeCommutingByBusLayout);
-
-//---Adding employeeCommutingByBus tab to tabSet
-        employeeCommutingTabSet.addTab(employeeCommutingByBusTab);
-        //tabSet.addTab(employeeCommutingTabSet);
-        //tabSet.addTab(employeeCommutingByBusTab);
-}
-private void initEmployeeCommutingByBusEditForm() {
-
-    employeeCommutingByBusForm.setCellPadding(5);
-    employeeCommutingByBusForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
-
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
-
-    final SelectItem busTypeItem = new SelectItem();
-    busTypeItem.setName("busType");
-    busTypeItem.setTitle("busType");
-    busTypeItem.setOptionDataSource(theEF_BusType_EPADS);
-
-    FloatItem passengerMilesItem = new FloatItem();
-    passengerMilesItem.setName("passengerMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    employeeCommutingByBusForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,busTypeItem, passengerMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton employeeCommutingByBusCancelButton = new IButton();
-    final IButton employeeCommutingByBusSaveButton = new IButton();
-
-    employeeCommutingByBusSaveButton.setTitle("SAVE");
-    employeeCommutingByBusSaveButton.setTooltip("Save this Source");
-    employeeCommutingByBusSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record employeeCommutingByBusFormRecord = employeeCommutingByBusForm.getValuesAsRecord();
-        employeeCommutingByBusDataGrid.updateData(employeeCommutingByBusFormRecord);
-        employeeCommutingByBusFormWindow.hide();
-      }
-    });
-
-    employeeCommutingByBusCancelButton.setTitle("CANCEL");
-    employeeCommutingByBusCancelButton.setTooltip("Cancel");
-    employeeCommutingByBusCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        employeeCommutingByBusFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(employeeCommutingByBusCancelButton);
-    buttons.addMember(employeeCommutingByBusSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(employeeCommutingByBusForm);
-    dialog.addMember(buttons);
-    employeeCommutingByBusFormWindow.setShowShadow(true);
-    employeeCommutingByBusFormWindow.setShowTitle(false);
-    employeeCommutingByBusFormWindow.setIsModal(true);
-    employeeCommutingByBusFormWindow.setPadding(20);
-    employeeCommutingByBusFormWindow.setWidth(500);
-    employeeCommutingByBusFormWindow.setHeight(350);
-    employeeCommutingByBusFormWindow.setShowMinimizeButton(false);
-    employeeCommutingByBusFormWindow.setShowCloseButton(true);
-    employeeCommutingByBusFormWindow.setShowModalMask(true);
-    employeeCommutingByBusFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //employeeCommutingByBusFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    employeeCommutingByBusFormWindow.addItem(dialog);
- }
-
-//--productTransportByVehicle
-private void productTransportByVehicleTab() {
-
-        VLayout productTransportByVehicleLayout = new VLayout(15);
-
-        Label productTransportByVehicleDataLabel = new Label("Current Sources of Product Transport - By Vehicle");
-        productTransportByVehicleDataLabel.setHeight(LABEL_HEIGHT);
-        productTransportByVehicleDataLabel.setWidth100();
-        productTransportByVehicleDataLabel.setAlign(Alignment.LEFT);
-        productTransportByVehicleDataLabel.setStyleName("labels");
-
-        //productTransportByVehicleLayout.addMember(productTransportByVehicleDataLabel);
-
-//--ListGrid setup
-        productTransportByVehicleDataGrid.setWidth100();
-        //productTransportByVehicleDataGrid.setHeight(200);
-        productTransportByVehicleDataGrid.setHeight100();
-        productTransportByVehicleDataGrid.setShowRecordComponents(true);
-        productTransportByVehicleDataGrid.setShowRecordComponentsByCell(true);
-        //productTransportByVehicleDataGrid.setCanRemoveRecords(true);
-        //productTransportByVehicleDataGrid.setShowAllRecords(true);
-        productTransportByVehicleDataGrid.setAutoFetchData(Boolean.FALSE);
-        productTransportByVehicleDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField vehicleTypeField = new ListGridField("vehicleType", "Vehicle Type");
-        vehicleTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField passengerMilesField = new ListGridField("passengerMiles", "Passenger Miles");
-        passengerMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        productTransportByVehicleDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, vehicleTypeField,passengerMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //productTransportByVehicleLayout.addMember(productTransportByVehicleDataGrid);
-
-        IButton newProductTransportByVehicleButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newProductTransportByVehicleButton.setWidth(ADD_BUTTON_WIDTH);
-        newProductTransportByVehicleButton.setIcon(ADD_ICON_IMAGE);
-
-        newProductTransportByVehicleButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                productTransportByVehicleForm.editNewRecord();
-                productTransportByVehicleFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-        gridButtonLayout.addMember(productTransportByVehicleDataLabel);
-        gridButtonLayout.addMember(newProductTransportByVehicleButton);
-        productTransportByVehicleLayout.addMember(gridButtonLayout);
-        productTransportByVehicleLayout.addMember(productTransportByVehicleDataGrid);
-
-//--Defining productTransportByVehicle
-        final Tab productTransportByVehicleTab = new Tab("Product Transport - By Vehicle");
-        productTransportByVehicleTab.setPane(productTransportByVehicleLayout);
-
-//---Adding productTransportByVehicle tab to tabSet
-        productTransportTabSet.addTab(productTransportByVehicleTab);
-        //tabSet.addTab(productTransportTabSet);
-        //tabSet.addTab(productTransportByVehicleTab);
-}
-private void initProductTransportByVehicleEditForm() {
-
-    productTransportByVehicleForm.setCellPadding(5);
-    productTransportByVehicleForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
-
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
-
-    final SelectItem vehicleTypeItem = new SelectItem();
-    vehicleTypeItem.setName("vehicleType");
-    vehicleTypeItem.setTitle("vehicleType");
-    vehicleTypeItem.setOptionDataSource(theEF_ProductTransport_VehicleType_EPADS);
-
-    FloatItem passengerMilesItem = new FloatItem();
-    passengerMilesItem.setName("passengerMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    productTransportByVehicleForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,vehicleTypeItem, passengerMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton productTransportByVehicleCancelButton = new IButton();
-    final IButton productTransportByVehicleSaveButton = new IButton();
-
-    productTransportByVehicleSaveButton.setTitle("SAVE");
-    productTransportByVehicleSaveButton.setTooltip("Save this Source");
-    productTransportByVehicleSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record productTransportByVehicleFormRecord = productTransportByVehicleForm.getValuesAsRecord();
-        productTransportByVehicleDataGrid.updateData(productTransportByVehicleFormRecord);
-        productTransportByVehicleFormWindow.hide();
-      }
-    });
-
-    productTransportByVehicleCancelButton.setTitle("CANCEL");
-    productTransportByVehicleCancelButton.setTooltip("Cancel");
-    productTransportByVehicleCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        productTransportByVehicleFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(productTransportByVehicleCancelButton);
-    buttons.addMember(productTransportByVehicleSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(productTransportByVehicleForm);
-    dialog.addMember(buttons);
-    productTransportByVehicleFormWindow.setShowShadow(true);
-    productTransportByVehicleFormWindow.setShowTitle(false);
-    productTransportByVehicleFormWindow.setIsModal(true);
-    productTransportByVehicleFormWindow.setPadding(20);
-    productTransportByVehicleFormWindow.setWidth(500);
-    productTransportByVehicleFormWindow.setHeight(350);
-    productTransportByVehicleFormWindow.setShowMinimizeButton(false);
-    productTransportByVehicleFormWindow.setShowCloseButton(true);
-    productTransportByVehicleFormWindow.setShowModalMask(true);
-    productTransportByVehicleFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //productTransportByVehicleFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    productTransportByVehicleFormWindow.addItem(dialog);
- }
-
-//--productTransportByHeavyDutyTrucks
-private void productTransportByHeavyDutyTrucksTab() {
-
-        VLayout productTransportByHeavyDutyTrucksLayout = new VLayout(15);
-
-        Label productTransportByHeavyDutyTrucksDataLabel = new Label("Current Sources of Product Transport - By Heavy Duty Trucks");
-        productTransportByHeavyDutyTrucksDataLabel.setHeight(LABEL_HEIGHT);
-        productTransportByHeavyDutyTrucksDataLabel.setWidth100();
-        productTransportByHeavyDutyTrucksDataLabel.setAlign(Alignment.LEFT);
-        productTransportByHeavyDutyTrucksDataLabel.setStyleName("labels");
-        //productTransportByHeavyDutyTrucksLayout.addMember(productTransportByHeavyDutyTrucksDataLabel);
-
-//--ListGrid setup
-        productTransportByHeavyDutyTrucksDataGrid.setWidth100();
-        //productTransportByHeavyDutyTrucksDataGrid.setHeight(200);
-        productTransportByHeavyDutyTrucksDataGrid.setHeight100();
-        productTransportByHeavyDutyTrucksDataGrid.setShowRecordComponents(true);
-        productTransportByHeavyDutyTrucksDataGrid.setShowRecordComponentsByCell(true);
-        //productTransportByHeavyDutyTrucksDataGrid.setCanRemoveRecords(true);
-        //productTransportByHeavyDutyTrucksDataGrid.setShowAllRecords(true);
-        productTransportByHeavyDutyTrucksDataGrid.setAutoFetchData(Boolean.FALSE);
-        productTransportByHeavyDutyTrucksDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField transportTypeField = new ListGridField("transportType", "Transport Type");
-        transportTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField tonMilesField = new ListGridField("tonMiles", "Ton Miles");
-        tonMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        productTransportByHeavyDutyTrucksDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, transportTypeField,tonMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //productTransportByHeavyDutyTrucksLayout.addMember(productTransportByHeavyDutyTrucksDataGrid);
-
-        IButton newProductTransportByHeavyDutyTrucksButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newProductTransportByHeavyDutyTrucksButton.setWidth(ADD_BUTTON_WIDTH);
-        newProductTransportByHeavyDutyTrucksButton.setIcon(ADD_ICON_IMAGE);
-
-        newProductTransportByHeavyDutyTrucksButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                productTransportByHeavyDutyTrucksForm.editNewRecord();
-                productTransportByHeavyDutyTrucksFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-        gridButtonLayout.addMember(productTransportByHeavyDutyTrucksDataLabel);
-        gridButtonLayout.addMember(newProductTransportByHeavyDutyTrucksButton);
-        productTransportByHeavyDutyTrucksLayout.addMember(gridButtonLayout);
-        productTransportByHeavyDutyTrucksLayout.addMember(productTransportByHeavyDutyTrucksDataGrid);
-
-//--Defining productTransportByHeavyDutyTrucks
-        final Tab productTransportByHeavyDutyTrucksTab = new Tab("Product Transport - By Heavy Duty Trucks");
-        productTransportByHeavyDutyTrucksTab.setPane(productTransportByHeavyDutyTrucksLayout);
-
-//---Adding productTransportByHeavyDutyTrucks tab to tabSet
-        productTransportTabSet.addTab(productTransportByHeavyDutyTrucksTab);
-        //tabSet.addTab(productTransportTabSet);
-        //tabSet.addTab(productTransportByHeavyDutyTrucksTab);
-}
-private void initProductTransportByHeavyDutyTrucksEditForm() {
-
-    productTransportByHeavyDutyTrucksForm.setCellPadding(5);
-    productTransportByHeavyDutyTrucksForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
-
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
+    IblFloatItem passengerMilesItem = new IblFloatItem("passengerMiles");
 
     final SelectItem transportTypeItem = new SelectItem();
     transportTypeItem.setName("transportType");
@@ -5727,1327 +8013,146 @@ private void initProductTransportByHeavyDutyTrucksEditForm() {
     FloatItem tonMilesItem = new FloatItem();
     tonMilesItem.setName("tonMiles");
 
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    productTransportByHeavyDutyTrucksForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,transportTypeItem, tonMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton productTransportByHeavyDutyTrucksCancelButton = new IButton();
-    final IButton productTransportByHeavyDutyTrucksSaveButton = new IButton();
-
-    productTransportByHeavyDutyTrucksSaveButton.setTitle("SAVE");
-    productTransportByHeavyDutyTrucksSaveButton.setTooltip("Save this Source");
-    productTransportByHeavyDutyTrucksSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record productTransportByHeavyDutyTrucksFormRecord = productTransportByHeavyDutyTrucksForm.getValuesAsRecord();
-        productTransportByHeavyDutyTrucksDataGrid.updateData(productTransportByHeavyDutyTrucksFormRecord);
-        productTransportByHeavyDutyTrucksFormWindow.hide();
-      }
-    });
-
-    productTransportByHeavyDutyTrucksCancelButton.setTitle("CANCEL");
-    productTransportByHeavyDutyTrucksCancelButton.setTooltip("Cancel");
-    productTransportByHeavyDutyTrucksCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        productTransportByHeavyDutyTrucksFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(productTransportByHeavyDutyTrucksCancelButton);
-    buttons.addMember(productTransportByHeavyDutyTrucksSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(productTransportByHeavyDutyTrucksForm);
-    dialog.addMember(buttons);
-    productTransportByHeavyDutyTrucksFormWindow.setShowShadow(true);
-    productTransportByHeavyDutyTrucksFormWindow.setShowTitle(false);
-    productTransportByHeavyDutyTrucksFormWindow.setIsModal(true);
-    productTransportByHeavyDutyTrucksFormWindow.setPadding(20);
-    productTransportByHeavyDutyTrucksFormWindow.setWidth(500);
-    productTransportByHeavyDutyTrucksFormWindow.setHeight(350);
-    productTransportByHeavyDutyTrucksFormWindow.setShowMinimizeButton(false);
-    productTransportByHeavyDutyTrucksFormWindow.setShowCloseButton(true);
-    productTransportByHeavyDutyTrucksFormWindow.setShowModalMask(true);
-    productTransportByHeavyDutyTrucksFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //productTransportByHeavyDutyTrucksFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    productTransportByHeavyDutyTrucksFormWindow.addItem(dialog);
- }
-
-//--productTransportByRail
-private void productTransportByRailTab() {
-
-        VLayout productTransportByRailLayout = new VLayout(15);
-
-        Label productTransportByRailDataLabel = new Label("Current Sources of Product Transport - By Rail");
-        productTransportByRailDataLabel.setHeight(LABEL_HEIGHT);
-        productTransportByRailDataLabel.setWidth100();
-        productTransportByRailDataLabel.setAlign(Alignment.LEFT);
-        productTransportByRailDataLabel.setStyleName("labels");
-
-        //productTransportByRailLayout.addMember(productTransportByRailDataLabel);
-
-//--ListGrid setup
-        productTransportByRailDataGrid.setWidth100();
-        //productTransportByRailDataGrid.setHeight(200);
-        productTransportByRailDataGrid.setHeight100();
-        productTransportByRailDataGrid.setShowRecordComponents(true);
-        productTransportByRailDataGrid.setShowRecordComponentsByCell(true);
-        //productTransportByRailDataGrid.setCanRemoveRecords(true);
-        //productTransportByRailDataGrid.setShowAllRecords(true);
-        productTransportByRailDataGrid.setAutoFetchData(Boolean.FALSE);
-        productTransportByRailDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField transportTypeField = new ListGridField("transportType", "Transport Type");
-        transportTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField tonMilesField = new ListGridField("tonMiles", "Ton Miles");
-        tonMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        productTransportByRailDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, transportTypeField,tonMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //productTransportByRailLayout.addMember(productTransportByRailDataGrid);
-
-        IButton newProductTransportByRailButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newProductTransportByRailButton.setWidth(ADD_BUTTON_WIDTH);
-        newProductTransportByRailButton.setIcon(ADD_ICON_IMAGE);
-
-        newProductTransportByRailButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                productTransportByRailForm.editNewRecord();
-                productTransportByRailFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-        gridButtonLayout.addMember(productTransportByRailDataLabel);
-        gridButtonLayout.addMember(newProductTransportByRailButton);
-        productTransportByRailLayout.addMember(gridButtonLayout);
-        productTransportByRailLayout.addMember(productTransportByRailDataGrid);
-
-
-//--Defining productTransportByRail
-        final Tab productTransportByRailTab = new Tab("Product Transport - By Rail");
-        productTransportByRailTab.setPane(productTransportByRailLayout);
-
-//---Adding productTransportByRail tab to tabSet
-        productTransportTabSet.addTab(productTransportByRailTab);
-        //tabSet.addTab(productTransportTabSet);
-        //tabSet.addTab(productTransportByRailTab);
-}
-private void initProductTransportByRailEditForm() {
-
-    productTransportByRailForm.setCellPadding(5);
-    productTransportByRailForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
+    IblDateItem fuelUsedBeginDateItem = new IblDateItem("fuelUsedBeginDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+    IblDateItem fuelUsedEndDateItem = new IblDateItem("fuelUsedEndDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
 
     TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
 
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(fuelSourceDescriptionItem);
+    if (typeOfData.equalsIgnoreCase("employeeBusinessTravelByVehicle")){
+         vehicleTypeItem.setOptionDataSource(theEF_VehicleType_EPADS);
+         formItemList.add(vehicleTypeItem);
+         formItemList.add(passengerMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Employee Business Travel - By Vehicle");
+    } else if (typeOfData.equalsIgnoreCase("employeeBusinessTravelByRail")){
+         formItemList.add(railTypeItem);
+         formItemList.add(passengerMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Employee Business Travel - By Rail");
+    } else if (typeOfData.equalsIgnoreCase("employeeBusinessTravelByBus")){
+         formItemList.add(busTypeItem);
+         formItemList.add(passengerMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Employee Business Travel - By Bus");
+    } else if (typeOfData.equalsIgnoreCase("employeeBusinessTravelByAir")){
+         formItemList.add(airTravelTypeItem);
+         formItemList.add(passengerMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Employee Business Travel - By Air");
+    } else if (typeOfData.equalsIgnoreCase("employeeCommutingByVehicle")){
+         vehicleTypeItem.setOptionDataSource(theEF_VehicleType_EPADS);
+         formItemList.add(vehicleTypeItem);
+         formItemList.add(passengerMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Employee Commuting - By Vehicle");
+    } else if (typeOfData.equalsIgnoreCase("employeeCommutingByRail")){
+         formItemList.add(railTypeItem);
+         formItemList.add(passengerMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Employee Commuting - By Rail");
+    } else if (typeOfData.equalsIgnoreCase("employeeCommutingByBus")){
+         formItemList.add(busTypeItem);
+         formItemList.add(passengerMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Employee Commuting - By Bus");
+    } else if (typeOfData.equalsIgnoreCase("productTransportByVehicle")){
+         vehicleTypeItem.setOptionDataSource(theEF_ProductTransport_VehicleType_EPADS);
+         formItemList.add(vehicleTypeItem);
+         formItemList.add(passengerMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Product Transport - By Vehicle");
+    } else if (typeOfData.equalsIgnoreCase("productTransportByHeavyDutyTrucks")){
+         formItemList.add(transportTypeItem);
+         formItemList.add(tonMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Product Transport - By Heavy Duty Trucks");
+    } else if (typeOfData.equalsIgnoreCase("productTransportByRail")){
+         formItemList.add(transportTypeItem);
+         formItemList.add(tonMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Product Transport - By Rail");
+    } else if (typeOfData.equalsIgnoreCase("productTransportByWaterAir")){
+         formItemList.add(transportTypeItem);
+         formItemList.add(tonMilesItem);
+         optionalSourceTypeItem.setDefaultValue("Product Transport - By Water or Air");
+    }
 
-    final SelectItem transportTypeItem = new SelectItem();
-    transportTypeItem.setName("transportType");
-    transportTypeItem.setTitle("transportType");
-    transportTypeItem.setOptionDataSource(theEF_ProductTransportType_EPADS);
+    formItemList.add(fuelUsedBeginDateItem);
+    formItemList.add(fuelUsedEndDateItem);
+    formItemList.add(optionalSourceTypeItem);
 
-    FloatItem tonMilesItem = new FloatItem();
-    tonMilesItem.setName("tonMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    productTransportByRailForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,transportTypeItem, tonMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton productTransportByRailCancelButton = new IButton();
-    final IButton productTransportByRailSaveButton = new IButton();
-
-    productTransportByRailSaveButton.setTitle("SAVE");
-    productTransportByRailSaveButton.setTooltip("Save this Source");
-    productTransportByRailSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record productTransportByRailFormRecord = productTransportByRailForm.getValuesAsRecord();
-        productTransportByRailDataGrid.updateData(productTransportByRailFormRecord);
-        productTransportByRailFormWindow.hide();
-      }
-    });
-
-    productTransportByRailCancelButton.setTitle("CANCEL");
-    productTransportByRailCancelButton.setTooltip("Cancel");
-    productTransportByRailCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        productTransportByRailFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(productTransportByRailCancelButton);
-    buttons.addMember(productTransportByRailSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(productTransportByRailForm);
-    dialog.addMember(buttons);
-    productTransportByRailFormWindow.setShowShadow(true);
-    productTransportByRailFormWindow.setShowTitle(false);
-    productTransportByRailFormWindow.setIsModal(true);
-    productTransportByRailFormWindow.setPadding(20);
-    productTransportByRailFormWindow.setWidth(500);
-    productTransportByRailFormWindow.setHeight(350);
-    productTransportByRailFormWindow.setShowMinimizeButton(false);
-    productTransportByRailFormWindow.setShowCloseButton(true);
-    productTransportByRailFormWindow.setShowModalMask(true);
-    productTransportByRailFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //productTransportByRailFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    productTransportByRailFormWindow.addItem(dialog);
- }
-
-//--productTransportByWaterAir
-private void productTransportByWaterAirTab() {
-
-        VLayout productTransportByWaterAirLayout = new VLayout(15);
-
-        Label productTransportByWaterAirDataLabel = new Label("Current Sources of Product Transport - By Water or Air");
-        productTransportByWaterAirDataLabel.setHeight(LABEL_HEIGHT);
-        productTransportByWaterAirDataLabel.setWidth100();
-        productTransportByWaterAirDataLabel.setAlign(Alignment.LEFT);
-        productTransportByWaterAirDataLabel.setStyleName("labels");
-
-        //productTransportByWaterAirLayout.addMember(productTransportByWaterAirDataLabel);
-
-//--ListGrid setup
-        productTransportByWaterAirDataGrid.setWidth100();
-        //productTransportByWaterAirDataGrid.setHeight(200);
-        productTransportByWaterAirDataGrid.setHeight100();
-        productTransportByWaterAirDataGrid.setShowRecordComponents(true);
-        productTransportByWaterAirDataGrid.setShowRecordComponentsByCell(true);
-        //productTransportByWaterAirDataGrid.setCanRemoveRecords(true);
-        //productTransportByWaterAirDataGrid.setShowAllRecords(true);
-        productTransportByWaterAirDataGrid.setAutoFetchData(Boolean.FALSE);
-        productTransportByWaterAirDataGrid.setDataSource(optionalSourceInfoDS);
-
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField optionalSourceTypeField = new ListGridField("optionalSourceType", "Optional Source Type");
-        optionalSourceTypeField.setType(ListGridFieldType.TEXT);
-        optionalSourceTypeField.setHidden(true);
-
-        ListGridField sourceDescriptionField = new ListGridField("sourceDescription", "Source Description");
-        sourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-        ListGridField transportTypeField = new ListGridField("transportType", "Transport Type");
-        transportTypeField.setType(ListGridFieldType.TEXT);
-
-        ListGridField tonMilesField = new ListGridField("tonMiles", "Ton Miles");
-        tonMilesField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        productTransportByWaterAirDataGrid.setFields(organizationIdField,optionalSourceTypeField, sourceDescriptionField, transportTypeField,tonMilesField, fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //productTransportByWaterAirLayout.addMember(productTransportByWaterAirDataGrid);
-
-        IButton newProductTransportByWaterAirButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newProductTransportByWaterAirButton.setWidth(ADD_BUTTON_WIDTH);
-        newProductTransportByWaterAirButton.setIcon(ADD_ICON_IMAGE);
-
-        newProductTransportByWaterAirButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                productTransportByWaterAirForm.editNewRecord();
-                productTransportByWaterAirFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-
-        gridButtonLayout.addMember(productTransportByWaterAirDataLabel);
-        gridButtonLayout.addMember(newProductTransportByWaterAirButton);
-        productTransportByWaterAirLayout.addMember(gridButtonLayout);
-        productTransportByWaterAirLayout.addMember(productTransportByWaterAirDataGrid);
-
-//--Defining productTransportByWaterAir
-        final Tab productTransportByWaterAirTab = new Tab("Product Transport - By Water or Air");
-        productTransportByWaterAirTab.setPane(productTransportByWaterAirLayout);
-
-//---Adding productTransportByWaterAir tab to tabSet
-        productTransportTabSet.addTab(productTransportByWaterAirTab);
-        //tabSet.addTab(productTransportTabSet);
-        //tabSet.addTab(productTransportByWaterAirTab);
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
 }
-private void initProductTransportByWaterAirEditForm() {
+public FormItem[] getWasteStreamCombustionFormFields() {
 
-    productTransportByWaterAirForm.setCellPadding(5);
-    productTransportByWaterAirForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem optionalSourceTypeItem = new TextItem("optionalSourceType");
-    optionalSourceTypeItem.setTitle("Optional Source Type");
-    optionalSourceTypeItem.setSelectOnFocus(true);
-    optionalSourceTypeItem.setWrapTitle(false);
-    //optionalSourceTypeItem.setDefaultValue("Source");
-
-    TextItem sourceDescriptionItem = new TextItem("sourceDescription");
-    sourceDescriptionItem.setTitle("Source Description");
-    sourceDescriptionItem.setSelectOnFocus(true);
-    sourceDescriptionItem.setWrapTitle(false);
-    sourceDescriptionItem.setDefaultValue("Source");
-
-    final SelectItem transportTypeItem = new SelectItem();
-    transportTypeItem.setName("transportType");
-    transportTypeItem.setTitle("transportType");
-    transportTypeItem.setOptionDataSource(theEF_ProductTransportType_EPADS);
-
-    FloatItem tonMilesItem = new FloatItem();
-    tonMilesItem.setName("tonMiles");
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    productTransportByWaterAirForm.setItems(organizationId,optionalSourceTypeItem, sourceDescriptionItem ,transportTypeItem, tonMilesItem, fuelUsedBeginDateItem,fuelUsedEndDateItem);
-
-    final IButton productTransportByWaterAirCancelButton = new IButton();
-    final IButton productTransportByWaterAirSaveButton = new IButton();
-
-    productTransportByWaterAirSaveButton.setTitle("SAVE");
-    productTransportByWaterAirSaveButton.setTooltip("Save this Source");
-    productTransportByWaterAirSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record productTransportByWaterAirFormRecord = productTransportByWaterAirForm.getValuesAsRecord();
-        productTransportByWaterAirDataGrid.updateData(productTransportByWaterAirFormRecord);
-        productTransportByWaterAirFormWindow.hide();
-      }
-    });
-
-    productTransportByWaterAirCancelButton.setTitle("CANCEL");
-    productTransportByWaterAirCancelButton.setTooltip("Cancel");
-    productTransportByWaterAirCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        productTransportByWaterAirFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(productTransportByWaterAirCancelButton);
-    buttons.addMember(productTransportByWaterAirSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(productTransportByWaterAirForm);
-    dialog.addMember(buttons);
-    productTransportByWaterAirFormWindow.setShowShadow(true);
-    productTransportByWaterAirFormWindow.setShowTitle(false);
-    productTransportByWaterAirFormWindow.setIsModal(true);
-    productTransportByWaterAirFormWindow.setPadding(20);
-    productTransportByWaterAirFormWindow.setWidth(500);
-    productTransportByWaterAirFormWindow.setHeight(350);
-    productTransportByWaterAirFormWindow.setShowMinimizeButton(false);
-    productTransportByWaterAirFormWindow.setShowCloseButton(true);
-    productTransportByWaterAirFormWindow.setShowModalMask(true);
-    productTransportByWaterAirFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //productTransportByWaterAirFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    productTransportByWaterAirFormWindow.addItem(dialog);
- }
-
-//--wasteStreamCombustion
-private void wasteStreamCombustionTab() {
-
-        wasteStreamCombustionLayout.setWidth100();
-        wasteStreamCombustionLayout.setHeight100();
-
-        VLayout wasteStreamCombustionDetailsLayout = new VLayout(15);
-
-        Label wasteStreamCombustionDataLabel = new Label("Current Sources of Product Waste Stream Combustion");
-        wasteStreamCombustionDataLabel.setHeight(LABEL_HEIGHT);
-        wasteStreamCombustionDataLabel.setWidth100();
-        wasteStreamCombustionDataLabel.setAlign(Alignment.LEFT);
-        wasteStreamCombustionDataLabel.setStyleName("labels");
-
-        //wasteStreamCombustionDetailsLayout.addMember(wasteStreamCombustionDataLabel);
-
-//--ListGrid setup
-        wasteStreamCombustionDataGrid.setWidth100();
-        //wasteStreamCombustionDataGrid.setHeight(200);
-        wasteStreamCombustionDataGrid.setHeight100();
-        wasteStreamCombustionDataGrid.setShowRecordComponents(true);
-        wasteStreamCombustionDataGrid.setShowRecordComponentsByCell(true);
-        //wasteStreamCombustionDataGrid.setCanRemoveRecords(true);
-        //wasteStreamCombustionDataGrid.setShowAllRecords(true);
-        wasteStreamCombustionDataGrid.setAutoFetchData(Boolean.FALSE);
-        wasteStreamCombustionDataGrid.setDataSource(wasteStreamCombustionInfoDS);
-
-        ListGridField organizationIdField = new ListGridField("organizationId", "Organization Id");
-        organizationIdField.setType(ListGridFieldType.INTEGER);
-        organizationIdField.setHidden(true);
-
-        ListGridField fuelSourceDescriptionField = new ListGridField("fuelSourceDescription", "Fuel Source Description");
-        fuelSourceDescriptionField.setType(ListGridFieldType.TEXT);
-
-	ListGridField amountOfWasterStreamGasCombustedField =
-	new ListGridField("amountOfWasterStreamGasCombusted", "Amount Of Waster Stream Gas Combusted");
-	amountOfWasterStreamGasCombustedField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField amountOfWasterStreamGasCombustedUnitField =
-	new ListGridField("amountOfWasterStreamGasCombustedUnit", "Amount Of Waster Stream Gas Combusted Unit");
-	amountOfWasterStreamGasCombustedUnitField.setType(ListGridFieldType.TEXT);
-
-	ListGridField totalNumberOfMolesPerUnitVolumentField =
-	new ListGridField("totalNumberOfMolesPerUnitVolument", "Total Number Of Moles Per Unit Volument");
-	totalNumberOfMolesPerUnitVolumentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField totalNumberOfMolesPerUnitVolumentUnitField =
-	new ListGridField("totalNumberOfMolesPerUnitVolumentUnit", "Amount Of Waster Stream Gas Combusted Unit");
-	totalNumberOfMolesPerUnitVolumentUnitField.setType(ListGridFieldType.TEXT);
-
-	ListGridField carbonMonoxideMolarFractionPercentField =
-	new ListGridField("carbonMonoxideMolarFractionPercent", "Carbon Monoxide Molar Fraction Percent");
-	carbonMonoxideMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField carbonDioxideMolarFractionPercentField =
-	new ListGridField("carbonDioxideMolarFractionPercent", "Carbon Dioxide Molar Fraction Percent");
-	carbonDioxideMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField methaneMolarFractionPercentField =
-	new ListGridField("methaneMolarFractionPercent", "methaneMolarFractionPercent");
-	methaneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField cetyleneMolarFractionPercentField =
-	new ListGridField("cetyleneMolarFractionPercent", "Cetylene Molar Fraction Percent");
-	cetyleneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField ethyleneMolarFractionPercentField =
-	new ListGridField("ethyleneMolarFractionPercent", "Ethylene Molar Fraction Percent");
-	ethyleneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField ethaneMolarFractionPercentField =
-	new ListGridField("ethaneMolarFractionPercent", "Ethane Molar Fraction Percent");
-	ethaneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField propyleneMolarFractionPercentField =
-	new ListGridField("propyleneMolarFractionPercent", "Propylene Molar Fraction Percent");
-	propyleneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-
-	ListGridField propaneMolarFractionPercentField =
-	new ListGridField("propaneMolarFractionPercent", "Propane Molar Fraction Percent");
-	propaneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-
-	ListGridField n_ButaneMolarFractionPercentField =
-	new ListGridField("n_ButaneMolarFractionPercent", "n_Butane Molar Fraction Percent");
-	n_ButaneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField benzeneMolarFractionPercentField =
-	new ListGridField("benzeneMolarFractionPercent", "Benzene Molar Fraction Percent");
-	benzeneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField bexaneMolarFractionPercentField =
-	new ListGridField("bexaneMolarFractionPercent", "Bexane Molar Fraction Percent");
-	bexaneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField tolueneMolarFractionPercentField =
-	new ListGridField("tolueneMolarFractionPercent", "Toluene Molar Fraction Percent");
-	tolueneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField octaneMolarFractionPercentField =
-	new ListGridField("octaneMolarFractionPercent", "Octane Molar Fraction Percent");
-	octaneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField ethanolMolarFractionPercentField =
-	new ListGridField("ethanolMolarFractionPercent", "Ethanol Molar Fraction Percent");
-	ethanolMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField acetoneMolarFractionPercentField =
-	new ListGridField("acetoneMolarFractionPercent", "Acetone Molar Fraction Percent");
-	acetoneMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField tetrahydrofuranMolarFractionPercentField =
-	new ListGridField("tetrahydrofuranMolarFractionPercent", "Tetrahydrofuran Molar Fraction Percent");
-	tetrahydrofuranMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField otherNon_CMolarFractionPercentField =
-	new ListGridField("otherNon_CMolarFractionPercent", "Other Non_C Molar Fraction Percent");
-	otherNon_CMolarFractionPercentField.setType(ListGridFieldType.FLOAT);
-
-	ListGridField oxidationFactorPercentField =
-	new ListGridField("oxidationFactorPercent", "Oxidation Factor Percent");
-	oxidationFactorPercentField.setType(ListGridFieldType.FLOAT);
-
-        ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
-        fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
-        fuelUsedEndDateField.setType(ListGridFieldType.DATE);
-
-        ListGridField editButtonField = new ListGridField("editButtonField", "Edit");
-        editButtonField.setAlign(Alignment.CENTER);
-
-        ListGridField removeButtonField = new ListGridField("removeButtonField", "Remove");
-        //removeButtonField.setWidth(100);
-
-        wasteStreamCombustionDataGrid.setFields(organizationIdField,fuelSourceDescriptionField,
-						amountOfWasterStreamGasCombustedField,
-						amountOfWasterStreamGasCombustedUnitField,
-						totalNumberOfMolesPerUnitVolumentField,
-						totalNumberOfMolesPerUnitVolumentUnitField,
-						carbonMonoxideMolarFractionPercentField,
-						carbonDioxideMolarFractionPercentField,
-						methaneMolarFractionPercentField,
-						cetyleneMolarFractionPercentField,
-						ethyleneMolarFractionPercentField,
-						ethaneMolarFractionPercentField,
-						propyleneMolarFractionPercentField,
-						propaneMolarFractionPercentField,
-						n_ButaneMolarFractionPercentField,
-						benzeneMolarFractionPercentField,
-						bexaneMolarFractionPercentField,
-						tolueneMolarFractionPercentField,
-						octaneMolarFractionPercentField,
-						ethanolMolarFractionPercentField,
-						acetoneMolarFractionPercentField,
-						tetrahydrofuranMolarFractionPercentField,
-						otherNon_CMolarFractionPercentField,
-                                                oxidationFactorPercentField,
-        					fuelUsedBeginDateField, fuelUsedEndDateField ,editButtonField, removeButtonField);
-
-        //wasteStreamCombustionDetailsLayout.addMember(wasteStreamCombustionDataGrid);
-
-        IButton newWasteStreamCombustionButton = new IButton(ADD_NEW_SOURCE_TEXT);
-        newWasteStreamCombustionButton.setWidth(ADD_BUTTON_WIDTH);
-        newWasteStreamCombustionButton.setIcon(ADD_ICON_IMAGE);
-
-        newWasteStreamCombustionButton.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent event) {
-                wasteStreamCombustionForm.editNewRecord();
-                wasteStreamCombustionFormWindow.show();
-            }
-        });
-
-        HLayout gridButtonLayout = new HLayout(10);
-        gridButtonLayout.addMember(wasteStreamCombustionDataLabel);
-        gridButtonLayout.addMember(newWasteStreamCombustionButton);
-        wasteStreamCombustionDetailsLayout.addMember(gridButtonLayout);
-        wasteStreamCombustionDetailsLayout.addMember(wasteStreamCombustionDataGrid);
-
-//--Defining wasteStreamCombustion
-        final Tab wasteStreamCombustionTab = new Tab("Waste Stream Combustion");
-        wasteStreamCombustionTab.setPane(wasteStreamCombustionDetailsLayout);
-
-//---Adding wasteStreamCombustion tab to tabSet
-        wasteStreamCombustionTabSet.addTab(wasteStreamCombustionTab);
-        wasteStreamCombustionLayout.addMember(wasteStreamCombustionTabSet);
-
-}
-private void initWasteStreamCombustionEditForm() {
-
-    wasteStreamCombustionForm.setCellPadding(5);
-    wasteStreamCombustionForm.setWidth("100%");
-
-//-- Form fields  -------------------------------------------------------------------
-    IntegerItem organizationId = new IntegerItem();
-    organizationId.setName("organizationId");
-
-    TextItem fuelSourceDescriptionItem = new TextItem();
+//-- setValidators for the forms for common types.
+    initializeValidators();
+    
+    FuelSourceDescriptionItem fuelSourceDescriptionItem = new FuelSourceDescriptionItem();
     fuelSourceDescriptionItem.setName("fuelSourceDescription");
 
-    FloatItem amountOfWasterStreamGasCombustedItem = new FloatItem();
-    amountOfWasterStreamGasCombustedItem.setName("amountOfWasterStreamGasCombusted");
+    IblFloatItem amountOfWasterStreamGasCombustedItem = new IblFloatItem("amountOfWasterStreamGasCombusted");
+    StaticTextItem amountOfWasterStreamGasCombustedUnitItem = new StaticTextItem("amountOfWasterStreamGasCombustedUnit");
+    amountOfWasterStreamGasCombustedUnitItem.setDefaultValue("scf");
 
-    TextItem amountOfWasterStreamGasCombustedUnitItem = new TextItem();
-    amountOfWasterStreamGasCombustedUnitItem.setName("amountOfWasterStreamGasCombustedUnit");
+    IblFloatItem totalNumberOfMolesPerUnitVolumentItem = new IblFloatItem("totalNumberOfMolesPerUnitVolument");
+    StaticTextItem totalNumberOfMolesPerUnitVolumentUnitItem = new StaticTextItem("totalNumberOfMolesPerUnitVolumentUnit");
+    totalNumberOfMolesPerUnitVolumentUnitItem.setDefaultValue("lbmole/ft3");
 
-	FloatItem totalNumberOfMolesPerUnitVolumentItem = new FloatItem();
-	totalNumberOfMolesPerUnitVolumentItem.setName("totalNumberOfMolesPerUnitVolument");
-
-	TextItem totalNumberOfMolesPerUnitVolumentUnitItem = new TextItem();
-	totalNumberOfMolesPerUnitVolumentUnitItem.setName("totalNumberOfMolesPerUnitVolumentUnit");
-
-	FloatItem carbonMonoxideMolarFractionPercentItem = new FloatItem();
-	carbonMonoxideMolarFractionPercentItem.setName("carbonMonoxideMolarFractionPercent");
-
-	FloatItem carbonDioxideMolarFractionPercentItem = new FloatItem();
-	carbonDioxideMolarFractionPercentItem.setName("carbonDioxideMolarFractionPercent");
-
-	FloatItem methaneMolarFractionPercentItem = new FloatItem();
-	methaneMolarFractionPercentItem.setName("methaneMolarFractionPercent");
-
-	FloatItem cetyleneMolarFractionPercentItem = new FloatItem();
-	cetyleneMolarFractionPercentItem.setName("cetyleneMolarFractionPercent");
-
-	FloatItem ethyleneMolarFractionPercentItem = new FloatItem();
-	ethyleneMolarFractionPercentItem.setName("ethyleneMolarFractionPercent");
-
-	FloatItem ethaneMolarFractionPercentItem = new FloatItem();
-	ethaneMolarFractionPercentItem.setName("ethaneMolarFractionPercent");
-
-	FloatItem propyleneMolarFractionPercentItem = new FloatItem();
-	propyleneMolarFractionPercentItem.setName("propyleneMolarFractionPercent");
-
-	FloatItem propaneMolarFractionPercentItem = new FloatItem();
-	propaneMolarFractionPercentItem.setName("propaneMolarFractionPercent");
-
-	FloatItem n_ButaneMolarFractionPercentItem = new FloatItem();
-	n_ButaneMolarFractionPercentItem.setName("n_ButaneMolarFractionPercent");
-
-	FloatItem benzeneMolarFractionPercentItem = new FloatItem();
-	benzeneMolarFractionPercentItem.setName("benzeneMolarFractionPercent");
-
-	FloatItem bexaneMolarFractionPercentItem = new FloatItem();
-	bexaneMolarFractionPercentItem.setName("bexaneMolarFractionPercent");
-
-	FloatItem tolueneMolarFractionPercentItem = new FloatItem();
-	tolueneMolarFractionPercentItem.setName("tolueneMolarFractionPercent");
-
-	FloatItem octaneMolarFractionPercentItem = new FloatItem();
-	octaneMolarFractionPercentItem.setName("octaneMolarFractionPercent");
-
-	FloatItem ethanolMolarFractionPercentItem = new FloatItem();
-	ethanolMolarFractionPercentItem.setName("ethanolMolarFractionPercent");
-
-	FloatItem acetoneMolarFractionPercentItem = new FloatItem();
-	acetoneMolarFractionPercentItem.setName("acetoneMolarFractionPercent");
-
-	FloatItem tetrahydrofuranMolarFractionPercentItem = new FloatItem();
-	tetrahydrofuranMolarFractionPercentItem.setName("tetrahydrofuranMolarFractionPercent");
-
-	FloatItem otherNon_CMolarFractionPercentItem = new FloatItem();
-	otherNon_CMolarFractionPercentItem.setName("otherNon_CMolarFractionPercent");
-
-      	FloatItem oxidationFactorPercentItem = new FloatItem();
-	oxidationFactorPercentItem.setName("oxidationFactorPercent");
-
-
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setName("fuelUsedBeginDate");
-
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setName("fuelUsedEndDate");
-
-    wasteStreamCombustionForm.setItems(organizationId,fuelSourceDescriptionItem,
-					    amountOfWasterStreamGasCombustedItem,
-					    amountOfWasterStreamGasCombustedUnitItem,
-					    totalNumberOfMolesPerUnitVolumentItem,
-					    totalNumberOfMolesPerUnitVolumentUnitItem,
-					    carbonMonoxideMolarFractionPercentItem,
-					    carbonDioxideMolarFractionPercentItem,
-					    methaneMolarFractionPercentItem,
-					    cetyleneMolarFractionPercentItem,
-					    ethyleneMolarFractionPercentItem,
-					    ethaneMolarFractionPercentItem,
-					    propyleneMolarFractionPercentItem,
-					    propaneMolarFractionPercentItem,
-					    n_ButaneMolarFractionPercentItem,
-					    benzeneMolarFractionPercentItem,
-					    bexaneMolarFractionPercentItem,
-					    tolueneMolarFractionPercentItem,
-					    octaneMolarFractionPercentItem,
-					    ethanolMolarFractionPercentItem,
-					    acetoneMolarFractionPercentItem,
-					    tetrahydrofuranMolarFractionPercentItem,
-					    otherNon_CMolarFractionPercentItem,
-                                            oxidationFactorPercentItem,
-    					    fuelUsedBeginDateItem,fuelUsedEndDateItem
-    					);
-
-    final IButton wasteStreamCombustionCancelButton = new IButton();
-    final IButton wasteStreamCombustionSaveButton = new IButton();
-
-    wasteStreamCombustionSaveButton.setTitle("SAVE");
-    wasteStreamCombustionSaveButton.setTooltip("Save this Source");
-    wasteStreamCombustionSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        Record wasteStreamCombustionFormRecord = wasteStreamCombustionForm.getValuesAsRecord();
-        wasteStreamCombustionDataGrid.updateData(wasteStreamCombustionFormRecord);
-        wasteStreamCombustionFormWindow.hide();
-      }
-    });
-
-    wasteStreamCombustionCancelButton.setTitle("CANCEL");
-    wasteStreamCombustionCancelButton.setTooltip("Cancel");
-    wasteStreamCombustionCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        wasteStreamCombustionFormWindow.hide();
-      }
-    });
-
-    HLayout buttons = new HLayout(10);
-    buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(wasteStreamCombustionCancelButton);
-    buttons.addMember(wasteStreamCombustionSaveButton);
-
-    VLayout dialog = new VLayout(10);
-    dialog.setPadding(10);
-    dialog.addMember(wasteStreamCombustionForm);
-    dialog.addMember(buttons);
-    wasteStreamCombustionFormWindow.setShowShadow(true);
-    wasteStreamCombustionFormWindow.setShowTitle(false);
-    wasteStreamCombustionFormWindow.setIsModal(true);
-    wasteStreamCombustionFormWindow.setPadding(20);
-    wasteStreamCombustionFormWindow.setWidth(500);
-    wasteStreamCombustionFormWindow.setHeight(350);
-    wasteStreamCombustionFormWindow.setShowMinimizeButton(false);
-    wasteStreamCombustionFormWindow.setShowCloseButton(true);
-    wasteStreamCombustionFormWindow.setShowModalMask(true);
-    wasteStreamCombustionFormWindow.centerInPage();
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //wasteStreamCombustionFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    wasteStreamCombustionFormWindow.addItem(dialog);
- }
-
-private void initOrganizationProfileEditForm() {
-
-    organizationProfileForm.setCellPadding(5);
-    //organizationProfileForm.setDefaultWidth(800);
-    organizationProfileForm.setWidth("50%");
-    organizationProfileForm.setNumCols(2);
-    //organizationProfileForm.setColWidths("25%");
-
-    organizationProfileVLayout.setWidth100();
-    organizationProfileVLayout.setHeight100();
-    //organizationProfileForm.setBorder("1px double orange");
-    //organizationProfileForm.setTitleOrientation(TitleOrientation.TOP);
-    organizationProfileForm.setDataSource(organizationDS);    
-    //organizationProfileForm.setDisableValidation(Boolean.TRUE);
-    organizationProfileForm.setAlign(Alignment.CENTER);
-
-    //organizationProfileForm.animateShow(AnimationEffect.SLIDE);
-    //organizationProfileForm.hide();
-    //organizationProfileForm.setTitle("Please your organization information:");
-
-//-- setValidators for the forms for common types.
-    //initializeValidators();
-
-//-- Form fields  -------------------------------------------------------------------
-    TextItem organizationNameItem = new TextItem("organizationName");
-    organizationNameItem.setWidth(200);
-    organizationNameItem.setColSpan(2);
-    //organizationNameItem.
-
-/*
-    DateItem currentInventoryBeginDateItem = new DateItem();
-    currentInventoryBeginDateItem.setName("currentInventoryBeginDate");
-    //currentInventoryBeginDateItem.setValidateOnExit(Boolean.FALSE);
-    //currentInventoryBeginDateItem.setValidateOnChange(Boolean.FALSE);
-    //currentInventoryBeginDateItem.setEditorType();
-    //currentInventoryBeginDateItem.setUseTextField(Boolean.TRUE);
+    IblFloatItem carbonMonoxideMolarFractionPercentItem = new IblFloatItem("carbonMonoxideMolarFractionPercent");
+    IblFloatItem carbonDioxideMolarFractionPercentItem = new IblFloatItem("carbonDioxideMolarFractionPercent");
+    IblFloatItem methaneMolarFractionPercentItem = new IblFloatItem("methaneMolarFractionPercent");
+    IblFloatItem cetyleneMolarFractionPercentItem = new IblFloatItem("cetyleneMolarFractionPercent");
+    IblFloatItem ethyleneMolarFractionPercentItem = new IblFloatItem("ethyleneMolarFractionPercent");
+    IblFloatItem ethaneMolarFractionPercentItem = new IblFloatItem("ethaneMolarFractionPercent");
+    IblFloatItem propyleneMolarFractionPercentItem = new IblFloatItem("propyleneMolarFractionPercent");
+    IblFloatItem propaneMolarFractionPercentItem = new IblFloatItem("propaneMolarFractionPercent");
+    IblFloatItem n_ButaneMolarFractionPercentItem = new IblFloatItem("n_ButaneMolarFractionPercent");
+    IblFloatItem benzeneMolarFractionPercentItem = new IblFloatItem("benzeneMolarFractionPercent");
+    IblFloatItem bexaneMolarFractionPercentItem = new IblFloatItem("bexaneMolarFractionPercent");
+    IblFloatItem tolueneMolarFractionPercentItem = new IblFloatItem("tolueneMolarFractionPercent");
+    IblFloatItem octaneMolarFractionPercentItem = new IblFloatItem("octaneMolarFractionPercent");
+    IblFloatItem ethanolMolarFractionPercentItem = new IblFloatItem("ethanolMolarFractionPercent");
+    IblFloatItem acetoneMolarFractionPercentItem = new IblFloatItem("acetoneMolarFractionPercent");
+    IblFloatItem tetrahydrofuranMolarFractionPercentItem = new IblFloatItem("tetrahydrofuranMolarFractionPercent");
+    IblFloatItem otherNon_CMolarFractionPercentItem = new IblFloatItem("otherNon_CMolarFractionPercent");
+    IblFloatItem oxidationFactorPercentItem = new IblFloatItem("oxidationFactorPercent");
     
-    DateItem currentInventoryEndDateItem = new DateItem();
-    currentInventoryEndDateItem.setName("currentInventoryEndDate");
-    //currentInventoryEndDateItem.setValidateOnExit(Boolean.FALSE);
-    //currentInventoryEndDateItem.setValidateOnChange(Boolean.FALSE);
-*/
-    TextItem organizationStreetAddress1Item = new TextItem("organizationStreetAddress1");
-    //organizationNameItem.setWidth(100);
+    IblDateItem fuelUsedBeginDateItem = new IblDateItem("fuelUsedBeginDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
+    IblDateItem fuelUsedEndDateItem = new IblDateItem("fuelUsedEndDate", currentInventoryBeginDateMin,
+                                                        currentInventoryEndDateMax, validateDateRange);
 
-    TextItem organizationStreetAddress2Item = new TextItem("organizationStreetAddress2");
-    //organizationNameItem.setWidth(200);
-
-    TextItem organizationCityItem = new TextItem("organizationCity");
-    //organizationNameItem.setWidth(50);
-
-    TextItem organizationStateItem = new TextItem("organizationState");
-    //organizationNameItem.setWidth(20);
-
-    TextItem organizationZipCodeItem = new TextItem("organizationZipCode");
-    organizationNameItem.setWidth(40);
-
-    TextItem organizationCountryItem = new TextItem("organizationCountry");
-    organizationNameItem.setWidth(200);
-
-    TextItem organizationWebsiteItem = new TextItem("organizationWebsite");
-    organizationNameItem.setWidth(200);
-
-    TextItem organizationHQItem = new TextItem("organizationHQ");
-    organizationNameItem.setWidth(20);
-
-    TextItem pointOfContactItem = new TextItem("pointOfContact");
-    organizationNameItem.setWidth(200);
-
-    //organizationProfileForm.setIsGroup(Boolean.TRUE);
-    //organizationProfileForm.setGroupTitle("Update your organization profile");
-    //organizationProfileForm.setRedrawOnResize(true);
-
-    organizationProfileForm.setItems(organizationNameItem, 
-                                        organizationStreetAddress1Item,organizationStreetAddress2Item,
-                                        organizationCityItem,organizationStateItem,organizationZipCodeItem,
-                                        organizationCountryItem,organizationWebsiteItem,organizationHQItem,pointOfContactItem);
-
-    final IButton organizationProfileCancelButton = new IButton();
-    final IButton organizationProfileSaveButton = new IButton();
-
-    organizationProfileSaveButton.setTitle("SAVE");
-    organizationProfileSaveButton.setTooltip("Save");
-    organizationProfileSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        if (!organizationProfileForm.getErrors().isEmpty()){
-            SC.say("Please clear errors before submitting this information!");
-        }
-        else {
-            //Record organizationRecord = organizationProfileForm.getValuesAsRecord();
-            organizationProfileForm.saveData();
-            //organizationProfileForm.clearValues();
-            //organizationProfileForm.markForRedraw();
-            //organizationProfileVLayout.hide();
-        }
-      }
-    });
-
-    organizationProfileCancelButton.setTitle("CANCEL");
-    organizationProfileCancelButton.setTooltip("Cancel");
-    organizationProfileCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        //organizationProfileForm.saveData();
-        //organizationProfileVLayout.hide();
-        Criteria fetchCriteria = new Criteria();
-
-        String orgName = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
-        fetchCriteria.addCriteria("organizationName", orgName);
-        organizationProfileForm.fetchData(fetchCriteria);
-      }
-    });
-
-    HLayout buttons = new HLayout();
-    //buttons.setWidth("50%");
-    //buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(organizationProfileCancelButton);
-    buttons.addMember(organizationProfileSaveButton);
-
-    Label updateOrganizationProfileLabel = new Label("Organization Profile");
-    updateOrganizationProfileLabel.setHeight(15);
-    updateOrganizationProfileLabel.setWidth100();
-    updateOrganizationProfileLabel.setAlign(Alignment.LEFT);
-    updateOrganizationProfileLabel.setStyleName("labels");
-
-    organizationProfileVLayout.setAlign(Alignment.CENTER);
-    organizationProfileVLayout.addMember(updateOrganizationProfileLabel);
-    organizationProfileVLayout.addMember(organizationProfileForm);
-    organizationProfileVLayout.addMember(buttons);
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(fuelSourceDescriptionItem);
+    formItemList.add(amountOfWasterStreamGasCombustedItem);
+    formItemList.add(amountOfWasterStreamGasCombustedUnitItem);
+    formItemList.add(totalNumberOfMolesPerUnitVolumentItem);
+    formItemList.add(totalNumberOfMolesPerUnitVolumentUnitItem);
+    formItemList.add(carbonMonoxideMolarFractionPercentItem);
+    formItemList.add(carbonDioxideMolarFractionPercentItem);
+    formItemList.add(methaneMolarFractionPercentItem);
+    formItemList.add(cetyleneMolarFractionPercentItem);
+    formItemList.add(ethyleneMolarFractionPercentItem);
+    formItemList.add(ethaneMolarFractionPercentItem);
+    formItemList.add(propyleneMolarFractionPercentItem);
+    formItemList.add(propaneMolarFractionPercentItem);
+    formItemList.add(n_ButaneMolarFractionPercentItem);
+    formItemList.add(benzeneMolarFractionPercentItem);
+    formItemList.add(bexaneMolarFractionPercentItem);
+    formItemList.add(tolueneMolarFractionPercentItem);
+    formItemList.add(octaneMolarFractionPercentItem);
+    formItemList.add(ethanolMolarFractionPercentItem);
+    formItemList.add(acetoneMolarFractionPercentItem);
+    formItemList.add(tetrahydrofuranMolarFractionPercentItem);
+    formItemList.add(otherNon_CMolarFractionPercentItem);
+    formItemList.add(oxidationFactorPercentItem);
     
-    /*
-    organizationProfileFormWindow.setShowShadow(true);
-    //organizationProfileFormWindow.setShowTitle(false);
-    //organizationProfileFormWindow.setIsModal(true);
-    organizationProfileFormWindow.setPadding(20);
-    organizationProfileFormWindow.setWidth(500);
-    organizationProfileFormWindow.setHeight(350);
-    //organizationProfileFormWindow.setShowMinimizeButton(false);
-    //organizationProfileFormWindow.setShowCloseButton(true);
-    organizationProfileFormWindow.setShowModalMask(true);
-    organizationProfileFormWindow.centerInPage();
-    organizationProfileFormWindow.setTitle("Please update your organization profile: ");
-	
-    //HeaderControl closeControl = new HeaderControl(HeaderControl.CLOSE, this);
-    //organizationProfileFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
-    organizationProfileFormWindow.addItem(dialog);
-    */
+    formItemList.add(fuelUsedBeginDateItem);
+    formItemList.add(fuelUsedEndDateItem);
+
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
 }
 
-private void initOrganizationInventoryYearEditForm() {
-
-    organizationInventoryYearVLayout.setWidth100();
-    organizationInventoryYearVLayout.setHeight100();
-    organizationInventoryYearForm.setCellPadding(5);
-    //organizationInventoryYearForm.setDefaultWidth(800);
-    organizationInventoryYearForm.setWidth("50%");
-    organizationInventoryYearForm.setNumCols(2);
-    //organizationInventoryYearForm.setColWidths("25%");
-
-    //organizationInventoryYearForm.setBorder("1px double orange");
-    //organizationInventoryYearForm.setTitleOrientation(TitleOrientation.TOP);
-    organizationInventoryYearForm.setDataSource(organizationDS);
-    //organizationInventoryYearForm.setDisableValidation(Boolean.TRUE);
-    //organizationInventoryYearForm.setAlign(Alignment.CENTER);
-
-    //organizationInventoryYearForm.animateShow(AnimationEffect.SLIDE);
-    //organizationInventoryYearForm.hide();
-    //organizationInventoryYearForm.setTitle("Please your organization information:");
-
-//-- setValidators for the forms for common types.
-    //initializeValidators();
-
-//-- Form fields  -------------------------------------------------------------------
-    //TextItem organizationNameItem = new TextItem("organizationName");
-    //organizationNameItem.setWidth(200);
-
-    //organizationNameItem.
-
-    DateItem currentInventoryBeginDateItem = new DateItem();
-    currentInventoryBeginDateItem.setName("currentInventoryBeginDate");
-    //currentInventoryBeginDateItem.setValidateOnExit(Boolean.FALSE);
-    //currentInventoryBeginDateItem.setValidateOnChange(Boolean.FALSE);
-    //currentInventoryBeginDateItem.setEditorType();
-    //currentInventoryBeginDateItem.setUseTextField(Boolean.TRUE);
-    //currentInventoryBeginDateItem.setUseMask(Boolean.TRUE);
-    
-    final DateItem currentInventoryEndDateItem = new DateItem();
-    currentInventoryEndDateItem.setName("currentInventoryEndDate");
-    //currentInventoryEndDateItem.setValidateOnExit(Boolean.FALSE);
-    //currentInventoryEndDateItem.setValidateOnChange(Boolean.FALSE);
-    //currentInventoryEndDateItem.setUseTextField(Boolean.TRUE);
-    //currentInventoryEndDateItem.setUseMask(Boolean.TRUE);
-
-    organizationInventoryYearForm.setItems(currentInventoryBeginDateItem, currentInventoryEndDateItem);
-
-    final IButton organizationInventoryYearCancelButton = new IButton();
-    final IButton organizationInventoryYearSaveButton = new IButton();
-
-    organizationInventoryYearSaveButton.setTitle("SAVE");
-    organizationInventoryYearSaveButton.setTooltip("Save");
-    organizationInventoryYearSaveButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        if (!organizationInventoryYearForm.getErrors().isEmpty()){
-            SC.say("Please clear errors before submitting this information!");
-        }
-        else {
-            //Record organizationRecord = organizationInventoryYearForm.getValuesAsRecord();           
-            organizationInventoryYearForm.saveData(
-                          new DSCallback() {
-                                        public void execute(DSResponse response, Object rawData, DSRequest request) {
-                                        UserOrganizationHeader.organizationSelectForm.fetchData();
-                            }
-                          });
-
-            //--Update Inventory Year in the Header
-            //UserOrganizationHeader.organizationSelectForm.fetchData();
-            //UserOrganizationHeader.organizationSelectForm.fetchData();
-            //organizationInventoryYearForm.clearValues();
-            //organizationInventoryYearForm.markForRedraw();
-            //organizationInventoryYearVLayout.hide();
-        }
-      }
-    });
-
-    organizationInventoryYearCancelButton.setTitle("CANCEL");
-    organizationInventoryYearCancelButton.setTooltip("Cancel");
-    organizationInventoryYearCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        //organizationInventoryYearForm.saveData();
-        //organizationInventoryYearVLayout.hide();
-        Criteria fetchCriteria = new Criteria();
-
-        String orgName = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
-        fetchCriteria.addCriteria("organizationName", orgName);
-        organizationInventoryYearForm.fetchData(fetchCriteria);
-      }
-    });
-
-    HLayout buttons = new HLayout();
-    //buttons.setWidth("50%");
-    //buttons.setAlign(Alignment.CENTER);
-    buttons.addMember(organizationInventoryYearCancelButton);
-    buttons.addMember(organizationInventoryYearSaveButton);
-
-    Label currentInventoryYearLabel = new Label("Current Inventory Year");
-    currentInventoryYearLabel.setHeight(15);
-    currentInventoryYearLabel.setWidth100();
-    currentInventoryYearLabel.setAlign(Alignment.LEFT);
-    currentInventoryYearLabel.setStyleName("labels");
-
-    organizationInventoryYearVLayout.addMember(currentInventoryYearLabel);
-    organizationInventoryYearVLayout.addMember(organizationInventoryYearForm);
-    organizationInventoryYearVLayout.addMember(buttons);
 }
 
-private void initEmissionsSummaryInputForm() {
-
-    emissionsSummaryInputVLayout.setWidth100();
-    emissionsSummaryInputVLayout.setHeight100();
-
-    emissionsSummaryInputForm.setCellPadding(5);
-    //emissionsSummaryInputForm.setDefaultWidth(800);
-    emissionsSummaryInputForm.setWidth("50%");
-    emissionsSummaryInputForm.setNumCols(2);
-    //emissionsSummaryInputForm.setColWidths("25%");
-
-    //emissionsSummaryInputForm.setBorder("1px double orange");
-    //emissionsSummaryInputForm.setTitleOrientation(TitleOrientation.TOP);
-    emissionsSummaryInputForm.setDataSource(organizationDS);
-    //emissionsSummaryInputForm.setDisableValidation(Boolean.TRUE);
-    //emissionsSummaryInputForm.setAlign(Alignment.CENTER);
-
-    //emissionsSummaryInputForm.animateShow(AnimationEffect.SLIDE);
-    //emissionsSummaryInputForm.hide();
-    //emissionsSummaryInputForm.setTitle("Please your organization information:");
-
-//-- setValidators for the forms for common types.
-    //initializeValidators();
-
-//-- Form fields  -------------------------------------------------------------------
-     DateItem emissionsBeginDate = new DateItem("emissionsBeginDate");
-     emissionsBeginDate.setTitle("Emissions Begin Date");
-
-     DateItem emissionsEndDate = new DateItem("emissionsEndDate");
-     emissionsEndDate.setTitle("Emissions End Date");
-
-     final SelectItem programTypeItem = new SelectItem();
-     programTypeItem.setName("programType");
-     programTypeItem.setTitle("Program Type");
-     programTypeItem.setValueMap("EPA Climate Leaders", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
-     programTypeItem.setDefaultToFirstOption(Boolean.TRUE);
-     programTypeItem.setDisabled(Boolean.TRUE);
-
-    emissionsSummaryInputForm.setItems(emissionsBeginDate, emissionsEndDate, programTypeItem);
-
-    //final IButton emissionsSummaryCancelButton = new IButton();
-    final IButton emissionsSummaryCalculateButton = new IButton();
-
-    emissionsSummaryCalculateButton.setWidth(180);
-
-    emissionsSummaryCalculateButton.setTitle("Calculate Emissions");
-    emissionsSummaryCalculateButton.setTooltip("Calculate Emissions");
-    emissionsSummaryCalculateButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-        if (!emissionsSummaryInputForm.getErrors().isEmpty()){
-            SC.say("Please clear errors before submitting this information!");
-        }
-        else {
-        	Record emissionsSummaryInputRecord = emissionsSummaryInputForm.getValuesAsRecord();
-                String orgName = (String) UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
-                emissionsSummaryInputRecord.setAttribute("organizationName", orgName);
-		emissionsSummaryDS.performCustomOperation("calculateEmissionsSummary", emissionsSummaryInputRecord);
-        }
-      }
-    });
-
-    /*
-    emissionsSummaryCancelButton.setTitle("CANCEL");
-    emissionsSummaryCancelButton.setTooltip("Cancel");
-    emissionsSummaryCancelButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent clickEvent) {
-      		SC.say("I need to cancel this!");
-      }
-    });
-    */
-
-    HLayout buttons = new HLayout();
-    //buttons.setAlign(Alignment.CENTER);
-    //buttons.addMember(emissionsSummaryCancelButton);
-    buttons.addMember(emissionsSummaryCalculateButton);
-
-    Label calculateEmissionsLabel = new Label("Calculate Emissions for the specific period");
-    calculateEmissionsLabel.setHeight(15);
-    calculateEmissionsLabel.setWidth100();
-    calculateEmissionsLabel.setAlign(Alignment.LEFT);
-    calculateEmissionsLabel.setStyleName("labels");
-
-    emissionsSummaryInputVLayout.addMember(calculateEmissionsLabel);
-    emissionsSummaryInputVLayout.addMember(emissionsSummaryInputForm);
-    emissionsSummaryInputVLayout.addMember(buttons);
-}
-
-public void displayEmissionSourceInfo(String emissionSourceChoice) {
-            Criteria fetchCriteria = new Criteria();
-
-            String orgName = (String)UserOrganizationHeader.organizationSelectForm.getField("organizationName").getValue();
-            fetchCriteria.addCriteria("organizationName", orgName);
-
-            //SC.say("Org Name is " + orgName);
-            Date currentInventoryBeginDate = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryBeginDate").getValue();
-            fetchCriteria.addCriteria("inventoryYearBeginDate", currentInventoryBeginDate);
-
-            Date currentInventoryEndDate = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryEndDate").getValue();
-            fetchCriteria.addCriteria("inventoryYearEndDate", currentInventoryEndDate);
-
-            String programType = (String) UserOrganizationHeader.organizationSelectForm.getField("programType").getValue();
-            fetchCriteria.addCriteria("programType", programType);
-
-            //--remove existing child from middleMiddleHLayout
-            Canvas[] children = middleMiddleHLayout.getChildren();
-
-            if (children.length>0){
-                for (int i=0; i < children.length; i++){
-                    middleMiddleHLayout.removeChild(children[i]);
-                }
-            }
-
-            //--remove existing child from middleMiddleHLayout
-            Canvas[] children2 = middleBottomHLayout.getChildren();
-            if (children2.length>0){
-                for (int i=0; i < children2.length; i++){
-                    middleBottomHLayout.removeChild(children2[i]);
-                }
-            }
-
-            //--hide middleBottomHLayout
-            middleBottomHLayout.hide();
-            
-            if (emissionSourceChoice.equals("Load Data")){
-               //emissionsSummaryInputForm.fetchData(fetchCriteria);
-               fileTypeItem.setValueMap(epaDataLoadOptions);
-               middleMiddleHLayout.addChild(fileUploadLayout);
-            } else if (emissionSourceChoice.equals("Load Emission Factors")){
-               //emissionsSummaryInputForm.fetchData(fetchCriteria);
-               fileTypeItem.setValueMap(emissionFactorsLoadOptions);
-               middleMiddleHLayout.addChild(fileUploadLayout);
-            } else if (emissionSourceChoice.equals("Emissions Report")){
-               //emissionsSummaryInputForm.fetchData(fetchCriteria);
-               middleMiddleHLayout.addChild(emissionsSummaryInputVLayout);            
-            } else if (emissionSourceChoice.equals("Emissions Summary")){
-               //emissionsSummaryInputForm.fetchData(fetchCriteria);
-               emissionsSummaryDataGrid.filterData(fetchCriteria);
-               middleMiddleHLayout.addChild(emissionsSummaryVLayout);
-            } else if (emissionSourceChoice.equals("Calculate Emissions")){
-               //emissionsSummaryInputForm.fetchData(fetchCriteria);
-               middleMiddleHLayout.addChild(emissionsSummaryInputVLayout);
-            } else if(emissionSourceChoice.equals("Change Inventory Year")) {
-              //--Display Edit Organizatin form
-               //stationaryCombustionDataGrid.filterData(fetchCriteria);
-               //organizationProfileForm.filterData(fetchCriteria);
-               organizationInventoryYearForm.fetchData(fetchCriteria);
-               middleMiddleHLayout.addChild(organizationInventoryYearVLayout);
-               //--There should be a better way to manage this
-               //organizationProfileForm.show();
-            } else if (emissionSourceChoice.equals("Organization Profile")){
-              //--Display Edit Organizatin form
-               //stationaryCombustionDataGrid.filterData(fetchCriteria);
-               //organizationProfileForm.filterData(fetchCriteria);
-               organizationProfileForm.fetchData(fetchCriteria);
-               middleMiddleHLayout.addChild(organizationProfileVLayout);
-               //--There should be a better way to manage this
-               //organizationProfileForm.show();
-            } else if (emissionSourceChoice.equals("Stationary Combustions Sources")){
-               //--Display stationary Combustion Data
-               stationaryCombustionDataGrid.filterData(fetchCriteria);
-               middleMiddleHLayout.addChild(stationaryCombustionLayout);
-            } else if (emissionSourceChoice.equals("Mobile Combustions Sources")){
-               //--Display Mobile Combustion Data
-               mobileCombustionDataGrid.filterData(fetchCriteria);
-               middleMiddleHLayout.addChild(mobileCombustionLayout);
-            } else if (emissionSourceChoice.equals("Refridgeration and Air Conditioning Sources")){
-               //--Display Refridgeration an Ar Conditioning Data
-               Criteria refridgerationACMaterialBalanceFetchCriteria = new Criteria();
-               refridgerationACMaterialBalanceFetchCriteria.addCriteria("methodType", "Refridgeration Air Conditioning - Company-Wide Material Balance Method");
-               refridgerationACMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
-               refridgerationAirConditioningDataGrid_1.filterData(refridgerationACMaterialBalanceFetchCriteria);
-
-               Criteria refridgerationACSimplifiedMaterialBalanceFetchCriteria = new Criteria();
-               refridgerationACSimplifiedMaterialBalanceFetchCriteria.addCriteria("methodType", "Refridgeration Air Conditioning - Company-Wide Simplified Material Balance Method");
-               refridgerationACSimplifiedMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
-               refridgerationAirConditioningDataGrid_2.filterData(refridgerationACSimplifiedMaterialBalanceFetchCriteria);
-
-               Criteria refridgerationACScreeningFetchCriteria = new Criteria();
-               refridgerationACScreeningFetchCriteria.addCriteria("methodType", "Refridgeration Air Conditioning - Source Level Screening Method");
-               refridgerationACScreeningFetchCriteria.addCriteria(fetchCriteria);
-               refridgerationAirConditioningDataGrid_3.filterData(refridgerationACScreeningFetchCriteria);
-
-               middleMiddleHLayout.addChild(refridgerationAirConditioningLayout);
-               //middleMiddleHLayout.addChild(refridgerationAirConditioningTabSet);
-            } else if (emissionSourceChoice.equals("Fire Suppression Sources")){
-               //--Display Refridgeration an Ar Conditioning Data
-               Criteria fireSuppressionMaterialBalanceFetchCriteria = new Criteria();
-               fireSuppressionMaterialBalanceFetchCriteria.addCriteria("methodType", "Fire Suppression - Company-Wide Material Balance Method");
-               fireSuppressionMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
-               fireSuppressionDataGrid_1.filterData(fireSuppressionMaterialBalanceFetchCriteria);
-
-               Criteria fireSuppressionSimplifiedMaterialBalanceFetchCriteria = new Criteria();
-               fireSuppressionSimplifiedMaterialBalanceFetchCriteria.addCriteria("methodType", "Fire Suppression - Company-Wide Simplified Material Balance Method");
-               fireSuppressionSimplifiedMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
-               fireSuppressionDataGrid_2.filterData(fireSuppressionSimplifiedMaterialBalanceFetchCriteria);
-
-               Criteria fireSuppressionACScreeningFetchCriteria = new Criteria();
-               fireSuppressionACScreeningFetchCriteria.addCriteria("methodType", "Fire Suppression - Source Level Screening Method");
-               fireSuppressionACScreeningFetchCriteria.addCriteria(fetchCriteria);
-               fireSuppressionDataGrid_3.filterData(fireSuppressionACScreeningFetchCriteria);
-
-               middleMiddleHLayout.addChild(fireSuppressionLayout);
-               //middleMiddleHLayout.addChild(refridgerationAirConditioningTabSet);
-            } else if (emissionSourceChoice.equals("Waste Stream Combustions Sources")){
-               //--Display Waste Stream Combustions Sources Data
-               wasteStreamCombustionDataGrid.filterData(fetchCriteria);
-               middleMiddleHLayout.addChild(wasteStreamCombustionLayout);
-            } else  if (emissionSourceChoice.equals("Purchased Electricity")){
-               //--Display purchased Electricity Data
-               purchasedElectricityDataGrid.filterData(fetchCriteria);
-               middleMiddleHLayout.addChild(purchasedElectricityLayout);
-            } else if (emissionSourceChoice.equals("Purchased Steam")){
-               //--Display purchasedSteam Data
-               purchasedSteamDataGrid.filterData(fetchCriteria);
-               middleMiddleHLayout.addChild(purchasedSteamLayout);
-            } else if (emissionSourceChoice.equals("Employee Business Travel")){
-               //--Display Mobile Combustion Data
-                //Different criteria for optionalSourceInfo
-                Criteria employeeBusinessTravelByVehicleFetchCriteria = new Criteria();
-                employeeBusinessTravelByVehicleFetchCriteria.addCriteria(fetchCriteria);
-                employeeBusinessTravelByVehicleFetchCriteria.addCriteria("optionalSourceType", "Employee Business Travel - By Vehicle");
-
-                Criteria employeeBusinessTravelByRailFetchCriteria = new Criteria();
-                employeeBusinessTravelByRailFetchCriteria.addCriteria(fetchCriteria);
-                employeeBusinessTravelByRailFetchCriteria.addCriteria("optionalSourceType", "Employee Business Travel - By Rail");
-
-                Criteria employeeBusinessTravelByBusFetchCriteria = new Criteria();
-                employeeBusinessTravelByBusFetchCriteria.addCriteria(fetchCriteria);
-                employeeBusinessTravelByBusFetchCriteria.addCriteria("optionalSourceType", "Employee Business Travel - By Bus");
-
-                Criteria employeeBusinessTravelByAirFetchCriteria = new Criteria();
-                employeeBusinessTravelByAirFetchCriteria.addCriteria(fetchCriteria);
-                employeeBusinessTravelByAirFetchCriteria.addCriteria("optionalSourceType", "Employee Business Travel - By Air");
-
-                employeeBusinessTravelByVehicleDataGrid.filterData(employeeBusinessTravelByVehicleFetchCriteria);
-                employeeBusinessTravelByRailDataGrid.filterData(employeeBusinessTravelByRailFetchCriteria);
-                employeeBusinessTravelByBusDataGrid.filterData(employeeBusinessTravelByBusFetchCriteria);
-                employeeBusinessTravelByAirDataGrid.filterData(employeeBusinessTravelByAirFetchCriteria);
-
-                middleMiddleHLayout.addChild(employeeBusinessTravelLayout);
-            } else if (emissionSourceChoice.equals("Employee Commuting")){
-               //--Display Employee Commuting
-                Criteria employeeCommutingByVehicleFetchCriteria = new Criteria();
-                employeeCommutingByVehicleFetchCriteria.addCriteria(fetchCriteria);
-                employeeCommutingByVehicleFetchCriteria.addCriteria("optionalSourceType", "Employee Commuting - By Vehicle");
-
-                Criteria employeeCommutingByRailFetchCriteria = new Criteria();
-                employeeCommutingByRailFetchCriteria.addCriteria(fetchCriteria);
-                employeeCommutingByRailFetchCriteria.addCriteria("optionalSourceType", "Employee Commuting - By Rail");
-
-                Criteria employeeCommutingByBusFetchCriteria = new Criteria();
-                employeeCommutingByBusFetchCriteria.addCriteria(fetchCriteria);
-
-                employeeCommutingByBusFetchCriteria.addCriteria("optionalSourceType", "Employee Commuting - By Bus");
-                employeeCommutingByVehicleDataGrid.filterData(employeeCommutingByVehicleFetchCriteria);
-                employeeCommutingByRailDataGrid.filterData(employeeCommutingByRailFetchCriteria);
-                employeeCommutingByBusDataGrid.filterData(employeeCommutingByBusFetchCriteria);
-
-                middleMiddleHLayout.addChild(employeeCommutingLayout);
-            } else if (emissionSourceChoice.equals("Product Transport")){
-               //--Display Product Transport Data
-                Criteria productTransportByVehicleFetchCriteria = new Criteria();
-                productTransportByVehicleFetchCriteria.addCriteria(fetchCriteria);
-                productTransportByVehicleFetchCriteria.addCriteria("optionalSourceType", "Product Transport - By Vehicle");
-
-                Criteria productTransportByHeavyDutyTrucksFetchCriteria = new Criteria();
-                productTransportByHeavyDutyTrucksFetchCriteria.addCriteria(fetchCriteria);
-                productTransportByHeavyDutyTrucksFetchCriteria.addCriteria("optionalSourceType", "Product Transport - By Heavy Duty Trucks");
-
-                Criteria productTransportByRailFetchCriteria = new Criteria();
-                productTransportByRailFetchCriteria.addCriteria(fetchCriteria);
-                productTransportByRailFetchCriteria.addCriteria("optionalSourceType", "Product Transport - By Rail");
-
-                Criteria productTransportByWaterAirFetchCriteria = new Criteria();
-                productTransportByWaterAirFetchCriteria.addCriteria(fetchCriteria);
-                productTransportByWaterAirFetchCriteria.addCriteria("optionalSourceType", "Product Transport - By Water or Air");
-
-                productTransportByVehicleDataGrid.filterData(productTransportByVehicleFetchCriteria);
-                productTransportByHeavyDutyTrucksDataGrid.filterData(productTransportByHeavyDutyTrucksFetchCriteria);
-                productTransportByRailDataGrid.filterData(productTransportByRailFetchCriteria);
-                productTransportByWaterAirDataGrid.filterData(productTransportByWaterAirFetchCriteria);
-
-                middleMiddleHLayout.addChild(productTransportLayout);
-            }
-  }
-
-public static Label getSectionLink(String message, ClickHandler handler) {
-   Label link = new Label();
-   link = new Label(message);
-   link.addStyleName("sectionLink");
-   link.setHeight(20);
-   link.setAlign(Alignment.LEFT);
-
-   //Set the width to the length of the text.
-   //link.setWidth(message.length()*6);
-   link.setWidth100();
-
-   //link.setBorder("1px Solid orange");
-   //link.setEdgeSize(15);
-   //link.setShowRollOver(Boolean.TRUE) ;
-   
-   link.setShowDown(Boolean.TRUE);   
-   link.setShowFocused(Boolean.TRUE);
-   link.setShadowDepth(5);
-   //link.setShadowSoftness(5);
-
-   //link.setBackgroundColor("#EFBFB");
-   link.addClickHandler(handler);
-   return link;
-
-   }
-
-/*
-  private AbstractDataTable createTable() {
-    DataTable data = DataTable.create();
-    data.addColumn(ColumnType.STRING, "Task");
-    data.addColumn(ColumnType.NUMBER, "Hours per Day");
-    data.addRows(2);
-    data.setValue(0, 0, "Work");
-    data.setValue(0, 1, 14);
-    data.setValue(1, 0, "Sleep");
-    data.setValue(1, 1, 10);
-    return data;
-  }
-
-    private Options createOptions() {
-    Options options = Options.create();
-    options.setWidth(400);
-    options.setHeight(240);
-    //options.set3D(true);
-    options.setTitle("My Daily Activities");
-    return options;
-  }
-*/
-
-}
 

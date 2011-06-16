@@ -6,6 +6,7 @@ import com.smartgwt.client.data.RestDataSource;
 import com.smartgwt.client.data.fields.*;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
+import com.smartgwt.client.types.FieldType;
 import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
 import com.smartgwt.client.widgets.form.fields.IntegerItem;
@@ -53,19 +54,22 @@ public class WasteStreamCombustionInfoDS extends RestDataSource {
 
     DataSourceFloatField amountOfWasterStreamGasCombustedField =
         new DataSourceFloatField("amountOfWasterStreamGasCombusted", "Amount Of Waster Stream Gas Combusted");
-    FloatItem amountOfWasterStreamGasCombustedItem = new FloatItem();
-    amountOfWasterStreamGasCombustedField.setEditorType(amountOfWasterStreamGasCombustedItem);
+    //FloatItem amountOfWasterStreamGasCombustedItem = new FloatItem();
+    //amountOfWasterStreamGasCombustedField.setEditorType(amountOfWasterStreamGasCombustedItem);
+    amountOfWasterStreamGasCombustedField.setType(ibLUsers.floatSimpleType);
 
     DataSourceTextField amountOfWasterStreamGasCombustedUnitField =
         new DataSourceTextField("amountOfWasterStreamGasCombustedUnit", "Amount Of Waster Stream Gas Combusted Unit");
     TextItem amountOfWasterStreamGasCombustedUnitItem = new TextItem();
     amountOfWasterStreamGasCombustedUnitItem.setWidth("100%");
     amountOfWasterStreamGasCombustedUnitField.setEditorType(amountOfWasterStreamGasCombustedUnitItem);
+    //amountOfWasterStreamGasCombustedUnitField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField totalNumberOfMolesPerUnitVolumentField =
         new DataSourceFloatField("totalNumberOfMolesPerUnitVolument", "Total Number Of Moles Per Unit Volument");
-    FloatItem totalNumberOfMolesPerUnitVolumentItem = new FloatItem();
-    totalNumberOfMolesPerUnitVolumentField.setEditorType(totalNumberOfMolesPerUnitVolumentItem);
+    //FloatItem totalNumberOfMolesPerUnitVolumentItem = new FloatItem();
+    //totalNumberOfMolesPerUnitVolumentField.setEditorType(totalNumberOfMolesPerUnitVolumentItem);
+    totalNumberOfMolesPerUnitVolumentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceTextField totalNumberOfMolesPerUnitVolumentUnitField =
         new DataSourceTextField("totalNumberOfMolesPerUnitVolumentUnit", "Amount Of Waster Stream Gas Combusted Unit");
@@ -75,105 +79,126 @@ public class WasteStreamCombustionInfoDS extends RestDataSource {
 
     DataSourceFloatField carbonMonoxideMolarFractionPercentField =
         new DataSourceFloatField("carbonMonoxideMolarFractionPercent", "Carbon Monoxide Molar Fraction Percent");
-    FloatItem carbonMonoxideMolarFractionPercentItem = new FloatItem();
-    carbonMonoxideMolarFractionPercentField.setEditorType(carbonMonoxideMolarFractionPercentItem);
+    //FloatItem carbonMonoxideMolarFractionPercentItem = new FloatItem();
+    //carbonMonoxideMolarFractionPercentField.setEditorType(carbonMonoxideMolarFractionPercentItem);
+    carbonMonoxideMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField carbonDioxideMolarFractionPercentField =
         new DataSourceFloatField("carbonDioxideMolarFractionPercent", "Carbon Dioxide Molar Fraction Percent");
-    FloatItem carbonDioxideMolarFractionPercentItem = new FloatItem();
-    carbonDioxideMolarFractionPercentField.setEditorType(carbonDioxideMolarFractionPercentItem);
+    //FloatItem carbonDioxideMolarFractionPercentItem = new FloatItem();
+    //carbonDioxideMolarFractionPercentField.setEditorType(carbonDioxideMolarFractionPercentItem);
+    carbonDioxideMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField methaneMolarFractionPercentField =
         new DataSourceFloatField("methaneMolarFractionPercent", "methaneMolarFractionPercent");
-    FloatItem methaneMolarFractionPercentItem = new FloatItem();
-    methaneMolarFractionPercentField.setEditorType(methaneMolarFractionPercentItem);
+    //FloatItem methaneMolarFractionPercentItem = new FloatItem();
+    //methaneMolarFractionPercentField.setEditorType(methaneMolarFractionPercentItem);
+    methaneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField cetyleneMolarFractionPercentField =
         new DataSourceFloatField("cetyleneMolarFractionPercent", "Cetylene Molar Fraction Percent");
-    FloatItem cetyleneMolarFractionPercentItem = new FloatItem();
-    cetyleneMolarFractionPercentField.setEditorType(cetyleneMolarFractionPercentItem);
+    //FloatItem cetyleneMolarFractionPercentItem = new FloatItem();
+    //cetyleneMolarFractionPercentField.setEditorType(cetyleneMolarFractionPercentItem);
+    cetyleneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField ethyleneMolarFractionPercentField =
         new DataSourceFloatField("ethyleneMolarFractionPercent", "Ethylene Molar Fraction Percent");
-    FloatItem ethyleneMolarFractionPercentItem = new FloatItem();
-    ethyleneMolarFractionPercentField.setEditorType(ethyleneMolarFractionPercentItem);
+    //FloatItem ethyleneMolarFractionPercentItem = new FloatItem();
+    //ethyleneMolarFractionPercentField.setEditorType(ethyleneMolarFractionPercentItem);
+    ethyleneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
     
     DataSourceFloatField ethaneMolarFractionPercentField =
         new DataSourceFloatField("ethaneMolarFractionPercent", "Ethane Molar Fraction Percent");
-    FloatItem ethaneMolarFractionPercentItem = new FloatItem();
-    ethaneMolarFractionPercentField.setEditorType(ethaneMolarFractionPercentItem);
+    //FloatItem ethaneMolarFractionPercentItem = new FloatItem();
+    //ethaneMolarFractionPercentField.setEditorType(ethaneMolarFractionPercentItem);
+    ethaneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField propyleneMolarFractionPercentField =
         new DataSourceFloatField("propyleneMolarFractionPercent", "Propylene Molar Fraction Percent");
-    FloatItem propyleneMolarFractionPercentItem = new FloatItem();
-    propyleneMolarFractionPercentField.setEditorType(propyleneMolarFractionPercentItem);
+    //FloatItem propyleneMolarFractionPercentItem = new FloatItem();
+    //propyleneMolarFractionPercentField.setEditorType(propyleneMolarFractionPercentItem);
+    propyleneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField propaneMolarFractionPercentField =
         new DataSourceFloatField("propaneMolarFractionPercent", "Propane Molar Fraction Percent");
-    FloatItem propaneMolarFractionPercentItem = new FloatItem();
-    propaneMolarFractionPercentField.setEditorType(propaneMolarFractionPercentItem);
+    //FloatItem propaneMolarFractionPercentItem = new FloatItem();
+    //propaneMolarFractionPercentField.setEditorType(propaneMolarFractionPercentItem);
+    propaneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField n_ButaneMolarFractionPercentField =
         new DataSourceFloatField("n_ButaneMolarFractionPercent", "n_Butane Molar Fraction Percent");
-    FloatItem n_ButaneMolarFractionPercentItem = new FloatItem();
-    n_ButaneMolarFractionPercentField.setEditorType(n_ButaneMolarFractionPercentItem);
+    //FloatItem n_ButaneMolarFractionPercentItem = new FloatItem();
+    //n_ButaneMolarFractionPercentField.setEditorType(n_ButaneMolarFractionPercentItem);
+    n_ButaneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField benzeneMolarFractionPercentField =
         new DataSourceFloatField("benzeneMolarFractionPercent", "Benzene Molar Fraction Percent");
-    FloatItem benzeneMolarFractionPercentItem = new FloatItem();
-    benzeneMolarFractionPercentField.setEditorType(benzeneMolarFractionPercentItem);
+    //FloatItem benzeneMolarFractionPercentItem = new FloatItem();
+    //benzeneMolarFractionPercentField.setEditorType(benzeneMolarFractionPercentItem);
+    benzeneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField bexaneMolarFractionPercentField =
         new DataSourceFloatField("bexaneMolarFractionPercent", "Bexane Molar Fraction Percent");
-    FloatItem bexaneMolarFractionPercentItem = new FloatItem();
-    bexaneMolarFractionPercentField.setEditorType(bexaneMolarFractionPercentItem);
+    //FloatItem bexaneMolarFractionPercentItem = new FloatItem();
+    //bexaneMolarFractionPercentField.setEditorType(bexaneMolarFractionPercentItem);
+    bexaneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField tolueneMolarFractionPercentField =
         new DataSourceFloatField("tolueneMolarFractionPercent", "Toluene Molar Fraction Percent");
-    FloatItem tolueneMolarFractionPercentItem = new FloatItem();
-    tolueneMolarFractionPercentField.setEditorType(tolueneMolarFractionPercentItem);
+    //FloatItem tolueneMolarFractionPercentItem = new FloatItem();
+    //tolueneMolarFractionPercentField.setEditorType(tolueneMolarFractionPercentItem);
+    tolueneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField octaneMolarFractionPercentField =
         new DataSourceFloatField("octaneMolarFractionPercent", "Octane Molar Fraction Percent");
-    FloatItem octaneMolarFractionPercentItem = new FloatItem();
-    octaneMolarFractionPercentField.setEditorType(octaneMolarFractionPercentItem);
+    //FloatItem octaneMolarFractionPercentItem = new FloatItem();
+    //octaneMolarFractionPercentField.setEditorType(octaneMolarFractionPercentItem);
+    octaneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField ethanolMolarFractionPercentField =
         new DataSourceFloatField("ethanolMolarFractionPercent", "Ethanol Molar Fraction Percent");
-    FloatItem ethanolMolarFractionPercentItem = new FloatItem();
-    ethanolMolarFractionPercentField.setEditorType(ethanolMolarFractionPercentItem);
+    //FloatItem ethanolMolarFractionPercentItem = new FloatItem();
+    //ethanolMolarFractionPercentField.setEditorType(ethanolMolarFractionPercentItem);
+    ethanolMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField acetoneMolarFractionPercentField =
         new DataSourceFloatField("acetoneMolarFractionPercent", "Acetone Molar Fraction Percent");
-    FloatItem acetoneMolarFractionPercentItem = new FloatItem();
-    acetoneMolarFractionPercentField.setEditorType(acetoneMolarFractionPercentItem);
+    //FloatItem acetoneMolarFractionPercentItem = new FloatItem();
+    //acetoneMolarFractionPercentField.setEditorType(acetoneMolarFractionPercentItem);
+    acetoneMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField tetrahydrofuranMolarFractionPercentField =
         new DataSourceFloatField("tetrahydrofuranMolarFractionPercent", "Tetrahydrofuran Molar Fraction Percent");
-    FloatItem tetrahydrofuranMolarFractionPercentItem = new FloatItem();
-    tetrahydrofuranMolarFractionPercentField.setEditorType(tetrahydrofuranMolarFractionPercentItem);
+    //FloatItem tetrahydrofuranMolarFractionPercentItem = new FloatItem();
+    //tetrahydrofuranMolarFractionPercentField.setEditorType(tetrahydrofuranMolarFractionPercentItem);
+    tetrahydrofuranMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField otherNon_CMolarFractionPercentField =
         new DataSourceFloatField("otherNon_CMolarFractionPercent", "Other Non_C Molar Fraction Percent");
-    FloatItem otherNon_CMolarFractionPercentItem = new FloatItem();
-    otherNon_CMolarFractionPercentField.setEditorType(otherNon_CMolarFractionPercentItem);
+    //FloatItem otherNon_CMolarFractionPercentItem = new FloatItem();
+    //otherNon_CMolarFractionPercentField.setEditorType(otherNon_CMolarFractionPercentItem);
+    otherNon_CMolarFractionPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField oxidationFactorPercentField =
         new DataSourceFloatField("oxidationFactorPercent", "Oxidation Factor Percent");
-    FloatItem oxidationFactorPercentItem = new FloatItem();
-    oxidationFactorPercentField.setEditorType(oxidationFactorPercentItem);
+    //FloatItem oxidationFactorPercentItem = new FloatItem();
+    //oxidationFactorPercentField.setEditorType(oxidationFactorPercentItem);
+    oxidationFactorPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceDateTimeField fuelUsedBeginDateField =
         new DataSourceDateTimeField("fuelUsedBeginDate", "Begin Date");
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setWidth("100%");
-    fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    //DateItem fuelUsedBeginDateItem = new DateItem();
+    //fuelUsedBeginDateItem.setWidth("100%");
+    //fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    fuelUsedBeginDateField.setType(FieldType.DATE);
 
     DataSourceDateTimeField fuelUsedEndDateField =
         new DataSourceDateTimeField("fuelUsedEndDate", "End Date");
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setWidth("100%");
-    fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    //DateItem fuelUsedEndDateItem = new DateItem();
+    //fuelUsedEndDateItem.setWidth("100%");
+    //fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    fuelUsedEndDateField.setType(FieldType.DATE);
+
 
     setFields(idField, organizationIdField, fuelSourceDescriptionField, 
             amountOfWasterStreamGasCombustedField,

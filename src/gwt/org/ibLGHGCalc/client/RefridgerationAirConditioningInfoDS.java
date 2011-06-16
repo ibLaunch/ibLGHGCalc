@@ -7,6 +7,7 @@ import com.smartgwt.client.data.RestDataSource;
 import com.smartgwt.client.data.fields.*;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
+import com.smartgwt.client.types.FieldType;
 import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
 import com.smartgwt.client.widgets.form.fields.IntegerItem;
@@ -38,13 +39,22 @@ public class RefridgerationAirConditioningInfoDS extends RestDataSource {
         new DataSourceIntegerField("id", "ID");
     idField.setCanEdit(false);
     idField.setPrimaryKey(true);
-
+    idField.setHidden(Boolean.TRUE);
+    
     DataSourceIntegerField organizationIdField =
         new DataSourceIntegerField("organizationId", "Organization Id");
     IntegerItem organizationIdItem = new IntegerItem();
     organizationIdField.setCanEdit(false);
     organizationIdField.setForeignKey("organizationDS.id");
     organizationIdField.setEditorType(organizationIdItem);
+    organizationIdField.setHidden(Boolean.TRUE);
+
+//-Source level screening method fields
+    DataSourceTextField sourceDescriptionField =
+        new DataSourceTextField("sourceDescription", "Source Description");
+    TextItem sourceDescriptionItem = new TextItem();
+    sourceDescriptionItem.setWidth("100%");
+    sourceDescriptionField.setEditorType(sourceDescriptionItem);
 
     DataSourceTextField gasTypeField =
         new DataSourceTextField("gasType", "Gas Type");
@@ -55,51 +65,53 @@ public class RefridgerationAirConditioningInfoDS extends RestDataSource {
 //-company-wide material balance fields
     DataSourceFloatField inventoryChangeField =
         new DataSourceFloatField("inventoryChange", "Inventory Change");
-    FloatItem inventoryChangeItem = new FloatItem();
-    inventoryChangeField.setEditorType(inventoryChangeItem);
+    //FloatItem inventoryChangeItem = new FloatItem();
+    //inventoryChangeField.setEditorType(inventoryChangeItem);
+    inventoryChangeField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField transferredAmountField =
         new DataSourceFloatField("transferredAmount", "Transferred Amount");
-    FloatItem transferredAmountItem = new FloatItem();
-    transferredAmountField.setEditorType(transferredAmountItem);
+    //FloatItem transferredAmountItem = new FloatItem();
+    //transferredAmountField.setEditorType(transferredAmountItem);
+    transferredAmountField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField capacityChangeField =
         new DataSourceFloatField("capacityChange", "Capacity Change");
-    FloatItem capacityChangeItem = new FloatItem();
-    capacityChangeField.setEditorType(capacityChangeItem);
+    //FloatItem capacityChangeItem = new FloatItem();
+    //capacityChangeField.setEditorType(capacityChangeItem);
+    capacityChangeField.setType(ibLUsers.floatSimpleType);
 
 //-company-wide simplified material balance fields
     DataSourceFloatField newUnitsChargeField =
         new DataSourceFloatField("newUnitsCharge", "New Units Charge");
-    FloatItem newUnitsChargeItem = new FloatItem();
-    newUnitsChargeField.setEditorType(newUnitsChargeItem);
+    //FloatItem newUnitsChargeItem = new FloatItem();
+    //newUnitsChargeField.setEditorType(newUnitsChargeItem);
+    newUnitsChargeField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField newUnitsCapacityField =
         new DataSourceFloatField("newUnitsCapacity", "New Units Capacity");
-    FloatItem newUnitsCapacityItem = new FloatItem();
-    newUnitsCapacityField.setEditorType(newUnitsCapacityItem);
+    //FloatItem newUnitsCapacityItem = new FloatItem();
+    //newUnitsCapacityField.setEditorType(newUnitsCapacityItem);
+    newUnitsCapacityField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField existingUnitsRechargeField =
         new DataSourceFloatField("existingUnitsRecharge", "Existing Units Recharge");
-    FloatItem existingUnitsRechargeItem = new FloatItem();
-    existingUnitsRechargeField.setEditorType(existingUnitsRechargeItem);
+    //FloatItem existingUnitsRechargeItem = new FloatItem();
+    //existingUnitsRechargeField.setEditorType(existingUnitsRechargeItem);
+    existingUnitsRechargeField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField disposedUnitsCapacityField =
         new DataSourceFloatField("disposedUnitsCapacity", "Disposed Units Capacity");
-    FloatItem disposedUnitsCapacityItem = new FloatItem();
-    disposedUnitsCapacityField.setEditorType(disposedUnitsCapacityItem);
+    //FloatItem disposedUnitsCapacityItem = new FloatItem();
+    //disposedUnitsCapacityField.setEditorType(disposedUnitsCapacityItem);
+    disposedUnitsCapacityField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField disposedUnitsRecoveredField =
         new DataSourceFloatField("disposedUnitsRecovered", "Disposed Units Recovered");
-    FloatItem disposedUnitsRecoveredItem = new FloatItem();
-    disposedUnitsRecoveredField.setEditorType(disposedUnitsRecoveredItem);
-
-//-Source level screening method fields
-    DataSourceTextField sourceDescriptionField =
-        new DataSourceTextField("sourceDescription", "Source Description");
-    TextItem sourceDescriptionItem = new TextItem();
-    sourceDescriptionItem.setWidth("100%");
-    sourceDescriptionField.setEditorType(sourceDescriptionItem);
+    //FloatItem disposedUnitsRecoveredItem = new FloatItem();
+    //disposedUnitsRecoveredField.setEditorType(disposedUnitsRecoveredItem);
+    //disposedUnitsRecoveredField.setType(ibLUsers.floatSimpleType);
+    disposedUnitsRecoveredField.setType(ibLUsers.floatSimpleType);
 
     DataSourceTextField typeOfEquipmentField =
         new DataSourceTextField("typeOfEquipment", "Type Of Equipment");
@@ -109,24 +121,27 @@ public class RefridgerationAirConditioningInfoDS extends RestDataSource {
 
     DataSourceFloatField sourceNewUnitsChargeField =
         new DataSourceFloatField("sourceNewUnitsCharge", "Source New Units Charge");
-    FloatItem sourceNewUnitsChargeItem = new FloatItem();
-    sourceNewUnitsChargeField.setEditorType(sourceNewUnitsChargeItem);
+    //FloatItem sourceNewUnitsChargeItem = new FloatItem();
+    //sourceNewUnitsChargeField.setEditorType(sourceNewUnitsChargeItem);
+    sourceNewUnitsChargeField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField operatingUnitsCapacityField =
         new DataSourceFloatField("operatingUnitsCapacity", "Operating Units Capacity");
-    FloatItem operatingUnitsCapacityItem = new FloatItem();
-    operatingUnitsCapacityField.setEditorType(operatingUnitsCapacityItem);
+    //FloatItem operatingUnitsCapacityItem = new FloatItem();
+    //voperatingUnitsCapacityField.setEditorType(operatingUnitsCapacityItem);
+    operatingUnitsCapacityField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField sourceDisposedUnitsCapacityField =
         new DataSourceFloatField("sourceDisposedUnitsCapacity", "Source Disposed Units Capacity");
-    FloatItem sourceDisposedUnitsCapacityItem = new FloatItem();
-    sourceDisposedUnitsCapacityField.setEditorType(sourceDisposedUnitsCapacityItem);
+    //FloatItem sourceDisposedUnitsCapacityItem = new FloatItem();
+    //sourceDisposedUnitsCapacityField.setEditorType(sourceDisposedUnitsCapacityItem);
+    sourceDisposedUnitsCapacityField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField timeInYearsUsedField =
         new DataSourceFloatField("timeInYearsUsed", "Time In Years Used");
-    FloatItem timeInYearsUsedItem = new FloatItem();
-    timeInYearsUsedField.setEditorType(timeInYearsUsedItem);
-
+    //FloatItem timeInYearsUsedItem = new FloatItem();
+    //timeInYearsUsedField.setEditorType(timeInYearsUsedItem);
+    timeInYearsUsedField.setType(ibLUsers.floatSimpleType);
 
 //--method type etc..
 
@@ -146,15 +161,17 @@ public class RefridgerationAirConditioningInfoDS extends RestDataSource {
 
     DataSourceDateTimeField fuelUsedBeginDateField =
         new DataSourceDateTimeField("fuelUsedBeginDate", "Begin Date");
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setWidth("100%");
-    fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    //DateItem fuelUsedBeginDateItem = new DateItem();
+    //fuelUsedBeginDateItem.setWidth("100%");
+    //fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    fuelUsedBeginDateField.setType(FieldType.DATE);
 
     DataSourceDateTimeField fuelUsedEndDateField =
         new DataSourceDateTimeField("fuelUsedEndDate", "End Date");
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setWidth("100%");
-    fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    //DateItem fuelUsedEndDateItem = new DateItem();
+    //fuelUsedEndDateItem.setWidth("100%");
+    //fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    fuelUsedEndDateField.setType(FieldType.DATE);
 
     setFields(idField, organizationIdField, gasTypeField, inventoryChangeField, transferredAmountField, capacityChangeField, newUnitsChargeField,
             newUnitsCapacityField, existingUnitsRechargeField, disposedUnitsCapacityField, disposedUnitsRecoveredField, sourceDescriptionField, 

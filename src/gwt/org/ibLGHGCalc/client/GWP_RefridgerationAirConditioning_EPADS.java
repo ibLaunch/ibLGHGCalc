@@ -41,13 +41,11 @@ public class GWP_RefridgerationAirConditioning_EPADS extends RestDataSource {
     TextItem gasTypeItem = new TextItem();
     gasTypeItem.setWidth("100%");
     gasTypeField.setEditorType(gasTypeItem);
-
     
     DataSourceFloatField gasTypeGWPField =
         new DataSourceFloatField("gasTypeGWP", "Gas Type GWP");
     FloatItem gasTypeGWPItem = new FloatItem();
     gasTypeGWPField.setEditorType(gasTypeGWPItem);
-
 
     setFields(idField, gasTypeField, gasTypeGWPField);
     //setup operations

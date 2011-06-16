@@ -6,6 +6,8 @@ import com.smartgwt.client.data.RestDataSource;
 import com.smartgwt.client.data.fields.*;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
+import com.smartgwt.client.types.DateDisplayFormat;
+import com.smartgwt.client.types.FieldType;
 import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
 import com.smartgwt.client.widgets.form.fields.IntegerItem;
@@ -37,6 +39,8 @@ public class StationaryCombustionInfoDS extends RestDataSource {
         new DataSourceIntegerField("id", "ID");
     idField.setCanEdit(false);
     idField.setPrimaryKey(true);
+    idField.setHidden(Boolean.TRUE);
+
 /*
     DataSourceIntegerField organizationNameField =
         new DataSourceIntegerField("organizationName", "Organization Name");
@@ -50,6 +54,7 @@ public class StationaryCombustionInfoDS extends RestDataSource {
     organizationIdField.setCanEdit(false);
     organizationIdField.setForeignKey("organizationDS.id");
     organizationIdField.setEditorType(organizationIdItem);
+    organizationIdField.setHidden(Boolean.TRUE);
     
     //DataSourceIntegerField versionField =
     //    new DataSourceIntegerField("version", "Version");
@@ -69,9 +74,10 @@ public class StationaryCombustionInfoDS extends RestDataSource {
 
     DataSourceFloatField fuelQuantityField =
         new DataSourceFloatField("fuelQuantity", "Fuel Quantity");
-    FloatItem fuelQuantityItem = new FloatItem();
-    fuelQuantityField.setEditorType(fuelQuantityItem);
-
+    //FloatItem fuelQuantityItem = new FloatItem();
+    //fuelQuantityField.setEditorType(fuelQuantityItem);
+    fuelQuantityField.setType(ibLUsers.floatSimpleType);
+    
     DataSourceTextField fuelUnitField =
         new DataSourceTextField("fuelUnit", "Fuel Unit");
     TextItem fuelUnitItem = new TextItem();
@@ -80,20 +86,24 @@ public class StationaryCombustionInfoDS extends RestDataSource {
 
     DataSourceDateTimeField fuelUsedBeginDateField =
         new DataSourceDateTimeField("fuelUsedBeginDate", "Begin Date");
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setWidth("100%");
-    fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    //DateItem fuelUsedBeginDateItem = new DateItem();
+    //fuelUsedBeginDateItem.setWidth("100%");
+    ///fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    fuelUsedBeginDateField.setType(FieldType.DATE);    
 
     DataSourceDateTimeField fuelUsedEndDateField =
         new DataSourceDateTimeField("fuelUsedEndDate", "End Date");
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setWidth("100%");
-    fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    //DateItem fuelUsedEndDateItem = new DateItem();
+    //fuelUsedEndDateItem.setWidth("100%");
+    //fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    fuelUsedEndDateField.setType(FieldType.DATE);
 
-
+/*
     DataSourceBooleanField isPublicField =
         new DataSourceBooleanField("isPublic", "Public");
-    setFields(idField, organizationIdField, fuelSourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField, isPublicField);
+ *
+ */
+    setFields(idField, organizationIdField, fuelSourceDescriptionField, fuelTypeField, fuelQuantityField, fuelUnitField, fuelUsedBeginDateField, fuelUsedEndDateField);
     //setup operations
     //1. fetch
     OperationBinding fetch =

@@ -47,7 +47,7 @@ public class OrganizationDS extends RestDataSource {
     //    new DataSourceIntegerField("version", "Version");
     //versionField.setCanEdit(false);
 
-    DataSourceTextField organizationNameField = new DataSourceTextField("organizationName", "Organization Name", FIELD_WIDTH, true);
+    DataSourceTextField organizationNameField = new DataSourceTextField("organizationName", "Organization", FIELD_WIDTH, true);
     StaticTextItem organizationNameItem = new StaticTextItem();
     organizationNameItem.setWidth("100%");
     organizationNameField.setEditorType(organizationNameItem);

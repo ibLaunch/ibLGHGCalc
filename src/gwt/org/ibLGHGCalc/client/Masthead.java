@@ -36,7 +36,8 @@ public class Masthead extends HLayout {
     //Img launchImg = new Img("/ibLGHGCalc/images/launch_yourself.png");
     //Img logoImg = new Img("/ibLGHGCalc/images/logo.gif");
     //Img headerImg = new Img("/ibLGHGCalc/images/sun.gif", 1000,60);
-    Img headerImg = new Img(GWT.getHostPageBaseURL()+"images/small_banner.JPG", 1000,60);
+    //Img headerImg = new Img(GWT.getHostPageBaseURL()+"images/small_banner.JPG", 1000,60);
+    Img headerImg = new Img(GWT.getHostPageBaseURL()+"images/sun.gif", 1000,60);
     //Img logoImg = new Img("/ibLGHGCalc/images/logo_alone.png");
 
     //Img headerImg = new Img("/ibLGHGCalc/images/sun.gif");
@@ -45,7 +46,7 @@ public class Masthead extends HLayout {
     headerImg.setWidth100();
     //headerImg.setBorder("2px solid black");
     headerImg.setShowTitle(Boolean.TRUE);
-    headerImg.setTitle("eFootprint !");
+    //headerImg.setTitle("eFootprint !");
     //headerImg.setTitleStyle("")
     
     // initialise the Name label

@@ -6,6 +6,7 @@ import com.smartgwt.client.data.RestDataSource;
 import com.smartgwt.client.data.fields.*;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
+import com.smartgwt.client.types.FieldType;
 import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
 import com.smartgwt.client.widgets.form.fields.IntegerItem;
@@ -37,6 +38,7 @@ public class PurchasedSteamInfoDS extends RestDataSource {
         new DataSourceIntegerField("id", "ID");
     idField.setCanEdit(false);
     idField.setPrimaryKey(true);
+    idField.setHidden(Boolean.TRUE);
 
     DataSourceIntegerField organizationIdField =
         new DataSourceIntegerField("organizationId", "Organization Id");
@@ -44,6 +46,7 @@ public class PurchasedSteamInfoDS extends RestDataSource {
     organizationIdField.setCanEdit(false);
     organizationIdField.setForeignKey("organizationDS.id");
     organizationIdField.setEditorType(organizationIdItem);
+    organizationIdField.setHidden(Boolean.TRUE);
 
     DataSourceTextField sourceDescriptionField =
         new DataSourceTextField("sourceDescription", "Source Description");
@@ -59,13 +62,15 @@ public class PurchasedSteamInfoDS extends RestDataSource {
 
     DataSourceFloatField boilerEfficiencyPercentField =
         new DataSourceFloatField("boilerEfficiencyPercent", "Boiler Efficiency Percent");
-    FloatItem boilerEfficiencyPercentItem = new FloatItem();
-    boilerEfficiencyPercentField.setEditorType(boilerEfficiencyPercentItem);
+    //FloatItem boilerEfficiencyPercentItem = new FloatItem();
+    //boilerEfficiencyPercentField.setEditorType(boilerEfficiencyPercentItem);
+    boilerEfficiencyPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField purchasedSteamField =
         new DataSourceFloatField("purchasedSteam", "Purchased Steam");
-    FloatItem purchasedSteamItem = new FloatItem();
-    purchasedSteamField.setEditorType(purchasedSteamItem);
+    //FloatItem purchasedSteamItem = new FloatItem();
+    //purchasedSteamField.setEditorType(purchasedSteamItem);
+    purchasedSteamField.setType(ibLUsers.floatSimpleType);
 
     DataSourceTextField purchasedSteamUnitField =
         new DataSourceTextField("purchasedSteamUnit", "Purchased Steam Unit");
@@ -75,18 +80,21 @@ public class PurchasedSteamInfoDS extends RestDataSource {
 
     DataSourceFloatField supplierCO2MultiplierField =
         new DataSourceFloatField("supplierCO2Multiplier", "supplier CO2 Emission Factor");
-    FloatItem supplierCO2MultiplierItem = new FloatItem();
-    supplierCO2MultiplierField.setEditorType(supplierCO2MultiplierItem);
+    //FloatItem supplierCO2MultiplierItem = new FloatItem();
+    //supplierCO2MultiplierField.setEditorType(supplierCO2MultiplierItem);
+    supplierCO2MultiplierField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField supplierCH4MultiplierField =
         new DataSourceFloatField("supplierCH4Multiplier", "supplier CH4 Emission Factor");
-    FloatItem supplierCH4MultiplierItem = new FloatItem();
-    supplierCH4MultiplierField.setEditorType(supplierCH4MultiplierItem);
+    //FloatItem supplierCH4MultiplierItem = new FloatItem();
+    //supplierCH4MultiplierField.setEditorType(supplierCH4MultiplierItem);
+    supplierCH4MultiplierField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField supplierN2OMultiplierField =
         new DataSourceFloatField("supplierN2OMultiplier", "supplier N2O Emission Factor");
-    FloatItem supplierN2OMultiplierItem = new FloatItem();
-    supplierN2OMultiplierField.setEditorType(supplierN2OMultiplierItem);
+    //FloatItem supplierN2OMultiplierItem = new FloatItem();
+    //supplierN2OMultiplierField.setEditorType(supplierN2OMultiplierItem);
+    supplierN2OMultiplierField.setType(ibLUsers.floatSimpleType);
 
     DataSourceTextField supplierCO2MultiplierUnitField =
         new DataSourceTextField("supplierCO2MultiplierUnit", "supplierCO2MultiplierUnit");
@@ -108,16 +116,18 @@ public class PurchasedSteamInfoDS extends RestDataSource {
 
     DataSourceDateTimeField fuelUsedBeginDateField =
         new DataSourceDateTimeField("fuelUsedBeginDate", "Begin Date");
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setWidth("100%");
-    fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
-
+    //DateItem fuelUsedBeginDateItem = new DateItem();
+    //fuelUsedBeginDateItem.setWidth("100%");
+    //fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    fuelUsedBeginDateField.setType(FieldType.DATE);
+    
     DataSourceDateTimeField fuelUsedEndDateField =
         new DataSourceDateTimeField("fuelUsedEndDate", "End Date");
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setWidth("100%");
-    fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
-
+    //DateItem fuelUsedEndDateItem = new DateItem();
+    //fuelUsedEndDateItem.setWidth("100%");
+    //fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    fuelUsedEndDateField.setType(FieldType.DATE);
+    
 
     setFields(idField, organizationIdField, sourceDescriptionField, fuelTypeField,boilerEfficiencyPercentField, purchasedSteamField,
     			purchasedSteamUnitField, supplierCO2MultiplierField, supplierCO2MultiplierUnitField, supplierCH4MultiplierField,

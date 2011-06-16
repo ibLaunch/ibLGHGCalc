@@ -6,6 +6,7 @@ import com.smartgwt.client.data.RestDataSource;
 import com.smartgwt.client.data.fields.*;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
+import com.smartgwt.client.types.FieldType;
 import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
 import com.smartgwt.client.widgets.form.fields.IntegerItem;
@@ -37,6 +38,7 @@ public class OptionalSourceInfoDS extends RestDataSource {
         new DataSourceIntegerField("id", "ID");
     idField.setCanEdit(false);
     idField.setPrimaryKey(true);
+    idField.setHidden(Boolean.TRUE);
 
     DataSourceIntegerField organizationIdField =
         new DataSourceIntegerField("organizationId", "Organization Id");
@@ -44,7 +46,8 @@ public class OptionalSourceInfoDS extends RestDataSource {
     organizationIdField.setCanEdit(false);
     organizationIdField.setForeignKey("organizationDS.id");
     organizationIdField.setEditorType(organizationIdItem);
-
+    organizationIdField.setHidden(Boolean.TRUE);
+    
     DataSourceTextField optionalSourceTypeField =
         new DataSourceTextField("optionalSourceType", "optionalSourceType");
     TextItem optionalSourceTypeItem = new TextItem();
@@ -83,8 +86,9 @@ public class OptionalSourceInfoDS extends RestDataSource {
 
     DataSourceFloatField passengerMilesField =
         new DataSourceFloatField("passengerMiles", "Passenger Miles");
-    FloatItem passengerMilesItem = new FloatItem();
-    passengerMilesField.setEditorType(passengerMilesItem);
+    //FloatItem passengerMilesItem = new FloatItem();
+    //passengerMilesField.setEditorType(passengerMilesItem);
+    passengerMilesField.setType(ibLUsers.floatSimpleType);
 
     DataSourceTextField transportTypeField =
         new DataSourceTextField("transportType", "Product transport Type");
@@ -94,20 +98,23 @@ public class OptionalSourceInfoDS extends RestDataSource {
 
     DataSourceFloatField tonMilesField =
         new DataSourceFloatField("tonMiles", "Ton Miles");
-    FloatItem tonMilesItem = new FloatItem();
-    tonMilesField.setEditorType(tonMilesItem);
-    
+    //FloatItem tonMilesItem = new FloatItem();
+    //tonMilesField.setEditorType(tonMilesItem);
+    tonMilesField.setType(ibLUsers.floatSimpleType);
+
     DataSourceDateTimeField fuelUsedBeginDateField =
         new DataSourceDateTimeField("fuelUsedBeginDate", "Begin Date");
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setWidth("100%");
-    fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    //DateItem fuelUsedBeginDateItem = new DateItem();
+    //fuelUsedBeginDateItem.setWidth("100%");
+    //fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    fuelUsedBeginDateField.setType(FieldType.DATE);
 
     DataSourceDateTimeField fuelUsedEndDateField =
         new DataSourceDateTimeField("fuelUsedEndDate", "End Date");
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setWidth("100%");
-    fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    //DateItem fuelUsedEndDateItem = new DateItem();
+    //fuelUsedEndDateItem.setWidth("100%");
+    //fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    fuelUsedEndDateField.setType(FieldType.DATE);
 
     setFields(idField,organizationIdField,optionalSourceTypeField,sourceDescriptionField,
                 vehicleTypeField,railTypeField,busTypeField,airTravelTypeField,

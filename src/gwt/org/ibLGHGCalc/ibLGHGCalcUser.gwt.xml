@@ -8,6 +8,5 @@
     <set-property name="user.agent" value="ie6"/>
     
     <!-- Specify the module entry point class.                   -->
-    <entry-point class="org.ibLGHGCalc.client.ibLGHGCalcUser"/>
-    <inherits name="com.smartgwt.SmartGwt"/>
+    <entry-point class="org.ibLGHGCalc.client.ibLGHGCalcUser"/>    
 </module>

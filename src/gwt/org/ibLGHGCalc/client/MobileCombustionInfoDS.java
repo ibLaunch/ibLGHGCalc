@@ -1,11 +1,18 @@
 package org.ibLGHGCalc.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.i18n.client.NumberFormat;
+import com.smartgwt.client.core.DataClass;
 import com.smartgwt.client.data.OperationBinding;
+import com.smartgwt.client.data.Record;
 import com.smartgwt.client.data.RestDataSource;
+import com.smartgwt.client.data.SimpleType;
+import com.smartgwt.client.data.SimpleTypeFormatter;
 import com.smartgwt.client.data.fields.*;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
+import com.smartgwt.client.types.FieldType;
+import com.smartgwt.client.widgets.DataBoundComponent;
 import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
 import com.smartgwt.client.widgets.form.fields.IntegerItem;
@@ -37,7 +44,19 @@ public class MobileCombustionInfoDS extends RestDataSource {
         new DataSourceIntegerField("id", "ID");
     idField.setCanEdit(false);
     idField.setPrimaryKey(true);
-    
+    idField.setHidden(Boolean.TRUE);
+/*
+    // Create a SimpleType for float fields and set the formatters.
+    final NumberFormat floatSimpleFormat = NumberFormat.getFormat("#,##0.00");
+    SimpleType floatSimpleType = new SimpleType("floatSimpleType", FieldType.FLOAT);
+    floatSimpleType.setNormalDisplayFormatter(new SimpleTypeFormatter() {
+            @Override
+            public String format(Object value, DataClass field,
+                            DataBoundComponent component, Record record) {
+                    return floatSimpleFormat.format(Double.valueOf(value.toString()));
+            }
+    });
+*/
 /*
     DataSourceIntegerField organizationNameField =
         new DataSourceIntegerField("organizationName", "Organization Name");
@@ -51,6 +70,7 @@ public class MobileCombustionInfoDS extends RestDataSource {
     organizationIdField.setCanEdit(false);
     organizationIdField.setForeignKey("organizationDS.id");
     organizationIdField.setEditorType(organizationIdItem);
+    organizationIdField.setHidden(Boolean.TRUE);
     
     //DataSourceIntegerField versionField =
     //    new DataSourceIntegerField("version", "Version");
@@ -82,8 +102,10 @@ public class MobileCombustionInfoDS extends RestDataSource {
 
     DataSourceFloatField fuelQuantityField =
         new DataSourceFloatField("fuelQuantity", "Fuel Quantity");
-    FloatItem fuelQuantityItem = new FloatItem();
-    fuelQuantityField.setEditorType(fuelQuantityItem);
+    //FloatItem fuelQuantityItem = new FloatItem();
+    //fuelQuantityField.setEditorType(fuelQuantityItem);
+    fuelQuantityField.setType(ibLUsers.floatSimpleType);
+    //fuelQuantityField.setType(new ibLUsers.FloatSimpleType());
 
     DataSourceTextField fuelUnitField =
         new DataSourceTextField("fuelUnit", "Fuel Unit");
@@ -93,33 +115,36 @@ public class MobileCombustionInfoDS extends RestDataSource {
 
     DataSourceFloatField milesTravelledField =
         new DataSourceFloatField("milesTravelled", "Miles Travelled");
-    FloatItem milesTravelledItem = new FloatItem();
-    milesTravelledField.setEditorType(milesTravelledItem);
-
+    //FloatItem milesTravelledItem = new FloatItem();
+    //milesTravelledField.setEditorType(milesTravelledItem);
+    milesTravelledField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField bioFuelPercentField =
         new DataSourceFloatField("bioFuelPercent", "Biofuel Percent");
-    FloatItem bioFuelPercentItem = new FloatItem();
-    bioFuelPercentField.setEditorType(bioFuelPercentItem);
+    //FloatItem bioFuelPercentItem = new FloatItem();
+    //bioFuelPercentField.setEditorType(bioFuelPercentItem);
+    bioFuelPercentField.setType(ibLUsers.floatSimpleType);
 
     DataSourceFloatField ethanolPercentField =
         new DataSourceFloatField("ethanolPercent", "Ethanol Percent");
-    FloatItem ethanolPercentItem = new FloatItem();
-    ethanolPercentField.setEditorType(ethanolPercentItem);
+    //FloatItem ethanolPercentItem = new FloatItem();
+    //ethanolPercentField.setEditorType(ethanolPercentItem);
+    ethanolPercentField.setType(ibLUsers.floatSimpleType);
 
 
     DataSourceDateTimeField fuelUsedBeginDateField =
         new DataSourceDateTimeField("fuelUsedBeginDate", "Begin Date");
-    DateItem fuelUsedBeginDateItem = new DateItem();
-    fuelUsedBeginDateItem.setWidth("100%");
-    fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    //DateItem fuelUsedBeginDateItem = new DateItem();
+    //fuelUsedBeginDateItem.setWidth("100%");
+    //fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
+    fuelUsedBeginDateField.setType(FieldType.DATE);
 
     DataSourceDateTimeField fuelUsedEndDateField =
         new DataSourceDateTimeField("fuelUsedEndDate", "End Date");
-    DateItem fuelUsedEndDateItem = new DateItem();
-    fuelUsedEndDateItem.setWidth("100%");
-    fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
-
+    //DateItem fuelUsedEndDateItem = new DateItem();
+    //fuelUsedEndDateItem.setWidth("100%");
+    //fuelUsedEndDateField.setEditorType(fuelUsedEndDateItem);
+    fuelUsedEndDateField.setType(FieldType.DATE);
 
     setFields(idField, organizationIdField, fuelSourceDescriptionField, vehicleTypeField, vehicleYearField, fuelTypeField, fuelQuantityField, fuelUnitField, milesTravelledField, bioFuelPercentField, ethanolPercentField, fuelUsedBeginDateField, fuelUsedEndDateField);
     //setup operations
@@ -142,5 +167,4 @@ public class MobileCombustionInfoDS extends RestDataSource {
     setOperationBindings(fetch, update, add, remove);
     //setClientOnly(true);
   }
-
 }
