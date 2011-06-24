@@ -17,9 +17,15 @@ class UrlMappings {
 		"500"(view:'/error')
                 "/login/$action?"(controller: "login")
                 "/logout/$action?"(controller: "logout")
+                /*
                 "/EF_StationaryCombustion_EPA"(controller:"EF_StationaryCombustion_EPA", parseRequest:true){
                         action = [POST:"uploadEmissionFactorFile"]
                 }
+                */
+                "/fileUpload"(controller:"fileUpload", parseRequest:true){
+                        action = [POST:"uploadFile"]
+                }
+
                 "403"(controller: "errors", action: "error403")
                 "500"(controller: "errors", action: "error500")
                 "500"(controller: "errors", action: "error403", exception: AccessDeniedException)

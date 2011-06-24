@@ -1,6 +1,6 @@
 <head>
-        <div id="bannerLeft" style="float:left;" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'launch_yourself.png')}" alt="ibL" border="0"></a></div>
-        <div id="bannerRight" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'logo.gif')}" alt="ibL" border="0" /></a></div>
+        <!--<div id="bannerLeft" style="float:left;" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'launch_yourself.png')}" alt="ibL" border="0"></a></div>-->
+        <!--<div id="bannerRight" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'logo.gif')}" alt="ibL" border="0" /></a></div>-->
         <meta name='layout' content='register'/>
 	<title><g:message code='spring.security.ui.register.title'/></title>
 </head>
@@ -9,6 +9,7 @@
 
 <p/>
 
+<div id ="container" align="center" >
 <s2ui:form width='650' height='300' elementId='loginFormContainer'
            titleCode='spring.security.ui.register.description' center='true'>
 
@@ -21,8 +22,8 @@
 	<g:else>
 
 	<br/>
-
-	<table>
+        
+        <table>
 	<tbody>
 
 		<s2ui:textFieldRow name='firstName' labelCode='user.firstName.label' bean="${command}"
@@ -52,7 +53,7 @@
 
 	</tbody>
 	</table>
-
+        
 	<s2ui:submitButton elementId='create' form='registerForm' messageCode='spring.security.ui.register.submit'/>
 
 	</g:else>
@@ -61,6 +62,7 @@
 
 </s2ui:form>
 
+</div>
 <script>
 $(document).ready(function() {
 	$('#username').focus();

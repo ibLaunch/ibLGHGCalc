@@ -61,24 +61,24 @@ class EF_StationaryCombustion_EPAController {
         isPublic: eF_StationaryCombustion_EPA.isPublic
     )
   }
-
+  
+  /*
 //-- This service is the loas emission factors files
     def uploadEmissionFactorFile = {
         def returnString
         println "params are-------:" + params
         String fileLoaded = loadEmissionFactorsService.emissionFactorFileUpload(params)
         println fileLoaded
-        returnString = "Hello, I am done"
+        //returnString = "Hello, I am done"
         
-        //render(view:"/stationaryCombustion")
+        render(view:"/stationaryCombustion")
         //render "File Uploaded :"
-/*
+
         sendMail {
            to "Hemant.Bundele@gmail.com"
            subject "Hello Billionaire"
            body 'Yes you can!'
-        }
-*/
-   
+        }   
     }
+    */
 }

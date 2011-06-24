@@ -24,7 +24,7 @@ import com.smartgwt.client.widgets.layout.VLayout;
 public class UserOrganizationHeader extends VLayout {
 
   private static final int USER_ORGANIZATION_HEADER_HEIGHT = 60;
-
+  private String STYLE_NAME = "headerStyle";
   private final OrganizationDS organizationDS = OrganizationDS.getInstance();
   public static final DynamicForm organizationSelectForm = new DynamicForm();
   //public static final SelectItem programTypeSelectItem = new SelectItem();
@@ -46,7 +46,8 @@ public class UserOrganizationHeader extends VLayout {
     this.setHeight(USER_ORGANIZATION_HEADER_HEIGHT);
     this.setHeight100();
     this.setWidth100();
-    //this.setBackgroundColor("#EFFBFB");
+    this.setStyleName(STYLE_NAME);
+    //this.setBackgroundColor("#6cf");
     //this.setShowEdges(true);
     //this.setAlign(VerticalAlignment.BOTTOM);
     this.setAlign(Alignment.CENTER);
@@ -54,7 +55,8 @@ public class UserOrganizationHeader extends VLayout {
     Img headerImg = new Img(GWT.getHostPageBaseURL()+"images/sun.gif", 1000,60);
     headerImg.setImageType(ImageStyle.TILE);
     */
-    this.setBackgroundImage("sun.gif");
+    //this.setBackgroundImage("small_banner.JPG");
+
     organizationId.setName("id");
     organizationSelectForm.setDataSource(organizationDS);
     organizationSelectForm.setNumCols(10);
@@ -79,8 +81,8 @@ public class UserOrganizationHeader extends VLayout {
     //final SelectItem programTypeSelectItem = new SelectItem();
     programTypeSelectItem.setName("programType");
     programTypeSelectItem.setTitle("Program Type");
-    programTypeSelectItem.setValueMap("EPA Climate Leaders");
-    //programTypeSelectItem.setValueMap("EPA Climate Leaders", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
+    programTypeSelectItem.setValueMap("US EPA");
+    //programTypeSelectItem.setValueMap("US EPA", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
     programTypeSelectItem.setDefaultToFirstOption(Boolean.TRUE);
     programTypeSelectItem.setDisabled(Boolean.TRUE);
     //programTypeSelectItem.setWidth("*");

@@ -75,7 +75,7 @@ class StationaryCombustionInfoService {
 
       //--Implement proper code for programType-??
       //String programType = parameters.programType
-      String programType = "EPA Climate Leaders"
+      String programType = "US EPA"
       String emissionsType = "Stationary Combustion"
 
       //-define emissions map
@@ -108,7 +108,7 @@ class StationaryCombustionInfoService {
               CO2EMissionsUnit:"Kg",
               CH4EMissionsUnit:"Gram",
               N2OEMissionsUnit:"Gram",
-              programType:"EPA Climate Leaders",
+              programType:"US EPA",
               emissionsType:"Stationary Combustion"
         )
         */
@@ -138,7 +138,7 @@ class StationaryCombustionInfoService {
           /*
           theEmissionsDetails = it
           //--Implement proper code for programType-??
-          if (theEmissionsDetails.programType.equals("EPA Climate Leaders")){
+          if (theEmissionsDetails.programType.equals("US EPA")){
                 theEmissionsDetails.CO2Emissions = fuelQty*theEF_StationaryCombustion_EPA.CO2MultiplierInKg
                 theEmissionsDetails.CH4Emissions = fuelQty*theEF_StationaryCombustion_EPA.CH4MultiplierInGram
                 theEmissionsDetails.N2OEmissions = fuelQty*theEF_StationaryCombustion_EPA.N2OMultiplierInGram
@@ -221,7 +221,7 @@ class StationaryCombustionInfoService {
   //--remove the method below
     def EmissionsDetails updateEmissionsDetails(EmissionsDetails theEmissionsDetails,
                                                                            String fuelType, Double fuelQty){
-        if ((theEmissionsDetails.programType.equals("EPA Climate Leaders")) &&
+        if ((theEmissionsDetails.programType.equals("US EPA")) &&
                 (theEmissionsDetails.emissionsType.equals("Stationary Combustion")) ){
             def theEF_StationaryCombustion_EPA = EF_StationaryCombustion_EPA.findByFuelType(parameters.fuelType)
             theEmissionsDetails.CO2Emissions = fuelQty*theEF_StationaryCombustion_EPA.CO2MultiplierInKg
@@ -239,7 +239,7 @@ class StationaryCombustionInfoService {
         def Double CH4Emissions
         def Double N2OEmissions
 
-        if ( (programType.equals("EPA Climate Leaders")) &&
+        if ( (programType.equals("US EPA")) &&
              (emissionsType.equals("Stationary Combustion")) ) {
              //- Get the emission factor object
              def theEF_StationaryCombustion_EPA = EF_StationaryCombustion_EPA.findByFuelType(fuelType)

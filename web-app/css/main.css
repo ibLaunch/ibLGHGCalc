@@ -9,6 +9,15 @@
   cursor: pointer;  
 }
 
+.mainVLayout {
+   /*
+   min-height: 100%;
+   min-width:  100%;
+   background: #EFFFFF;
+   */
+ 
+}
+
 .listgridField {
   border: transparent 1px solid;
   background: #EFFBFB;
@@ -20,6 +29,36 @@
   cursor: pointer;
 
 }
+
+.headerStyle{
+    background: #6cf;
+}
+.dashboardListGrid {
+  border: 2px outset #286ea0;
+  /*
+  background: #EFFBFB;
+  color: #7401DF;
+  font-family: Tahoma, Verdana, sans-serif;
+  font-size: inherit;
+  padding-left: 4px;
+  padding-right: 4px;
+  cursor: pointer;
+  */
+}
+
+.dashboardForm {
+  border: 2px outset #286ea0;
+  /*
+  background: #EFFBFB;
+  color: #7401DF;
+  font-family: Tahoma, Verdana, sans-serif;
+  font-size: inherit;
+  padding-left: 4px;
+  padding-right: 4px;
+  cursor: pointer;
+  */
+}
+
 .labels {
   border: transparent 1px solid;
   background: #EFFBFB;
@@ -38,7 +77,7 @@
 }
 
 .userOrganizationHeaderFormItem {
-  border: thin 1px solid;
+  border: 2px outset #286ea0;
   
   color: #243B0B;
   font-family: Tahoma, Verdana, sans-serif;

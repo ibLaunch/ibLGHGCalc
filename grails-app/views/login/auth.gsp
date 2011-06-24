@@ -1,22 +1,24 @@
 <head>
-<div id="bannerLeft" style="float:left;" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'launch_yourself.png')}" alt="ibL" border="0"></a></div>
-<div id="bannerRight" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'logo.gif')}" alt="ibL" border="0" /></a></div>
-<title><g:message code='spring.security.ui.login.title'/></title>
+<!--<div id="bannerLeft" style="float:left;" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'launch_yourself.png')}" alt="ibL" border="0"></a></div> -->
+<!--<div id="bannerLeft" align="center" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'sun.gif')}" alt="ibL" border="0" height="60" width="1000"> </a></div>-->
+<!--<div id="bannerRight" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'logo.gif')}" alt="ibL" border="0" /></a></div>-->
+<!--<title><g:message code='spring.security.ui.login.title'/></title>-->
 <meta name='layout' content='register'/>
 </head>
 
-<body>
+<body style='background-color:PowderBlue;' >
 
 <p/>
 
-<div class="login s2ui_center ui-corner-all" style='text-align:center;'>
-	<div class="login-inner">
-	<form action='${postUrl}' method='POST' id="loginForm" name="loginForm" autocomplete='off'>
-	<div class="sign-in">
+<div class="login s2ui_center ui-corner-all" style='background-color:PowderBlue;'   >
+        
+        <div class="login-inner" align="center">
+	<form action='${postUrl}' method='POST' id="loginForm" name="loginForm" autocomplete='off' >
+	<div class="sign-in" >
 
 	<!--<h1><g:message code='spring.security.ui.login.signin'/></h1>-->
 
-	<table>
+        <table>
 		<tr>
 			<td><label for="username"><g:message code='spring.security.ui.login.username'/></label></td>
 			<td><input name="j_username" id="username" size="20" /></td>

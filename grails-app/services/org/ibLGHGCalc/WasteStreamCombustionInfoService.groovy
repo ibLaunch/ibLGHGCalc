@@ -65,7 +65,7 @@ class WasteStreamCombustionInfoService {
       def theWasteStreamCombustionInfo = WasteStreamCombustionInfo.get(parameters.id)
 
       //--Implement proper code for programType-??
-      String programType = "EPA Climate Leaders"
+      String programType = "US EPA"
       String emissionsType = "Waste Stream Combustion"
       println " I am before Double conversion"
       //--get the values fromm parameters
@@ -247,7 +247,7 @@ class WasteStreamCombustionInfoService {
         //def wasteStreamComponentMolecularWeightPercentCarbon = ["wasteStreamComponent"]["molecularWeight"]["percentCarbon"]
         //wasteStreamComponentMolecularWeightPercentCarbon.put("wasteStreamComponent":"test","molecularWeight":20,"percentCarbon":20)
 
-        if ( (programType.equals("EPA Climate Leaders")) &&
+        if ( (programType.equals("US EPA")) &&
              (emissionsType.equals("Waste Stream Combustion")) ) {
              //- Get the list of waste stream components along with molecular weight and percent carbon. This step can be replaced with hashmap
              def theEF_WasteStreamCombustion_EPAList =  EF_WasteStreamCombustion_EPA.list()

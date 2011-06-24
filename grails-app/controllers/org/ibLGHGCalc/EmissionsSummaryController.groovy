@@ -69,8 +69,7 @@ class EmissionsSummaryController {
     xml.record(
         id: emissionsSummary.id,
         organizationId: emissionsSummary.organizationId,
-
-    	directEmissions: emissionsSummary.directEmissions,
+    	
 	stationaryCombustionEmissions: emissionsSummary.stationaryCombustionEmissions,
     	mobileCombustionEmissions: emissionsSummary.mobileCombustionEmissions,
     	refridgerationAirConditioningEmissions: emissionsSummary.refridgerationAirConditioningEmissions,
@@ -99,6 +98,8 @@ class EmissionsSummaryController {
 
     	totalEmissions: emissionsSummary.totalEmissions,
         totalOptionalEmissions: emissionsSummary.totalOptionalEmissions,
+        totalDirectEmissions: emissionsSummary.totalDirectEmissions,
+        totalInDirectEmissions: emissionsSummary.totalInDirectEmissions,
         totalNumberOfSources: emissionsSummary.totalNumberOfSources,
         programType: emissionsSummary.programType,        
     	emissionsBeginDate: emissionsSummary.emissionsBeginDate?.format("yyyy-MM-dd"),

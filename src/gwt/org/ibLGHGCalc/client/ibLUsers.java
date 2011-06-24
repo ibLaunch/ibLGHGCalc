@@ -73,6 +73,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import com.smartgwt.client.widgets.form.validator.RegExpValidator;
+import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
+import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -97,8 +99,8 @@ public class ibLUsers implements EntryPoint {
     private static final String FUEL_TYPE_FIELD_WIDTH = "20%";
     private static final String FUEL_QUANTITY_FIELD_WIDTH = "10%";
     private static final String FUEL_UNIT_FIELD_WIDTH = "5%";
-    private static final String BEGIN_DATE_FIELD_WIDTH = "8%";
-    private static final String END_DATE_FIELD_WIDTH = "8%";
+    private static final String BEGIN_DATE_FIELD_WIDTH = "12%";
+    private static final String END_DATE_FIELD_WIDTH = "12%";
     private static final String EDIT_BUTTON_FIELD_WIDTH = "5%";
     private static final String REMOVE_BUTTON_FIELD_WIDTH = "9%";
 
@@ -113,9 +115,9 @@ public class ibLUsers implements EntryPoint {
     //private static final String VEHICLE_TYPE_FIELD_WIDTH = "20%";
 
 
-    private static final String PROGRAM_TYPE_FIELD_WIDTH = "20%";
+    private static final String PROGRAM_TYPE_FIELD_WIDTH = "15%";
     private static final String TOTAL_EMISSIONS_FIELD_WIDTH = "20%";
-
+    private static final String REPORT_FILE_NAME_FIELD_WIDTH = "20%";
     private static final String GAS_TYPE_FIELD_WIDTH = "20%";
     private static final String EQUIPMENT_TYPE_FIELD_WIDTH = "20%";
 
@@ -207,9 +209,9 @@ public class ibLUsers implements EntryPoint {
     public final NumberFormat floatSimpleFormat = NumberFormat.getFormat("#,##0.00");
     public static SimpleType floatSimpleType = new SimpleType("floatSimpleTypeID", FieldType.FLOAT);
 
-    private final String eFUploadFormSubmitAction = "EF_StationaryCombustion_EPA";
+    //private final String eFUploadFormSubmitAction = "EF_StationaryCombustion_EPA";
+    private final String eFUploadFormSubmitAction = "fileUpload";
     private final DynamicForm uploadForm = new DynamicForm();
-
 
     private final FileUploadDS fileUploadDS = FileUploadDS.getInstance();
 
@@ -980,6 +982,47 @@ private final ListGrid emissionsSummaryDataGrid = new ListGrid()
     
     private final IblListGrid wasteStreamCombustionDataGrid = new IblListGrid(wasteStreamCombustionInfoDS, wasteStreamCombustionForm, wasteStreamCombustionFormWindow);
 
+
+    private TabSelectedHandler refridgerationTabSelectedHandler = new TabSelectedHandler() {
+        public void onTabSelected(TabSelectedEvent event) {
+            //displayEmissionSourceInfo(event.getTab().getTitle());
+            displayEmissionSourceInfo("Refridgeration and Air Conditioning Sources");
+            GWT.log("TabSelectedHandler.onTabSelected:" + event.getTab().getTitle(), null);
+        }
+    };
+
+    private TabSelectedHandler fireSuppressionTabSelectedHandler = new TabSelectedHandler() {
+        public void onTabSelected(TabSelectedEvent event) {
+            //displayEmissionSourceInfo(event.getTab().getTitle());
+            displayEmissionSourceInfo("Fire Suppression Sources");
+            GWT.log("TabSelectedHandler.onTabSelected:" + event.getTab().getTitle(), null);
+        }
+    };
+
+    private TabSelectedHandler employeeBusinessTravelTabSelectedHandler = new TabSelectedHandler() {
+        public void onTabSelected(TabSelectedEvent event) {
+            //displayEmissionSourceInfo(event.getTab().getTitle());
+            displayEmissionSourceInfo("Employee Business Travel");
+            GWT.log("TabSelectedHandler.onTabSelected:" + event.getTab().getTitle(), null);
+        }
+    };
+
+    private TabSelectedHandler employeeCommutingTabSelectedHandler = new TabSelectedHandler() {
+        public void onTabSelected(TabSelectedEvent event) {
+            //displayEmissionSourceInfo(event.getTab().getTitle());
+            displayEmissionSourceInfo("Employee Commuting");
+            GWT.log("TabSelectedHandler.onTabSelected:" + event.getTab().getTitle(), null);
+        }
+    };
+
+    private TabSelectedHandler productTransportTabSelectedHandler = new TabSelectedHandler() {
+        public void onTabSelected(TabSelectedEvent event) {
+            //displayEmissionSourceInfo(event.getTab().getTitle());
+            displayEmissionSourceInfo("Product Transport");
+            GWT.log("TabSelectedHandler.onTabSelected:" + event.getTab().getTitle(), null);
+        }
+    };
+
 public void onModuleLoad() {
 
 // - New code added below for layout management
@@ -992,8 +1035,12 @@ public void onModuleLoad() {
 
       // initialise the main layout container
       mainVLayout = new VLayout();
+      mainVLayout.setStyleName("mainVLayout");
+
+      
       mainVLayout.setWidth("100%");
       mainVLayout.setHeight("100%");
+      
       //mainVLayout.setOverflow(Overflow.HIDDEN);
       //mainVLayout.setAlign(Alignment.RIGHT);
       //mainVLayout.setBorder("1px double orange");
@@ -1002,9 +1049,10 @@ public void onModuleLoad() {
       //mainVLayout.setLayoutRightMargin(50);
       //mainVLayout.setLayoutLeftMargin(50);
       //mainVLayout.setLayoutTopMargin(20);
-      mainVLayout.setLayoutBottomMargin(20);
+      //mainVLayout.setLayoutBottomMargin(20);
       //mainVLayout.setBackgroundColor("#A9F5F2");
-      mainVLayout.setBackgroundColor("#CCFFCC");
+      //mainVLayout.setBackgroundColor("#CCFFCC");
+      //mainVLayout.setBackgroundColor("#B0E0E6");
       
       // initialise the North layout container
       northHLayout = new HLayout();
@@ -1063,6 +1111,7 @@ public void onModuleLoad() {
             @Override
             public String format(Object value, DataClass field,
                             DataBoundComponent component, Record record) {
+                    if (value == null) return "";
                     return floatSimpleFormat.format(Double.valueOf(value.toString()));
             }
     });
@@ -1168,7 +1217,7 @@ public void onModuleLoad() {
    final SelectItem programTypeSelectItem = new SelectItem();
    programTypeSelectItem.setName("programType");
    programTypeSelectItem.setTitle("Program Type");
-   programTypeSelectItem.setValueMap("EPA Climate Leaders", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
+   programTypeSelectItem.setValueMap("US EPA", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
 
    organizationSelectForm.setFields(organizationNameSelectItem, inventoryYearBeginDate, inventoryYearEndDate,programTypeSelectItem);
    //middleTopHLayout.addMember(organizationSelectForm);
@@ -1206,7 +1255,7 @@ public void onModuleLoad() {
 
     //middleMiddleHLayout.addChild(middleMiddleHLayoutLable);
     middleMiddleHLayout.addChild(new Dashboard());
-    middleMiddleHLayout.setBackgroundImage("sun.gif");
+    //middleMiddleHLayout.setBackgroundImage("featurepic3.JPG");
     
     middleBottomHLayout.addChild(middleBottomHLayoutLable);
     middleBottomHLayout.animateShow(AnimationEffect.SLIDE);
@@ -1451,7 +1500,7 @@ public void onModuleLoad() {
      final SelectItem programTypeItem = new SelectItem();
      programTypeItem.setName("programType2");
      programTypeItem.setTitle("Program Type");
-     programTypeItem.setValueMap("EPA Climate Leaders", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
+     programTypeItem.setValueMap("US EPA", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
 
      emissionsSummaryInputForm.setFields(emissionsBeginDate, emissionsEndDate,programTypeItem);
      calculateEmissionsSection.addItem(emissionsSummaryInputForm);
@@ -2228,7 +2277,7 @@ private void emissionsSummaryTab() {
         //biomassMobileCombustionEmissionsField.setType(ListGridFieldType.FLOAT);
 */
 
-        FloatListGridField totalEmissionsField = new FloatListGridField("totalEmissions", "Total Emissions");
+        FloatListGridField totalEmissionsField = new FloatListGridField("totalEmissions", "Total Emissions(MT CO2-e)");
         //totalEmissionsField.setType(ListGridFieldType.FLOAT);
         totalEmissionsField.setWidth(TOTAL_EMISSIONS_FIELD_WIDTH);
 
@@ -2252,10 +2301,11 @@ private void emissionsSummaryTab() {
         reportFileNameField.setType(ListGridFieldType.TEXT);
         reportFileNameField.setBaseStyle("listgridField");
         //reportFileNameField.setShowD
-        reportFileNameField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
+        reportFileNameField.setWidth(REPORT_FILE_NAME_FIELD_WIDTH);
+        //reportFileNameField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
         //reportFileNameField.setLinkURLPrefix("/ibLGHGCalc/reports/");
 
-
+/*
         ListGridField downloadReportField = new ListGridField("downloadReportField", "Download Report");
         //downloadReportField.setType(ListGridFieldType.TEXT);
         downloadReportField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
@@ -2264,7 +2314,7 @@ private void emissionsSummaryTab() {
         ListGridField viewReportButtonField = new ListGridField("viewReportButtonField", "Download Report");
         //viewReportButtonField.setType(ListGridFieldType.LINK);
         viewReportButtonField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
-
+*/
         //viewReportButtonField
         ListGridField reportGeneratedDate = new ListGridField("lastUpdated", "Report Generation Date");
         reportGeneratedDate.setWidth(END_DATE_FIELD_WIDTH);
@@ -2284,6 +2334,8 @@ private void emissionsSummaryTab() {
  *
  */
         emissionsSummaryDataGrid.setFields(programTypeField, emissionsBeginDateField, emissionsEndDateField,totalEmissionsField,reportGeneratedDate, reportFileNameField);
+        emissionsSummaryDataGrid.sort("lastUpdated", SortDirection.DESCENDING);
+
         //reportFileNameField.setHidden(true);
         //emissionsSummaryDataGrid.setFields(programTypeField, emissionsBeginDateField, emissionsEndDateField,totalEmissionsField,reportFileNameField,reportGeneratedDate);
         //reportFileNameField.setHidden(true);
@@ -2518,6 +2570,9 @@ private void refridgerationAirConditioningTab() {
         refridgerationAirConditioningTabSet.addTab(refridgerationAirConditioningTab_1);
         refridgerationAirConditioningTabSet.addTab(refridgerationAirConditioningTab_2);
         refridgerationAirConditioningTabSet.addTab(refridgerationAirConditioningTab_3);
+        
+        //--Tab selected handler for all tabs
+        refridgerationAirConditioningTabSet.addTabSelectedHandler(refridgerationTabSelectedHandler);
 
         refridgerationAirConditioningLayout.addMember(refridgerationAirConditioningTabSet);
 
@@ -2587,7 +2642,8 @@ private void fireSuppressionTab() {
         fireSuppressionTabSet.addTab(fireSuppressionTab_1);
         fireSuppressionTabSet.addTab(fireSuppressionTab_2);
         fireSuppressionTabSet.addTab(fireSuppressionTab_3);
-
+        
+        fireSuppressionTabSet.addTabSelectedHandler(fireSuppressionTabSelectedHandler);
         fireSuppressionLayout.addMember(fireSuppressionTabSet);
  }
 private void initFireSuppressionEditForm_123() {
@@ -2765,6 +2821,9 @@ private void employeeBusinessTravelByAirTab() {
         employeeBusinessTravelTabSet.addTab(employeeBusinessTravelByAirTab);
         //tabSet.addTab(employeeBusinessTravelTabSet);
         //tabSet.addTab(employeeBusinessTravelByAirTab);
+
+        //--Tab selected handler for all tabs
+        employeeBusinessTravelTabSet.addTabSelectedHandler(employeeBusinessTravelTabSelectedHandler);
 }
 private void initEmployeeBusinessTravelByAirEditForm() {
 
@@ -2840,6 +2899,9 @@ private void employeeCommutingByBusTab() {
         employeeCommutingTabSet.addTab(employeeCommutingByBusTab);
         //tabSet.addTab(employeeCommutingTabSet);
         //tabSet.addTab(employeeCommutingByBusTab);
+
+        //--Tab selected handler
+        employeeCommutingTabSet.addTabSelectedHandler(employeeCommutingTabSelectedHandler);
 }
 private void initEmployeeCommutingByBusEditForm() {
 
@@ -2917,6 +2979,9 @@ private void productTransportByRailTab() {
         productTransportTabSet.addTab(productTransportByRailTab);
         //tabSet.addTab(productTransportTabSet);
         //tabSet.addTab(productTransportByRailTab);
+
+        //-Tab selected handler for all tabs.
+        productTransportTabSet.addTabSelectedHandler(productTransportTabSelectedHandler);
 }
 private void initProductTransportByRailEditForm() {
 
@@ -3273,7 +3338,7 @@ private void initEmissionsSummaryInputForm() {
      final SelectItem programTypeItem = new SelectItem();
      programTypeItem.setName("programType");
      programTypeItem.setTitle("Program Type");
-     programTypeItem.setValueMap("EPA Climate Leaders", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
+     programTypeItem.setValueMap("US EPA", "California ARB 32", "WCI", "India", "China", "Russia","Brazil");
      programTypeItem.setDefaultToFirstOption(Boolean.TRUE);
      programTypeItem.setDisabled(Boolean.TRUE);
     //emissionsSummaryInputForm.setDataSource(emissionsSummaryDS);
@@ -3549,16 +3614,23 @@ public void displayEmissionSourceInfo(String emissionSourceChoice) {
                fireSuppressionMaterialBalanceFetchCriteria.addCriteria("methodType", "Fire Suppression - Company-Wide Material Balance Method");
                fireSuppressionMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
                fireSuppressionDataGrid_1.filterData(fireSuppressionMaterialBalanceFetchCriteria);
+               //fireSuppressionDataGrid_1.setCriteria(fireSuppressionMaterialBalanceFetchCriteria);
+               //fireSuppressionDataGrid_1.fetchData();
+               
 
                Criteria fireSuppressionSimplifiedMaterialBalanceFetchCriteria = new Criteria();
                fireSuppressionSimplifiedMaterialBalanceFetchCriteria.addCriteria("methodType", "Fire Suppression - Company-Wide Simplified Material Balance Method");
                fireSuppressionSimplifiedMaterialBalanceFetchCriteria.addCriteria(fetchCriteria);
                fireSuppressionDataGrid_2.filterData(fireSuppressionSimplifiedMaterialBalanceFetchCriteria);
+               //fireSuppressionDataGrid_2.setCriteria(fireSuppressionSimplifiedMaterialBalanceFetchCriteria);
+               //fireSuppressionDataGrid_2.fetchData();
 
                Criteria fireSuppressionACScreeningFetchCriteria = new Criteria();
                fireSuppressionACScreeningFetchCriteria.addCriteria("methodType", "Fire Suppression - Source Level Screening Method");
                fireSuppressionACScreeningFetchCriteria.addCriteria(fetchCriteria);
                fireSuppressionDataGrid_3.filterData(fireSuppressionACScreeningFetchCriteria);
+               //fireSuppressionDataGrid_3.setCriteria(fireSuppressionACScreeningFetchCriteria);
+               //fireSuppressionDataGrid_3.fetchData();
 
                middleMiddleHLayout.addChild(fireSuppressionLayout);
                //middleMiddleHLayout.addChild(refridgerationAirConditioningTabSet);

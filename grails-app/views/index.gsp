@@ -1,7 +1,7 @@
 <html>
     <head>
-        <title>Welcome to Grails</title>
-        <meta name="layout" content="main" />
+        <title>Welcome to ibLaunch Energy!</title>
+        <meta name="layout" content="main" />        
         <style type="text/css" media="screen">
 
         #nav {

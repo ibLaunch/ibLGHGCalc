@@ -65,7 +65,7 @@ class LoadEmissionFactorsService {
       //String fileType = parameters.fileType.toString()
 
       //-temporary placeholder for programType -- This needs to be automated ??
-      String programType = "EPA Climate Leaders"
+      String programType = "US EPA"
 
       String emissionsType
       if (parameters.fileType.contains("Refridgeration Air Conditioning")){
@@ -882,7 +882,7 @@ class LoadEmissionFactorsService {
                       def theOrganization = Organization.get(organizationId)
                       stationaryCombustionInfo.organization =  theOrganization 
                       //-temporary placeholder for programType -- This needs to be automated ??
-                      //String programType = "EPA Climate Leaders"
+                      //String programType = "US EPA"
                       //String emissionsType = "Stationary Combustion"
                       //def theEmissionsDetails = stationaryCombustionInfoService.createEmissionsDetails(fuelType, fuelQty, programType)
                       def Map <String, String> emissions = stationaryCombustionInfoService.calculateEmissions(fuelType, fuelQty, programType, emissionsType)
@@ -970,7 +970,7 @@ class LoadEmissionFactorsService {
                       theMobileCombustionInfo.organization =  theOrganization
 
                       //-temporary placeholder for programType -- This needs to be automated ??
-                      //String programType = "EPA Climate Leaders"
+                      //String programType = "US EPA"
                       //String emissionsType = "Mobile Combustion"
 
                       //Calculate Emissions
@@ -1299,7 +1299,7 @@ class LoadEmissionFactorsService {
                       theRefridgerationAirConditioningInfo.organization =  theOrganization
 
                       //-temporary placeholder for programType -- This needs to be automated ??
-                      //String programType = "EPA Climate Leaders"
+                      //String programType = "US EPA"
                       //String emissionsType = "Refridgeration And Air Conditioning"
 
 		      //-create parameters map to send to calcualteEmissions()
@@ -1394,7 +1394,7 @@ class LoadEmissionFactorsService {
 
                       //-temporary placeholder for programType -- This needs to be automated ??
 
-                      //String programType = "EPA Climate Leaders"
+                      //String programType = "US EPA"
                       //String emissionsType = "Refridgeration And Air Conditioning"
 
 		      //-create parameters map to send to calcualteEmissions()
@@ -1479,7 +1479,7 @@ class LoadEmissionFactorsService {
                       theRefridgerationAirConditioningInfo.organization =  theOrganization
 
                       //-temporary placeholder for programType -- This needs to be automated ??
-                      //String programType = "EPA Climate Leaders"
+                      //String programType = "US EPA"
                       //String emissionsType = "Refridgeration And Air Conditioning"
 
 		      //-create parameters map to send to calcualteEmissions()

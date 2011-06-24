@@ -73,7 +73,7 @@ class PurchasedElectricityInfoService {
       def thePurchasedElectricityInfo = PurchasedElectricityInfo.get(parameters.id)
 
       //--Implement proper code for programType-??
-      String programType = "EPA Climate Leaders"
+      String programType = "US EPA"
       String emissionsType = "Purchased Electricity"
 
       //-define emissions map
@@ -192,7 +192,7 @@ class PurchasedElectricityInfoService {
         def Double CH4Emissions
         def Double N2OEmissions
 
-        if ( (programType.equals("EPA Climate Leaders")) &&
+        if ( (programType.equals("US EPA")) &&
              (emissionsType.equals("Purchased Electricity")) ) {
              //- Get the emission factor object
              def theEF_PurchasedElectricity_EPA = EF_PurchasedElectricity_EPA.findByEGRIDSubregion(eGRIDSubregion)

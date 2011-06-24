@@ -21,9 +21,16 @@ grails.plugins.springsecurity.securityConfigType=SecurityConfigType.InterceptUrl
 
 grails.plugins.springsecurity.interceptUrlMap = [
     '/stationaryCombustion.gsp':         ['ROLE_USER','ROLE_ADMIN'],
+    '/fileUpload'              :         ['ROLE_USER','ROLE_ADMIN'],
+    '/reports'                 :         ['ROLE_USER','ROLE_ADMIN'],
+    '/*.pdf'                   :         ['ROLE_USER','ROLE_ADMIN'],
+    '/j_spring_security_switch_user':    ['ROLE_SWITCH_USER', 'IS_AUTHENTICATED_FULLY'],
     '/'                        :         ['ROLE_USER','ROLE_ADMIN']
     //'/**'                    :         ['IS_AUTHENTICATED_ANONYMOUSLY']
 ]
+
+//--Allow ROLE_SWITCH_USER to switch user as someone else.
+grails.plugins.springsecurity.useSwitchUserFilter = true
 
 //-- Fail on error if validation fails while saving
 grails.gorm.failOnError = true

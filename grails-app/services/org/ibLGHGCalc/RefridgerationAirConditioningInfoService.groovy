@@ -71,7 +71,7 @@ class RefridgerationAirConditioningInfoService {
       def theRefridgerationAirConditioningInfo = RefridgerationAirConditioningInfo.get(parameters.id)
 
       //--Implement proper code for programType-??
-      String programType = "EPA Climate Leaders"
+      String programType = "US EPA"
       String emissionsType
 
       if (parameters.methodType?.contains("Refridgeration Air Conditioning")){
@@ -255,7 +255,7 @@ class RefridgerationAirConditioningInfoService {
         def String CH4EmissionsUnit
         def String N2OEmissionsUnit
 
-        if ( (programType.equals("EPA Climate Leaders")) &&
+        if ( (programType.equals("US EPA")) &&
              ((emissionsType.equals("Refridgeration And Air Conditioning"))|| (emissionsType.equals("Fire Suppression")))) {
              //- Get the emission factor object
              def theGWP_RefridgerationAirConditioning_EPA =  GWP_RefridgerationAirConditioning_EPA.findByGasType(parameters.gasType)

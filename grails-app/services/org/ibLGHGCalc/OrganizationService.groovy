@@ -30,7 +30,7 @@ class OrganizationService {
 
     @Transactional
     //@PreAuthorize("hasPermission(#orzanitationId, write) or hasPermission(#orzanitationId, admin)")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     def Organization save(Map<String, String> parameters) {
       log.info "save( ${parameters} )"
       println parameters

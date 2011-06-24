@@ -8,6 +8,9 @@ import org.codehaus.groovy.grails.plugins.springsecurity.ui.RegistrationCode
 
 import org.springframework.security.acls.domain.BasePermission
 
+import static java.util.Calendar.YEAR
+
+
 class RegisterController extends grails.plugins.springsecurity.ui.RegisterController {
 	def mailService
 	def saltSource
@@ -37,10 +40,29 @@ class RegisterController extends grails.plugins.springsecurity.ui.RegisterContro
 //- Below is temporary fix it in future
                 def theOrganization = Organization.findByOrganizationName(command.organizationName)
                 if(!theOrganization){
+                   //--Get the defauly inventory year based on today's date
+                   def defaultInventoryYear = [:]
+                   defaultInventoryYear = getDefaultInventoryYear()
+                   def pointOfContact = command.firstName + " " + command.lastName
+                   
+                   //--Create the new organization
+                   theOrganization = Organization.newInstance(organizationName: command.organizationName,
+                                                              currentInventoryBeginDate:defaultInventoryYear.defaultInventoryBeginDate,
+                                                              currentInventoryEndDate:defaultInventoryYear.defaultInventoryEndDate,
+                                                              programType:"US EPA",
+                                                              pointOfContact:pointOfContact,
+                                                              userList:user
+                                                             )
+                      if (!theOrganization.validate() || !theOrganization.save(flush:true)) {
+                            // TODO
+                      }
+
+                 /*
                  theOrganization = Organization.newInstance(organizationName: command.organizationName)
                      if (!theOrganization.validate() || !theOrganization.save(flush:true)) {
 			// TODO
                      }
+                 */
                 }
                 aclUtilService.addPermission(theOrganization, user.username, BasePermission.ADMINISTRATION)
 
@@ -71,6 +93,23 @@ class RegisterController extends grails.plugins.springsecurity.ui.RegisterContro
 
 		render view: 'index', model: [emailSent: true]
 	}
+
+        def Map<String,Date> getDefaultInventoryYear(){
+
+            def defaultInventoryYear = [:]
+
+            def today = new Date()
+            def lastYear = today[YEAR] - 1
+
+            Date defaultInventoryBeginDate = new Date().parse('yyyy-MM-dd', lastYear.toString()+"-01-01")
+            Date defaultInventoryEndDate = new Date().parse('yyyy-MM-dd', lastYear.toString()+"-12-31")
+
+            defaultInventoryYear.put("defaultInventoryBeginDate",defaultInventoryBeginDate)
+            defaultInventoryYear.put("defaultInventoryEndDate",defaultInventoryEndDate)
+
+            return defaultInventoryYear
+        }
+
     
 }
 class RegisterCommand {
@@ -89,6 +128,16 @@ class RegisterCommand {
                 firstName blank: false, firstName: true
                 lastName blank: false, lastName: true
                 phoneNumber blank: false, phoneNumber: true
+                /*
+                ---Work on this latter
+                phoneNumber blank: false,validator: { value, command ->
+			if (value) {
+				if (!(value ==~ /^[01]?\s*[\(\.-]?(\d{3})[\)\.-]?\s*(\d{3})[\.-](\d{4})$/)) {
+					return 'registerCommand.phoneNumber.format'
+				}
+			}
+		}
+                */
                 organizationName blank: false, organizationName: true
                 
 		username blank: false, validator: { value, command ->
@@ -97,6 +146,15 @@ class RegisterCommand {
 					SpringSecurityUtils.securityConfig.userLookup.userDomainClassName).clazz
 				if (User.findByUsername(value)) {
 					return 'registerCommand.username.unique'
+				}
+			}
+		}
+		organizationName blank: false, validator: { value, command ->
+			if (value) {
+				def Organization = AH.application.getDomainClass(
+					SpringSecurityUtils.securityConfig.userLookup.userDomainClassName).clazz
+				if (Organization.findByOrganizationName(value)) {
+					return 'registerCommand.organizationName.unique'
 				}
 			}
 		}

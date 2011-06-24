@@ -98,7 +98,7 @@ class EmissionsSummaryService {
       Date endDate = new Date().parse('yyyy-MM-dd', parameters.emissionsEndDate)
 
       //String programType = parameters.programType.toString()
-      //String programType = "EPA Climate Leaders"
+      //String programType = "US EPA"
       String programType = parameters.programType
 
       //def theOrganization = Organization.get(parameters.organizationId)
@@ -126,8 +126,14 @@ class EmissionsSummaryService {
           theEmissionsSummary.emissionsEndDate = endDate
       }
 
-      Double totalEmissions = 0
-      Double totalOptionalEmissions = 0
+      //Double totalEmissions = 0
+      //Double totalOptionalEmissions = 0
+      //Double totalDirectEmissions = 0
+      //Double totalInDirectEmissions = 0
+      theEmissionsSummary.totalEmissions = 0
+      theEmissionsSummary.totalOptionalEmissions = 0
+      theEmissionsSummary.totalDirectEmissions = 0
+      theEmissionsSummary.totalInDirectEmissions = 0
       Integer totalNumberOfSources = 0
 
 // ------------------- Calculate stationaryCombustionEmissions
@@ -459,19 +465,8 @@ class EmissionsSummaryService {
                                             theEmissionsSummary.fireSuppressantEmissions +
                                             theEmissionsSummary.purchasedElectricityEmissions +
                                             theEmissionsSummary.purchasedSteamEmissions +
-                                            theEmissionsSummary.wasteStreamCombustionEmissions +
-                                            theEmissionsSummary.employeeBusinessTravelByVehicleEmissions+
-                                            theEmissionsSummary.employeeBusinessTravelByRailEmissions +
-                                            theEmissionsSummary.employeeBusinessTravelByBusEmissions +
-                                            theEmissionsSummary.employeeBusinessTravelByAirEmissions +
-                                            theEmissionsSummary.employeeCommutingByVehicleEmissions +
-                                            theEmissionsSummary.employeeCommutingByRailEmissions +
-                                            theEmissionsSummary.employeeCommutingByBusEmissions +
-                                            theEmissionsSummary.productTransportByVehicleEmissions +
-                                            theEmissionsSummary.productTransportByHeavyDutyTrucksEmissions +
-                                            theEmissionsSummary.productTransportByRailEmissions +
-                                            theEmissionsSummary.productTransportByWaterAirEmissions                                            
-
+                                            theEmissionsSummary.wasteStreamCombustionEmissions
+                                            
        theEmissionsSummary.totalOptionalEmissions = theEmissionsSummary.employeeBusinessTravelByVehicleEmissions+
                                             theEmissionsSummary.employeeBusinessTravelByRailEmissions +
                                             theEmissionsSummary.employeeBusinessTravelByBusEmissions +
@@ -483,6 +478,16 @@ class EmissionsSummaryService {
                                             theEmissionsSummary.productTransportByHeavyDutyTrucksEmissions +
                                             theEmissionsSummary.productTransportByRailEmissions +
                                             theEmissionsSummary.productTransportByWaterAirEmissions
+
+       theEmissionsSummary.totalDirectEmissions = theEmissionsSummary.stationaryCombustionEmissions +
+                                            theEmissionsSummary.mobileCombustionEmissions +
+                                            theEmissionsSummary.refridgerationAirConditioningEmissions +
+                                            theEmissionsSummary.fireSuppressantEmissions +
+                                            theEmissionsSummary.wasteStreamCombustionEmissions
+
+
+       theEmissionsSummary.totalInDirectEmissions = theEmissionsSummary.purchasedElectricityEmissions +
+                                            theEmissionsSummary.purchasedSteamEmissions
 
        theEmissionsSummary.totalNumberOfSources = totalNumberOfSources
         //-- Save that in the theEmissionsSummary

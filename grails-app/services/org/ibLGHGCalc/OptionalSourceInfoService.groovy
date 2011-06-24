@@ -70,7 +70,7 @@ class OptionalSourceInfoService {
       def theOptionalSourceInfo = OptionalSourceInfo.get(parameters.id)
 
       //--Implement proper code for programType-??
-      String programType = "EPA Climate Leaders"
+      String programType = "US EPA"
       String emissionsType = parameters.optionalSourceType
 
       //-create parameters map to send to calcualteEmissions()
@@ -221,7 +221,7 @@ class OptionalSourceInfoService {
 
         def theEF_OptionalSource_EPA
 
-        if (programType.equals("EPA Climate Leaders"))
+        if (programType.equals("US EPA"))
              switch (emissionsType) {
                 case ["Employee Business Travel - By Vehicle","Employee Commuting - By Vehicle"] :
                     //- Get the emission factor object

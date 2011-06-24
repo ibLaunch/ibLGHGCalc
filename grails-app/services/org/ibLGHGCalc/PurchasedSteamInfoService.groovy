@@ -74,7 +74,7 @@ class PurchasedSteamInfoService {
       def thePurchasedSteamInfo = PurchasedSteamInfo.get(parameters.id)
 
       //--Implement proper code for programType-??
-      String programType = "EPA Climate Leaders"
+      String programType = "US EPA"
       String emissionsType = "Purchased Steam"
 
 	//-create parameters map to send to calcualteEmissions()
@@ -229,7 +229,7 @@ class PurchasedSteamInfoService {
         def Double CH4Emissions
         def Double N2OEmissions
 
-        if ( (programType.equals("EPA Climate Leaders")) &&
+        if ( (programType.equals("US EPA")) &&
              (emissionsType.equals("Purchased Steam")) ) {
              //- Get the emission factor object
              def theEF_PurchasedSteam_EPA = EF_PurchasedSteam_EPA.findByFuelType(parameters.fuelType)

@@ -27,8 +27,8 @@ class Organization {
                       purchasedElectricityInfoList:PurchasedElectricityInfo,
                       purchasedSteamInfoList:PurchasedSteamInfo,
                       optionalSourceInfoList:OptionalSourceInfo,
-                      wasteStreamCombustionInfoList:WasteStreamCombustionInfo
-                      //userList:SecUser
+                      wasteStreamCombustionInfoList:WasteStreamCombustionInfo,
+                      userList:SecUser
                      ]
 
     static constraints = {
@@ -36,7 +36,7 @@ class Organization {
 
         currentInventoryBeginDate(nullable:true)
         currentInventoryEndDate(nullable:true)
-        programType(nullable:true, default:"EPA Climate Leaders")
+        programType(nullable:true, default:"US EPA")
         organizationStreetAddress1(nullable:true)
         organizationStreetAddress2(nullable:true)
         organizationCity(nullable:true)
@@ -47,15 +47,15 @@ class Organization {
         organizationHQ(nullable:true)
         pointOfContact(nullable:true)
 
-
         stationaryCombustionInfoList(nullable:true)
         emissionsSummaryList(nullable:true)
         mobileCombustionInfoList (nullable:true)
+        refridgerationAirConditioningInfoList(nullable:true)
         purchasedElectricityInfoList (nullable:true)
         purchasedSteamInfoList (nullable:true)
         optionalSourceInfoList (nullable:true)
         wasteStreamCombustionInfoList (nullable:true)
-        //userList (nullable:true)
+        userList (nullable:true)
     }
 
     static mapping = {
@@ -67,7 +67,7 @@ class Organization {
         purchasedSteamInfoList cascade: "all-delete-orphan"
         optionalSourceInfoList cascade: "all-delete-orphan"
         wasteStreamCombustionInfoList cascade: "all-delete-orphan"
-        //userList cascade: "all-delete-orphan"
+        userList cascade: "all-delete-orphan"
         //tablePerHierarchy false
     }
 }

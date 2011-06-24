@@ -5,23 +5,9 @@ import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.DSCallback;
 import com.smartgwt.client.data.DSRequest;
 import com.smartgwt.client.data.DSResponse;
-import com.smartgwt.client.data.Record;
 import com.smartgwt.client.types.Alignment;
-import com.smartgwt.client.types.DateDisplayFormat;
-import com.smartgwt.client.types.ImageStyle;
-import com.smartgwt.client.types.Overflow;
-import com.smartgwt.client.types.TitleOrientation;
-import com.smartgwt.client.types.VerticalAlignment;
-import com.smartgwt.client.util.SC;
-import com.smartgwt.client.widgets.Img;
-import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.types.SortDirection;
 import com.smartgwt.client.widgets.form.DynamicForm;
-import com.smartgwt.client.widgets.form.fields.DateItem;
-import com.smartgwt.client.widgets.form.fields.HiddenItem;
-import com.smartgwt.client.widgets.form.fields.IntegerItem;
-import com.smartgwt.client.widgets.form.fields.SelectItem;
-import com.smartgwt.client.widgets.form.fields.TextItem;
-import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.form.fields.StaticTextItem;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
@@ -32,6 +18,8 @@ public class Dashboard extends VLayout {
 
   //private static final int USER_ORGANIZATION_HEADER_HEIGHT = 60;
 
+  private String LISTGRID_STYLE_NAME="dashboardListGrid";
+  private String FORM_STYLE_NAME="dashboardForm";
   private final OrganizationDS organizationDS = OrganizationDS.getInstance();
   private static final DynamicForm organizationSelectForm = new DynamicForm();
   
@@ -62,7 +50,9 @@ public class Dashboard extends VLayout {
     //pointOfContact.setCellStyle("userOrganizationHeaderFormItem");
 
     organizationSelectForm.setDataSource(organizationDS);
-    organizationSelectForm.setBorder("5px outset #286ea0");
+    //organizationSelectForm.setBorder("5px outset #286ea0");
+    organizationSelectForm.setStyleName(FORM_STYLE_NAME);
+
     organizationSelectForm.setHeight("20%");
     organizationSelectForm.setWidth("100%");
     organizationSelectForm.setAlign(Alignment.LEFT);
@@ -73,17 +63,22 @@ public class Dashboard extends VLayout {
     //organizationSelectForm.setWidth("15");
     organizationSelectForm.setFields(organizationName,pointOfContact);
 
-    FloatListGridField totalEmissions = new FloatListGridField("totalEmissions", "Total Emissions");
+    FloatListGridField totalEmissions = new FloatListGridField("totalEmissions", "Total Emissions(CO2-e MT)");
+    FloatListGridField totalOptionalEmissions = new FloatListGridField("totalOptionalEmissions", "Optional Emissions(MT CO2-e)");
     ListGridField totalNumberOfSources = new ListGridField("totalNumberOfSources");
     ListGridField emissionsBeginDate = new ListGridField("emissionsBeginDate");
     emissionsBeginDate.setWidth(BEGIN_DATE_FIELD_WIDTH);
     ListGridField emissionsEndDate = new ListGridField("emissionsEndDate");
     emissionsEndDate.setWidth(END_DATE_FIELD_WIDTH);
     ListGridField programType = new ListGridField("programType");
+    ListGridField lastUpdated = new ListGridField("lastUpdated");
 
     emissionsSummaryDashboardListGrid.setDataSource(emissionsSummaryDS);
-    emissionsSummaryDashboardListGrid.setFields(programType,emissionsBeginDate, emissionsEndDate, totalNumberOfSources, totalEmissions);
-    emissionsSummaryDashboardListGrid.setBorder("5px outset #286ea0");
+    emissionsSummaryDashboardListGrid.setFields(programType,emissionsBeginDate, emissionsEndDate, totalNumberOfSources, totalEmissions,totalOptionalEmissions,lastUpdated);
+    emissionsSummaryDashboardListGrid.sort("lastUpdated", SortDirection.DESCENDING);
+    emissionsSummaryDashboardListGrid.hideField("lastUpdated");
+    //emissionsSummaryDashboardListGrid.setBorder("5px outset #286ea0");
+    emissionsSummaryDashboardListGrid.setStyleName(LISTGRID_STYLE_NAME);
     //emissionsSummaryDashboardListGrid.setAutoFitFieldWidths(Boolean.TRUE);
     //emissionsSummaryDashboardListGrid.setBackgroundImage("sun.gif");
     

@@ -6,9 +6,6 @@ class EmissionsSummary {
     
     static belongsTo = [organization:Organization]
 
-
-
-    Double directEmissions
     Double stationaryCombustionEmissions
     Double mobileCombustionEmissions
     Double refridgerationAirConditioningEmissions
@@ -38,6 +35,9 @@ class EmissionsSummary {
     
     Double totalEmissions
     Double totalOptionalEmissions
+    Double totalDirectEmissions
+    Double totalInDirectEmissions
+
     Integer totalNumberOfSources
 
     String programType
@@ -52,7 +52,7 @@ class EmissionsSummary {
     SecUser summaryGeneratedByUserReference
 
     static constraints = {
-            directEmissions(nullable:true)
+            
             stationaryCombustionEmissions(nullable:true)
     	    mobileCombustionEmissions(nullable:true)
 	    refridgerationAirConditioningEmissions(nullable:true)
@@ -81,6 +81,8 @@ class EmissionsSummary {
 
 	    totalEmissions(nullable:true)
             totalOptionalEmissions(nullable:true)
+            totalDirectEmissions(nullable:true)
+            totalInDirectEmissions(nullable:true)
             totalNumberOfSources(nullable:true)
 	    emissionsBeginDate(blank:false)
 	    emissionsEndDate(blank:false)

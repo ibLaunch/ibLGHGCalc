@@ -70,7 +70,7 @@ class MobileCombustionInfoService {
       Float ethanolPercent = parameters.ethanolPercent.toDouble()
 
       //--Implement proper code for programType-??
-      String programType = "EPA Climate Leaders"
+      String programType = "US EPA"
       String emissionsType = "Mobile Combustion"
 
       def Map<String,String> emissions
@@ -211,7 +211,7 @@ class MobileCombustionInfoService {
    }
 
     def EmissionsDetails updateCO2EmissionsDetails(EmissionsDetails theEmissionsDetails, String fuelType, Double fuelQty, String programType, String emissionType, Double bioFuelPercent, Double biodieselFuelPercent){
-        if ((theEmissionsDetails.programType.equals("EPA Climate Leaders")) &&
+        if ((theEmissionsDetails.programType.equals("US EPA")) &&
                 (theEmissionsDetails.emissionsType.equals("Mobile Combustion")) ){
             def theEF_CO2_MobileCombustion_EPA = EF_CO2_MobileCombustion_EPA.findByFuelType(fuelType)
 
@@ -231,7 +231,7 @@ class MobileCombustionInfoService {
     }
 
     def Double createCO2EmissionsDetails(String fuelType, Double fuelQty, String programType, String emissionsType, Double bioFuelPercent, Double ethanolPercent){
-        if ( (programType.equals("EPA Climate Leaders")) &&
+        if ( (programType.equals("US EPA")) &&
              (emissionsType.equals("Mobile Combustion")) ) {
             //- Get the emission factor object
             def theEF_CO2_MobileCombustion_EPA = EF_CO2_MobileCombustion_EPA.findByFuelType(fuelType)
@@ -268,7 +268,7 @@ class MobileCombustionInfoService {
 
         println "vehicleType: " + vehicleType
 
-        if ( (programType.equals("EPA Climate Leaders")) &&
+        if ( (programType.equals("US EPA")) &&
              (emissionsType.equals("Mobile Combustion")) ) {
             //-- Getting CO2 emissions
 
