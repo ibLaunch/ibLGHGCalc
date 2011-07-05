@@ -27,31 +27,39 @@ class BootStrap {
         //TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
         def userRole = SecRole.findByAuthority('ROLE_USER') ?: new SecRole(authority: 'ROLE_USER').save(failOnError: true)
         def adminRole = SecRole.findByAuthority('ROLE_ADMIN') ?: new SecRole(authority: 'ROLE_ADMIN').save(failOnError: true)
+        def switchUserRole = SecRole.findByAuthority('ROLE_SWITCH_USER') ?: new SecRole(authority: 'ROLE_SWITCH_USER').save(failOnError: true)
 
         println "------------------ I am in BootStrap Init-------------------------------------------"
 
         def adminUser = SecUser.findByUsername('admin') ?: new SecUser(
                 username: 'admin',
                 password: springSecurityService.encodePassword('admin'),
-                enabled: true).save(failOnError: true)
+                enabled: true).save(flush: true)
 
         def userUser = SecUser.findByUsername('user') ?: new SecUser(
                 username: 'user',
                 password: springSecurityService.encodePassword('user'),
-                enabled: true).save(failOnError: true)
+                enabled: true).save(flush: true)
 
         if (!adminUser.authorities.contains(adminRole)) {
             SecUserSecRole.create adminUser, adminRole
+        }
+
+        if (!adminUser.authorities.contains(switchUserRole)) {
+            SecUserSecRole.create adminUser, switchUserRole
         }
         
         if (!userUser.authorities.contains(userRole)) {
             SecUserSecRole.create userUser, userRole
         }
 
+        createAdminOrganization(userUser)
+
         println "userRole : "+ userRole
         println "adminRole : "+ adminRole
         println "adminUser : "+ adminUser
         println "userUser : "+ userUser
+        //println "theOrganization : "+ theOrganization
         //createGrants()
     }
 
@@ -132,5 +140,26 @@ class BootStrap {
     }
 
     def destroy = {
+    }
+
+    private void createAdminOrganization(SecUser defaultUser){
+
+        loginAsAdmin()
+
+        try {
+            def theOrganization =  Organization.findByOrganizationName('GreenLaunch') ?:Organization.newInstance(organizationName: "GreenLaunch",
+                                                      currentInventoryBeginDate:new Date(),
+                                                      currentInventoryEndDate:new Date(),
+                                                      programType:"US EPA",
+                                                      pointOfContact:"user",
+                                                      userList:defaultUser
+                                                     ).save(flush: true)
+
+            aclUtilService.addPermission(theOrganization, defaultUser.username, BasePermission.ADMINISTRATION)
+        }
+        finally {
+            SCH.clearContext()
+        }
+
     }
 }

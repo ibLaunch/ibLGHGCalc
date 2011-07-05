@@ -130,19 +130,58 @@ def serveReportFile = {
 
     if (theEmissionsSummary) {
         println "params:---"+params
-        String fileName = theEmissionsSummary?.reportFileName        
+        String fileName = theEmissionsSummary?.reportFileName
+        def reportFile
+        
+
+        try {
+            reportFile = new File(System.properties['base.dir']+"/reports/"+params.organizationId+"/"+fileName);
+            //response.setContentType("application/x-download");
+        }
+        catch(FileNotFoundException e) {
+            println "Report not Generated!!!!"
+            log.error e            
+            //reportFound = 0
+        }
+        catch (IOException e) {
+            println "Caught IOException: " + e.getMessage()
+        }
+
+        if (reportFile.size() > 0){
+            response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+            response.outputStream << reportFile.readBytes()            
+        } else {
+            response.outputStream << "Report file not generated"
+        }
+
+    } else {
+        println " No report found ---------------"
+        response.outputStream << " Either report not generated or you don't have access to this report, contact support if needed"
+    }
+
+/*
+    if (theEmissionsSummary) {
+        println "params:---"+params
+        String fileName = theEmissionsSummary?.reportFileName
+
+
         if (fileName){
             def rFile = new File(System.properties['base.dir']+"/reports/"+params.organizationId+"/"+fileName);
             //response.setContentType("application/x-download");
             response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
             response.outputStream << rFile.readBytes()
-        } else {
+        } 
+        else {       
+            log.error e
+            println "Report not Generated!"
             response.outputStream << " No report found!!!!!"
         }
     } else {
         println " No report found ---------------"
         response.outputStream << " Either report not generated or you don't have access to this report, contact support if needed"
     }
+*/
+
  }
 
 }

@@ -7,14 +7,15 @@
 
 
 <!--<div id="tagLine" align="center" style="background-color: #6cf;height: 60px;">-->
-<div id="tagLine" align="center" style="background-color: #FFFFFF;height: 60px; bottom: 20px">
-  <!--<div style="margin-top: 30px; vertical-align: middle;">-->
+<div id="tagLine" align="center" style="background-color: #FFFFFF; height: 80px;border-bottom: thick solid orange;">
     <img src="${resource(dir:'images',file:'logo.gif')}" alt="ibL" border="0" align="left"/>
-    <h2 style="margin-top: 25px">
+  <div style="height:80px; padding: 25px 0 25px 0;">
+    <h2>
       <!--<img src="${resource(dir:'images',file:'logo.gif')}" alt="ibL" border="0" />-->
-      Manage your impact on environment, save your bottom line!
+      <!--Manage your impact on environment, save your bottom line! -->
+      Launch yourself with us, Manage your environmental impact!
     </h2>
-  <!--</div>-->
+  </div>
 </div>
 <!--<div id="bannerLeft" align="center" ><a href="http://www.greenhousegas.org"><img src="${resource(dir:'images',file:'sun.gif')}" alt="ibL" border="0" height="60"  width="1000"> </a></div>-->
 <!--<link rel="shortcut icon" href="${resource(dir:'images',file:'favicon.ico')}" type="image/x-icon"/>-->
@@ -47,16 +48,16 @@ html, body {
   min-height: 100%;
   height: auto !important;
   height: 100%;
-  margin: 0 auto -1em;
+  margin: 0 auto -1.3em;
 }
 
 .clearfooter {
-  height: 1em;
+  height: 1.3em;
 }
 
 .footer {
-  height: 1em;
-  background:#6cf;
+  height: 1.3em;
+  text-align: center;
 }
 </style>
 
@@ -73,7 +74,7 @@ html, body {
     <div class="clearfooter"></div>
   </div>
 <!--<div id="footer" style="padding-top: 20px">-->
-<div class="footer">
+<div class="footer" style="border-top: thick solid orange; padding: 0.5em 0 0.5em 0; background-color: #FFFFFF;">
   <h4><pre>Copyright © 2011 ibLaunch Energy, Inc. All rights reserved.;  Contact: support@ibLaunchEnergy.com </pre></h4>
 </div>
 </body>

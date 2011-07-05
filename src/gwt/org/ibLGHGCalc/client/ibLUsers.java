@@ -29,14 +29,12 @@ import com.smartgwt.client.widgets.layout.*;
 import com.smartgwt.client.widgets.tab.Tab;
 import com.smartgwt.client.widgets.tab.TabSet;
 import com.smartgwt.client.widgets.menu.*;
-import com.smartgwt.client.widgets.menu.events.MenuItemClickEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
-import com.google.gwt.i18n.client.TimeZone;
 import com.smartgwt.client.core.DataClass;
 import com.smartgwt.client.data.DSCallback;
 import com.smartgwt.client.data.DSRequest;
@@ -45,25 +43,16 @@ import com.smartgwt.client.data.RestDataSource;
 import com.smartgwt.client.data.SimpleType;
 import com.smartgwt.client.data.SimpleTypeFormatter;
 import com.smartgwt.client.util.DateDisplayFormatter;
-import com.smartgwt.client.util.DateInputFormatter;
-import com.smartgwt.client.widgets.events.CloseClickHandler;
-import com.smartgwt.client.widgets.events.DoubleClickEvent;
-import com.smartgwt.client.widgets.events.DoubleClickHandler;
-import com.smartgwt.client.widgets.events.HoverEvent;
-import com.smartgwt.client.widgets.events.HoverHandler;
 import com.smartgwt.client.widgets.form.validator.DateRangeValidator;
 import com.smartgwt.client.widgets.form.validator.FloatPrecisionValidator;
 import com.smartgwt.client.widgets.form.validator.IsFloatValidator;
 import com.smartgwt.client.widgets.form.validator.RequiredIfFunction;
 import com.smartgwt.client.widgets.form.validator.RequiredIfValidator;
-import com.smartgwt.client.widgets.form.validator.Validator;
 import com.smartgwt.client.widgets.grid.CellFormatter;
 import com.smartgwt.client.widgets.grid.events.CellClickEvent;
 import com.smartgwt.client.widgets.grid.events.CellClickHandler;
 import com.smartgwt.client.widgets.grid.events.RecordClickEvent;
 import com.smartgwt.client.widgets.grid.events.RecordClickHandler;
-import com.smartgwt.client.widgets.grid.events.RecordDoubleClickEvent;
-import com.smartgwt.client.widgets.grid.events.RecordDoubleClickHandler;
 import com.smartgwt.client.widgets.menu.events.ItemClickEvent;
 import com.smartgwt.client.widgets.menu.events.ItemClickHandler;
 import com.smartgwt.client.widgets.viewer.DetailFormatter;
@@ -71,7 +60,6 @@ import com.smartgwt.client.widgets.viewer.DetailViewer;
 import com.smartgwt.client.widgets.viewer.DetailViewerField;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 import com.smartgwt.client.widgets.form.validator.RegExpValidator;
 import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
 import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
@@ -140,19 +128,19 @@ public class ibLUsers implements EntryPoint {
 //- Data upload Options
     private String[] epaDataLoadOptions = {
 				"Stationary Combustion Info",
-				"Data - EPA Purchased Electricity",
-				"Data - EPA Purchased Steam",
-				"Data - EPA Employee Business Travel - By Vehicle",
-				"Data - EPA Employee Business Travel - By Bus",
-				"Data - EPA Employee Business Travel - By Rail",
-				"Data - EPA Employee Business Travel - By Air",
-				"Data - EPA Employee Commuting - By Vehicle",
-				"Data - EPA Employee Commuting - By Rail",
-				"Data - EPA Employee Commuting - By Bus",
-				"Data - EPA Product Transport - By Vehicle",
-				"Data - EPA Product Transport - By Heavy Duty Trucks",
-				"Data - EPA Product Transport - By Rail",
-				"Data - EPA Product Transport - By Water or Air",
+				"Purchased Electricity",
+				"Purchased Steam",
+				"Employee Business Travel - By Vehicle",
+				"Employee Business Travel - By Bus",
+				"Employee Business Travel - By Rail",
+				"Employee Business Travel - By Air",
+				"Employee Commuting - By Vehicle",
+				"Employee Commuting - By Rail",
+				"Employee Commuting - By Bus",
+				"Product Transport - By Vehicle",
+				"Product Transport - By Heavy Duty Trucks",
+				"Product Transport - By Rail",
+				"Product Transport - By Water or Air",
 				"Mobile Combustion Info",
 				"Refridgeration Air Conditioning - Company-Wide Material Balance Method",
 				"Refridgeration Air Conditioning - Company-Wide Simplified Material Balance Method",
@@ -505,7 +493,7 @@ public class ibLUsers implements EntryPoint {
 */
   
 //-- Below works!!
-    private final ListGrid emissionsSummaryDataGrid = new ListGrid();
+    private final ListGrid emissionsSummaryDataGrid = new ListGrid() ;
     /*
         {
             @Override
@@ -515,17 +503,31 @@ public class ibLUsers implements EntryPoint {
                     //Button viewReportButton = new Button();
                     Button viewReportButton = new Button();
                     //viewReportButton.setAutoFit(Boolean.TRUE);
-                    
+                    String reportFileName = (String)record.getAttribute("reportFileName");
+                    viewReportButton.setTitle(reportFileName);
+                    //viewReportButton.setPosition(Positioning.ABSOLUTE);
+
+                    HLayout recordCanvas = new HLayout(3);
+                    recordCanvas.setHeight(22);
+                    recordCanvas.setAlign(Alignment.CENTER);
+                    recordCanvas.setSnapTo("T");
+                    recordCanvas.setSnapToGrid(true);
+
+                    //viewReportButton.setSnapTo("T");
+                    //viewReportButton.setSnapToGrid(true);
+
                     viewReportButton.addClickHandler(new ClickHandler() {
                         public void onClick(ClickEvent event) {
 	                    Integer orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
                             //String fileName = record.getAttribute("reportFileName");
-                            String emissionsSummaryReportId = (String)record.getAttribute("id");
+                            String emissionsSummaryReportId = (String)record.getAttribute("id");                            
                             String url = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
                             com.google.gwt.user.client.Window.open(url,null,null);
                         }
                     });
-                    return viewReportButton;
+                    recordCanvas.addMember(viewReportButton);
+                    return recordCanvas;
+                    //return viewReportButton;
                 } else {
                     return null;
                 }
@@ -1518,37 +1520,6 @@ public void onModuleLoad() {
          });
 */
 
-//-- Calculate Emissions Section
-    SectionStackSection reportSection = new SectionStackSection("Report");
-    reportSection.setID("reportSection");
-
-    Label calculateEmissionsLabel = getSectionLink("Calculate Emissions", new ClickHandler() {
-       @Override
-       public void onClick(ClickEvent event) {
-          displayEmissionSourceInfo("Calculate Emissions");
-       }
-    });
-    reportSection.addItem(calculateEmissionsLabel);
-
-    /*
-    Label emissionsSummaryLabel = getSectionLink("Emissions Summary", new ClickHandler() {
-       @Override
-       public void onClick(ClickEvent event) {
-          displayEmissionSourceInfo("Emissions Summary");
-       }
-    });
-    reportSection.addItem(emissionsSummaryLabel);
-    */
-
-    Label emissionsReportLabel = getSectionLink("Emissions Report", new ClickHandler() {
-       @Override
-       public void onClick(ClickEvent event) {
-          displayEmissionSourceInfo("Emissions Report");
-       }
-    });
-    reportSection.addItem(emissionsReportLabel);
-    leftSectionStack.addSection(reportSection);
-
 //--Direct Emissions Sources
 
     SectionStackSection directEmissionsSourcesSection = new SectionStackSection("Direct Emission Sources");
@@ -1658,6 +1629,37 @@ public void onModuleLoad() {
 
     leftSectionStack.addSection(optionalEmissionsSourcesSection);
 
+//-- Calculate Emissions Section
+    SectionStackSection reportSection = new SectionStackSection("Report");
+    reportSection.setID("reportSection");
+
+    Label calculateEmissionsLabel = getSectionLink("Calculate Emissions", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Calculate Emissions");
+       }
+    });
+    reportSection.addItem(calculateEmissionsLabel);
+
+    /*
+    Label emissionsSummaryLabel = getSectionLink("Emissions Summary", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Emissions Summary");
+       }
+    });
+    reportSection.addItem(emissionsSummaryLabel);
+    */
+
+    Label emissionsReportLabel = getSectionLink("Emissions Report", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Emissions Report");
+       }
+    });
+    reportSection.addItem(emissionsReportLabel);
+    leftSectionStack.addSection(reportSection);
+
 //--Upload Data
     SectionStackSection uploadDataSection = new SectionStackSection("Upload Data");
     uploadDataSection.setID("uploadDataSection");
@@ -1743,6 +1745,21 @@ public void onModuleLoad() {
         }
     });
 
+    ApplicationMenu.helpSubMenu.addItemClickHandler(new ItemClickHandler() {
+        public void onItemClick(ItemClickEvent event) {
+            MenuItem item = event.getItem();
+            //SC.say("You clicked : " + item.getTitle());
+            displayEmissionSourceInfo(item.getTitle());
+        }
+    });
+
+    ApplicationMenu.helpSubMenu.addItemClickHandler(new ItemClickHandler() {
+        public void onItemClick(ItemClickEvent event) {
+            MenuItem item = event.getItem();
+            //SC.say("You clicked : " + item.getTitle());
+            displayEmissionSourceInfo(item.getTitle());
+        }
+    });
 
 //--add layouts inside middleVLayout
     //middleVLayout.addMember(topMenuHLayout);
@@ -2180,10 +2197,13 @@ private void emissionsSummaryTab() {
         emissionsSummaryDataGrid.setHeight100();
         emissionsSummaryDataGrid.setShowRecordComponents(true);
         emissionsSummaryDataGrid.setShowRecordComponentsByCell(true);
+        emissionsSummaryDataGrid.setRecordComponentPosition(EmbeddedPosition.WITHIN);
+        //emissionsSummaryDataGrid.setS
         emissionsSummaryDataGrid.setCanExpandRecords(true);
         emissionsSummaryDataGrid.setExpansionMode(ExpansionMode.DETAILS);
         emissionsSummaryDataGrid.setCanRemoveRecords(true);
-        //emissionsSummaryDataGrid.
+        
+
         emissionsSummaryDataGrid.setAutoFetchData(Boolean.TRUE);
         emissionsSummaryDataGrid.setDataSource(emissionsSummaryDS);
 
@@ -2297,21 +2317,55 @@ private void emissionsSummaryTab() {
         //reportFileLocationField.setType(ListGridFieldType.LINK);
         //reportFileLocationField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
 
-        ListGridField reportFileNameField = new ListGridField("reportFileName", "Download Report");
-        reportFileNameField.setType(ListGridFieldType.TEXT);
+        ListGridField reportFileNameField = new ListGridField("reportFileName", "Report Download");
+        reportFileNameField.setType(ListGridFieldType.TEXT);        
         reportFileNameField.setBaseStyle("listgridField");
+        reportFileNameField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    return "Click to download";
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+/*
+        reportFileNameField.setIcon(ADD_ICON_IMAGE);
+        reportFileNameField.setShowDownIcon(Boolean.TRUE);
+        reportFileNameField.setShowSelectedIcon(Boolean.FALSE);
+        reportFileNameField.setCellFormatter(new CellFormatter() {
+            public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
+                if (value == null) return null;
+                try {
+                    //Button newButton = new Button();
+                    //newButton.setTitle(record.getAttribute("reportFileName"));
+                    String fileName =record.getAttribute("reportFileName");
+                    return Canvas.imgHTML(ADD_ICON_IMAGE, 20, 12, null, null,null);
+                    //return record.getAttribute("reportFileName");
+                    //return newButton;
+                } catch (Exception e) {
+                    return value.toString();
+                }
+            }
+        });
+*/
+
         //reportFileNameField.setShowD
         reportFileNameField.setWidth(REPORT_FILE_NAME_FIELD_WIDTH);
         //reportFileNameField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
         //reportFileNameField.setLinkURLPrefix("/ibLGHGCalc/reports/");
 
-/*
-        ListGridField downloadReportField = new ListGridField("downloadReportField", "Download Report");
-        //downloadReportField.setType(ListGridFieldType.TEXT);
+
+        ListGridField downloadReportField = new ListGridField("reportFileName", "Download Report");
+        downloadReportField.setType(ListGridFieldType.ICON);
+        downloadReportField.setIcon(ADD_ICON_IMAGE);
+        downloadReportField.setDisplayField("Click to download");
+        //downloadReportField.setValueField("reportFileName");
         downloadReportField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
 
-
-        ListGridField viewReportButtonField = new ListGridField("viewReportButtonField", "Download Report");
+/*
+        ListGridField viewReportButtreportFileNameFieldonField = new ListGridField("viewReportButtonField", "Download Report");
         //viewReportButtonField.setType(ListGridFieldType.LINK);
         viewReportButtonField.setWidth(PROGRAM_TYPE_FIELD_WIDTH);
 */
@@ -2333,7 +2387,7 @@ private void emissionsSummaryTab() {
                                                 totalEmissionsField);
  *
  */
-        emissionsSummaryDataGrid.setFields(programTypeField, emissionsBeginDateField, emissionsEndDateField,totalEmissionsField,reportGeneratedDate, reportFileNameField);
+        emissionsSummaryDataGrid.setFields(programTypeField, emissionsBeginDateField, emissionsEndDateField,totalEmissionsField,reportGeneratedDate,reportFileNameField);
         emissionsSummaryDataGrid.sort("lastUpdated", SortDirection.DESCENDING);
 
         //reportFileNameField.setHidden(true);
@@ -2346,6 +2400,7 @@ private void emissionsSummaryTab() {
 
         //- adding cell click handler
         //emissionsSummaryDataGrid.getR
+        
         emissionsSummaryDataGrid.addCellClickHandler(new CellClickHandler() {
             public void onCellClick(CellClickEvent event) {
                 ListGridRecord record =  event.getRecord();
@@ -2354,7 +2409,7 @@ private void emissionsSummaryTab() {
                 //String fieldName = emissionsSummaryDataGrid.getFieldName(colNum);
                 String fieldTitle = field.getTitle();
 
-                if (fieldTitle.contains("Download Report")){
+                if (fieldTitle.contains("Report Download")){
                         //String orgId = (String)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
                         //field.setLinkURLPrefix("Reports/"+orgId+"/");
                         Integer orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
@@ -2366,7 +2421,29 @@ private void emissionsSummaryTab() {
             }
         });        
         
-        
+        /*
+        emissionsSummaryDataGrid.addRecordClickHandler(new RecordClickHandler() {
+            public void onRecordClick(RecordClickEvent event) {
+                //ListGridRecord record =  (ListGridRecord)event.getRecord();
+                ListGridField listGridField = event.getField();
+                //ListGridField field = emissionsSummaryDataGrid.getField(colNum);
+                //String fieldName = emissionsSummaryDataGrid.getFieldName(colNum);
+                String fieldTitle = listGridField.getTitle();
+
+                if (fieldTitle.contains("Download Report")){
+                        //String orgId = (String)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+                        //field.setLinkURLPrefix("Reports/"+orgId+"/");
+                        Integer orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+                        //String fileName = record.getAttribute("reportFileName");
+                        String emissionsSummaryReportId = (String)event.getRecord().getAttribute("id");
+                        String url = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+                        com.google.gwt.user.client.Window.open(url,null,null);
+                }
+            }
+        });
+
+        */
+
         emissionsSummaryVLayout.addMember(emissionsSummaryDataGrid);
 
         //emissionsSummaryDetailViewer.setFields(stationaryCombustionEmissionsField);
@@ -2690,6 +2767,8 @@ private void purchasedElectricityTab() {
 //---Adding Purchased Electricity tab to tabSet
         purchasedElectricityTabSet.addTab(purchasedElectricityTab);
         purchasedElectricityLayout.addMember(purchasedElectricityTabSet);
+
+
 }
 private void initPurchasedElectricityEditForm() {
 
@@ -3087,15 +3166,20 @@ private void initOrganizationProfileEditForm() {
     //currentInventoryEndDateItem.setValidateOnChange(Boolean.FALSE);
 */
     TextItem organizationStreetAddress1Item = new TextItem("organizationStreetAddress1");
+    organizationStreetAddress1Item.setValidateOnChange(Boolean.TRUE);
     //organizationNameItem.setWidth(100);
 
     TextItem organizationStreetAddress2Item = new TextItem("organizationStreetAddress2");
+    organizationStreetAddress2Item.setRequired(Boolean.FALSE);
+    organizationStreetAddress2Item.setValidateOnChange(Boolean.TRUE);
     //organizationNameItem.setWidth(200);
 
     TextItem organizationCityItem = new TextItem("organizationCity");
+    organizationCityItem.setValidateOnChange(Boolean.TRUE);
     //organizationNameItem.setWidth(50);
 
     TextItem organizationStateItem = new TextItem("organizationState");
+    organizationStateItem.setValidateOnChange(Boolean.TRUE);
     //organizationNameItem.setWidth(20);
 
     TextItem organizationZipCodeItem = new TextItem("organizationZipCode");
@@ -3105,15 +3189,19 @@ private void initOrganizationProfileEditForm() {
     organizationNameItem.setWidth(20);
 
     TextItem organizationCountryItem = new TextItem("organizationCountry");
+    organizationCountryItem.setValidateOnChange(Boolean.TRUE);
     organizationNameItem.setWidth(200);
 
     TextItem organizationWebsiteItem = new TextItem("organizationWebsite");
+    organizationWebsiteItem.setValidateOnChange(Boolean.TRUE);
     organizationNameItem.setWidth(200);
 
     TextItem organizationHQItem = new TextItem("organizationHQ");
+    organizationHQItem.setValidateOnChange(Boolean.TRUE);
     organizationNameItem.setWidth(20);
 
     TextItem pointOfContactItem = new TextItem("pointOfContact");
+    pointOfContactItem.setValidateOnChange(Boolean.TRUE);
     organizationNameItem.setWidth(200);
 
     //organizationProfileForm.setIsGroup(Boolean.TRUE);
@@ -3121,9 +3209,9 @@ private void initOrganizationProfileEditForm() {
     //organizationProfileForm.setRedrawOnResize(true);
 
     organizationProfileForm.setItems(organizationNameItem, 
-                                        organizationStreetAddress1Item,organizationStreetAddress2Item,
+                                        organizationStreetAddress1Item,
                                         organizationCityItem,organizationStateItem,organizationZipCodeItem,
-                                        organizationCountryItem,organizationWebsiteItem,organizationHQItem,pointOfContactItem);
+                                        organizationCountryItem,organizationWebsiteItem,pointOfContactItem);
 
     final IButton organizationProfileCancelButton = new IButton();
     final IButton organizationProfileSaveButton = new IButton();
@@ -3138,10 +3226,14 @@ private void initOrganizationProfileEditForm() {
         }
         else {
             //Record organizationRecord = organizationProfileForm.getValuesAsRecord();
-            organizationProfileForm.saveData();
-            //organizationProfileForm.clearValues();
-            //organizationProfileForm.markForRedraw();
-            //organizationProfileVLayout.hide();
+            //organizationProfileForm.saveData();
+            organizationProfileForm.saveData(
+                          new DSCallback() {
+                                        public void execute(DSResponse response, Object rawData, DSRequest request) {
+                                        UserOrganizationHeader.organizationSelectForm.fetchData();
+                                        SC.say("Update Complete!");
+                            }
+                          });
         }
       }
     });
@@ -3176,6 +3268,7 @@ private void initOrganizationProfileEditForm() {
     organizationProfileVLayout.addMember(updateOrganizationProfileLabel);
     organizationProfileVLayout.addMember(organizationProfileForm);
     organizationProfileVLayout.addMember(buttons);
+    organizationProfileVLayout.setStyleName("generalVLayout");
     
     /*
     organizationProfileFormWindow.setShowShadow(true);
@@ -3245,6 +3338,31 @@ private void initOrganizationInventoryYearEditForm() {
     final IButton organizationInventoryYearCancelButton = new IButton();
     final IButton organizationInventoryYearSaveButton = new IButton();
 
+    //--Confirmation message
+    final Label confirmationMessage = new Label("Update Complete!");
+    /*
+    final Portlet cMPortletWindow = new Portlet();
+    cMPortletWindow.setShowCloseConfirmationMessage(Boolean.FALSE);
+    cMPortletWindow.addItem(confirmationMessage);
+    cMPortletWindow.animateShow(AnimationEffect.FADE, null, 100);
+    cMPortletWindow.setAnimateFadeTime(1000);
+    cMPortletWindow.hide();
+    */
+    
+    confirmationMessage.setID("textbox");
+    confirmationMessage.setAlign(Alignment.CENTER);
+    confirmationMessage.setShowEdges(true);
+    confirmationMessage.setPadding(5);
+    confirmationMessage.setLeft(50);
+    confirmationMessage.setTop(50);
+    //confirmationMessage.setParentElement(layout);
+    //confirmationMessage.setWidth(200);
+    confirmationMessage.setSmoothFade(Boolean.TRUE);
+    //confirmationMessage.setContents("The future has a way of arriving unannounced.");
+    confirmationMessage.setVisibility(Visibility.HIDDEN);
+
+
+
     organizationInventoryYearSaveButton.setTitle("SAVE");
     organizationInventoryYearSaveButton.setTooltip("Save");
     organizationInventoryYearSaveButton.addClickHandler(new ClickHandler() {
@@ -3258,6 +3376,12 @@ private void initOrganizationInventoryYearEditForm() {
                           new DSCallback() {
                                         public void execute(DSResponse response, Object rawData, DSRequest request) {
                                         UserOrganizationHeader.organizationSelectForm.fetchData();
+                                        SC.say("Update Complete!");
+                                        //confirmationMessage.animateShow(AnimationEffect.FADE, null, (int) 1000);
+                                        //SC.echo("Hello");
+                                        //alert("Hello");
+                                        //confirmationMessage.show();
+                                        //organizationInventoryYearVLayout.showMember(cMPortletWindow);
                             }
                           });
 
@@ -3300,6 +3424,8 @@ private void initOrganizationInventoryYearEditForm() {
     organizationInventoryYearVLayout.addMember(currentInventoryYearLabel);
     organizationInventoryYearVLayout.addMember(organizationInventoryYearForm);
     organizationInventoryYearVLayout.addMember(buttons);
+    organizationInventoryYearVLayout.addMember(confirmationMessage);
+    //organizationInventoryYearVLayout.hideMember(cMPortletWindow);
 }
 
 private void initEmissionsSummaryInputForm() {
@@ -3460,6 +3586,7 @@ public void displayDetailInfo(ListGrid listGrid, DetailViewerField[] fieldList) 
 
 public void displayEmissionsReport(String emissionsReportChoice, String emissionsSummaryReportId) {
 
+    /*
     //--remove existing child from middleBottomHLayout
     Canvas[] children2 = middleBottomHLayout.getChildren();
     if (children2.length>0){
@@ -3467,7 +3594,8 @@ public void displayEmissionsReport(String emissionsReportChoice, String emission
 	    middleBottomHLayout.removeChild(children2[i]);
 	}
     }
-
+    */
+    
     orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
     String reportUrl = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
     com.google.gwt.user.client.Window.open(reportUrl,null,null);
@@ -3486,6 +3614,49 @@ public void displayEmissionsReport(String emissionsReportChoice, String emission
     */
 
     }
+
+public void displayHelp (String helpChoice) {
+
+            if (helpChoice.equals("User Guide")){
+                /*
+                Img eGridImage = new Img("eGrid-2005.jpg");
+                eGridImage.setHeight100();
+                eGridImage.setWidth100();
+                Canvas eGridImageCanvas = new Canvas();
+                eGridImageCanvas.addChild(eGridImage);
+                middleBottomHLayout.addChild(eGridImageCanvas);
+                middleBottomHLayout.show();
+                */
+
+                //com.google.gwt.user.client.Window.open("/ibLGHGCalc/images/eGird-2005.jpg",null,null);
+
+            } else if (helpChoice.equals("Know your Electricity Grid Sub-Region")){
+                /*
+                Img eGridImage = new Img("eGrid-2005.jpg");
+                Portlet imagePortlet = new Portlet();
+                imagePortlet.addMember(eGridImage);
+                imagePortlet.show();
+                 *
+                */
+
+                //String hostImageURL=com.google.gwt.user.client.Window.Location.getHost()+"/eGrid-2005.jpg";
+                String hostImageURL="http://www.google.com";
+                com.google.gwt.user.client.Window.open(hostImageURL, null, null);
+                /*
+                Canvas eGridImageCanvas = new Canvas();
+                eGridImageCanvas.setHeight100();
+                eGridImageCanvas.setWidth100();
+                eGridImageCanvas.addChild(eGridImage);
+                 *
+                 */
+                
+                /*
+                middleBottomHLayout.addChild(eGridImageCanvas);
+                middleBottomHLayout.show();
+                 *
+                 */
+            }
+}
 public void displayEmissionSourceInfo(String emissionSourceChoice) {
             Criteria fetchCriteria = new Criteria();
 
@@ -3523,7 +3694,7 @@ public void displayEmissionSourceInfo(String emissionSourceChoice) {
 
             //--hide middleBottomHLayout
             middleBottomHLayout.hide();
-            
+
             if (emissionSourceChoice.equals("Load Data")){
                //emissionsSummaryInputForm.fetchData(fetchCriteria);
                fileTypeItem.setValueMap(epaDataLoadOptions);
@@ -3552,8 +3723,10 @@ public void displayEmissionSourceInfo(String emissionSourceChoice) {
                //mainOrganizationId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
                //emissionsSummaryDataGrid.getField("reportFileName").setLinkURLPrefix("/ibLGHGCalc/reports/"+mainOrganizationId+"/");
                //emissionsSummaryDataGrid.redraw();
-               emissionsSummaryDataGrid.filterData(fetchCriteria);
+
+               emissionsSummaryDataGrid.filterData(fetchCriteria);                
                middleMiddleHLayout.addChild(emissionsSummaryVLayout);
+               //middleMiddleHLayout.addChild(emissionsSummaryDataGrid, orgName, true);
                //emissionsSummaryDataGrid.markForRedraw();
             } else if (emissionSourceChoice.equals("Calculate Emissions")){
                //emissionsSummaryInputForm.fetchData(fetchCriteria);

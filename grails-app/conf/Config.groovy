@@ -25,7 +25,19 @@ grails.plugins.springsecurity.interceptUrlMap = [
     '/reports'                 :         ['ROLE_USER','ROLE_ADMIN'],
     '/*.pdf'                   :         ['ROLE_USER','ROLE_ADMIN'],
     '/j_spring_security_switch_user':    ['ROLE_SWITCH_USER', 'IS_AUTHENTICATED_FULLY'],
-    '/'                        :         ['ROLE_USER','ROLE_ADMIN']
+    '/aclclass/**'              :         ['ROLE_ADMIN'],
+    '/aclentry/**'              :         ['ROLE_ADMIN'],
+    '/aclobjectidentity/**'     :         ['ROLE_ADMIN'],
+    '/aclsid/**'                :         ['ROLE_ADMIN'],
+    '/errors/**'                :         ['permitAll'],
+    '/persistentlogin/**'       :         ['ROLE_ADMIN'],
+    '/registrationcode/**'      :         ['ROLE_ADMIN'],
+    '/requestmap/**'            :         ['ROLE_ADMIN'],
+    '/role/**'                  :         ['ROLE_ADMIN'],
+    '/securityinfo/**'          :         ['ROLE_ADMIN'],
+    '/user/**'                  :         ['ROLE_ADMIN'],
+    '/'                         :         ['ROLE_USER','ROLE_ADMIN']
+    //'/**'                        :         ['ROLE_ADMIN']
     //'/**'                    :         ['IS_AUTHENTICATED_ANONYMOUSLY']
 ]
 
@@ -123,14 +135,16 @@ grails.plugins.springsecurity.userLookup.userDomainClassName = 'org.ibLGHGCalc.S
 grails.plugins.springsecurity.userLookup.authorityJoinClassName = 'org.ibLGHGCalc.SecUserSecRole'
 grails.plugins.springsecurity.authority.className = 'org.ibLGHGCalc.SecRole'
 //SpringSecurityUtils.securityConfig.successHandler.defaultTargetUrl = '/stationaryCombustion.gsp'
-
+SpringSecurityUtils.securityConfig.successHandler.defaultTargetUrl = '/login/auth'
+grails.plugins.springsecurity.logout.afterLogoutUrl='/login/auth'
+grails.plugins.springsecurity.failureHandler.defaultFailureUrl='/login/authfail?login_error=1'
 
 grails {
    mail {
      host = "smtp.gmail.com"
      port = 465
      //username = "Hemant.Bundele@gmail.com"
-     //password = "cherry123"
+     //password = "???????"
      username = "Hemant@ibLaunchEnergy.com"
      password = "hemant123"
      props = ["mail.smtp.auth":"true",
@@ -150,14 +164,33 @@ def url = "<link>${requestContextPath}/register/verifyRegistration?t=${registrat
 //def username = registrationCode.username
 
 //grails.plugins.springsecurity.ui.register.emailBody = 'Hi $user.firstName \\n You (or someone pretending to be you) created an account with this email address. \\nIf you made the request, please <a href="$url">Click here</a> to finish the registration'
+
 grails.plugins.springsecurity.ui.register.emailBody =
 '''\
 Hi $user.firstName,<br/>
 <br/>
-Welcome to yourGHGEmissionsReport.com
+Welcome to iGreenLaunch.com!
+<br/>
+<br/>
+Please allow us one business day to activate your account. We will get back to you as we activate your account. <br/>
+<br/>
+Thank you very much for your interest. <br/>
+<br/>
+Best Regards! <br/>
+iGreenLaunch Team <br/>
+'''
+
+//-Code below in-activated to allow manual activation of the user
+/*
+grails.plugins.springsecurity.ui.register.emailBody =
+'''\
+Hi $user.firstName,<br/>
+<br/>
+Welcome to iGreenLaunch.com!
 <br/>
 You (or someone pretending to be you) created an account with this email address.<br/>
 <br/>
-If you made the request, please click <a href="$url">here</a> to finish the registration.
+If you made the request, please click <a href="$url">Launch</a> to finish the registration.
 '''
-spring.security.ui.login.signin = "Hello My Friend"
+*/
+//spring.security.ui.login.signin = "Hello My Friend"

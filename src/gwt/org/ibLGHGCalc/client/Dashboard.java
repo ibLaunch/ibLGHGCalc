@@ -7,6 +7,7 @@ import com.smartgwt.client.data.DSRequest;
 import com.smartgwt.client.data.DSResponse;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.SortDirection;
+import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.StaticTextItem;
 import com.smartgwt.client.widgets.grid.ListGrid;
@@ -79,6 +80,7 @@ public class Dashboard extends VLayout {
     emissionsSummaryDashboardListGrid.hideField("lastUpdated");
     //emissionsSummaryDashboardListGrid.setBorder("5px outset #286ea0");
     emissionsSummaryDashboardListGrid.setStyleName(LISTGRID_STYLE_NAME);
+
     //emissionsSummaryDashboardListGrid.setAutoFitFieldWidths(Boolean.TRUE);
     //emissionsSummaryDashboardListGrid.setBackgroundImage("sun.gif");
     
@@ -98,7 +100,17 @@ public class Dashboard extends VLayout {
     this.addMember(northLayout);
      *
      */
+    Label emissionsSummaryLabel = new Label("Emissions Summary");
+    emissionsSummaryLabel.setHeight(15);
+    emissionsSummaryLabel.setWidth100();
+    emissionsSummaryLabel.setAlign(Alignment.LEFT);
+    emissionsSummaryLabel.setStyleName("labels");
+
+    VLayout eSummaryVLayout = new VLayout();
+    eSummaryVLayout.addMember(emissionsSummaryLabel);
+    eSummaryVLayout.addMember(emissionsSummaryDashboardListGrid);
+    
     this.addMember(organizationSelectForm);
-    this.addMember(emissionsSummaryDashboardListGrid);
+    this.addMember(eSummaryVLayout);
   }
 }

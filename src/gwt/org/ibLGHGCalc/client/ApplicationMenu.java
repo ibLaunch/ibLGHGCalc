@@ -26,6 +26,7 @@ public class ApplicationMenu extends HLayout {
   public static final Menu organizationSubMenu = new Menu();;
   public static final Menu reportSubMenu = new Menu();;
   public static final Menu fileUploadSubMenu = new Menu();;
+  public static final Menu helpSubMenu = new Menu();;
 
   public ApplicationMenu() {
     super();
@@ -100,6 +101,11 @@ public class ApplicationMenu extends HLayout {
    fileUploadSubMenu.setItems(
            new MenuItem("Load Data"),
            new MenuItem("Load Emission Factors")
+           );
+
+   helpSubMenu.setItems(
+           new MenuItem("User Guide"),
+           new MenuItem("Know your Electricity Grid Sub-Region")
            );
 
    emissionSourcesMenu.setItems(directEmissionSourcesItem, inDirectEmissionSourcesItem,separator, optionalEmissionSourcesItem);
@@ -193,6 +199,19 @@ public class ApplicationMenu extends HLayout {
    dataUploadMenuButton.setShowMenuButtonImage(true);
    //dataUploadMenuButton.setPadding(PADDING_SIZE);
 
+   IMenuButton helpMenuButton = new IMenuButton("Help", helpSubMenu);
+   //IMenuButton directEmissionSourceMenuButton = new IMenuButton("Scope 1", directEmissionsSourcesSubMenu);
+   //directEmissionSourceMenuButton.setWidth100();
+   helpMenuButton.setLayoutAlign(VerticalAlignment.CENTER);
+   helpMenuButton.setWidth(IMENU_BUTTON_WIDTH);
+   helpMenuButton.setHeight(IMENU_BUTTON_HEIGHT);
+   //directEmissionSourceMenuButton.setMenuAnimationEffect("fade");
+   helpMenuButton.setShowShadow(true);
+   helpMenuButton.setShadowDepth(SHADOW_DEPTH);
+   helpMenuButton.setShowMenuButtonImage(true);
+   //directEmissionSourceMenuButton.setLayoutAlign(VerticalAlignment.CENTER);
+   //directEmissionSourceMenuButton.setPadding(PADDING_SIZE);
+
 /*
 //-- Top Menu click handler
 
@@ -230,6 +249,7 @@ public class ApplicationMenu extends HLayout {
     this.addMember(optionalEmissionSourceMenuButton);
     this.addMember(reportMenuButton);
     this.addMember(dataUploadMenuButton);
+    //this.addMember(helpMenuButton);
     //this.setIsGroup(Boolean.TRUE);
     //this.setGroupTitle("Application Menu");
     //this.setMembersMargin(MEMBERS_MARGIN);

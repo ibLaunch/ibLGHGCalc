@@ -163,7 +163,7 @@ class LoadEmissionFactorsService {
                     returnString = parameters.fileType + " uploaded!"
                     break
           
-          case "Data - EPA Purchased Electricity":
+          case "Purchased Electricity":
                   for (int r=4; r< sheet.rows; r++) {
                       def sourceParameters = [:]
                       sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
@@ -246,7 +246,7 @@ class LoadEmissionFactorsService {
                     returnString = parameters.fileType + " uploaded!"
                     break
 
-          case "Data - EPA Purchased Steam":
+          case "Purchased Steam":
                   for (int r=4; r< sheet.rows; r++) {
                       def sourceParameters = [:]
                       sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
@@ -465,9 +465,9 @@ class LoadEmissionFactorsService {
                     returnString = parameters.fileType + " uploaded!"
                     break
 
-          case ["Data - EPA Employee Business Travel - By Vehicle",
-                "Data - EPA Employee Commuting - By Vehicle",
-                "Data - EPA Product Transport - By Vehicle"]:
+          case ["Employee Business Travel - By Vehicle",
+                "Employee Commuting - By Vehicle",
+                "Product Transport - By Vehicle"]:
                   for (int r=4; r< sheet.rows; r++) {
                       def sourceParameters = [:]
                       sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
@@ -538,7 +538,7 @@ class LoadEmissionFactorsService {
                     returnString = parameters.fileType + " uploaded!"
                     break
 
-          case ["Data - EPA Employee Business Travel - By Rail","Data - EPA Employee Commuting - By Rail"]:
+          case ["Employee Business Travel - By Rail","Employee Commuting - By Rail"]:
                   for (int r=4; r< sheet.rows; r++) {
                       def sourceParameters = [:]
                       sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
@@ -609,7 +609,7 @@ class LoadEmissionFactorsService {
                     returnString = parameters.fileType + " uploaded!"
                     break
 
-          case ["Data - EPA Employee Business Travel - By Bus","Data - EPA Employee Commuting - By Bus"]:
+          case ["Employee Business Travel - By Bus","Employee Commuting - By Bus"]:
                   for (int r=4; r< sheet.rows; r++) {
                       def sourceParameters = [:]
                       sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
@@ -680,7 +680,7 @@ class LoadEmissionFactorsService {
                     returnString = parameters.fileType + " uploaded!"
                     break
 
-          case "Data - EPA Employee Business Travel - By Air":
+          case "Employee Business Travel - By Air":
                   for (int r=4; r< sheet.rows; r++) {
                       def sourceParameters = [:]
                       sourceParameters.put("sourceDescription",sheet.getCell(0, r).contents)
@@ -750,9 +750,9 @@ class LoadEmissionFactorsService {
                     returnString = parameters.fileType + " uploaded!"
                     break
 
-          case ["Data - EPA Product Transport - By Heavy Duty Trucks",
-                "Data - EPA Product Transport - By Rail",
-                "Data - EPA Product Transport - By Water or Air"]:
+          case ["Product Transport - By Heavy Duty Trucks",
+                "Product Transport - By Rail",
+                "Product Transport - By Water or Air"]:
                   for (int r=4; r< sheet.rows; r++) {
 
                       def sourceParameters = [:]

@@ -4,9 +4,9 @@
     
     <inherits name="com.smartgwt.SmartGwt"/>
     <inherits name="com.smartgwt.tools.SmartGwtTools"/>
-
+<!--
     <set-property name="user.agent" value="ie6"/>
-    
+-->
     <!-- Specify the module entry point class.                   -->
     <entry-point class="org.ibLGHGCalc.client.ibLGHGCalcUser"/>    
 </module>
