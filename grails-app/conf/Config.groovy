@@ -100,6 +100,7 @@ environments {
         grails.serverURL = "http://localhost:8080/${appName}"
         basePath = "/opt/tomcat7/webapps/ROOT"
         jasper.dir.reports = '/opt/tomcat7/webapps/ROOT/reports'
+        //-this is a git test        
         //jasper.dir.reports = '/var/lib/tomcat6/webapps/ROOT/reports'
         //jasper.dir.reports = '/tmp/reports'
     }
