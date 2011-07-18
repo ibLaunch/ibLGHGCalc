@@ -66,6 +66,7 @@ environments {
             //url = "jdbc:mysql://https://rds.us-east-1.amazonaws.com:3306/ibLGHGCalc"
             url = "jdbc:mysql://iblghgcalc.ccdw5fdwq9ea.us-east-1.rds.amazonaws.com:3306/iblghgcalcdb"
 
+
             //url = "jdbc:mysql://iblghgcalc.ccdw5fdwq9ea.us-east-1.rds.amazonaws.com/ibLGHGCalc"
         }
     }

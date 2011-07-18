@@ -8,7 +8,8 @@ class EmissionsSummaryController {
   def emissionsSummaryService
   def aclUtilService
   def springSecurityService
-
+  def grailsApplication
+  
   def list = {
     log.info "EmissionsSummaryController.list( ${params} )"
     println "params: -----"+ params
@@ -133,9 +134,21 @@ def serveReportFile = {
         String fileName = theEmissionsSummary?.reportFileName
         def reportFile
         
+        //Get the basePAth
+        def basePath = grailsApplication.parentContext.getResource("/").file.toString()
+        println "----basePath while serving report----:" +basePath
+
+
+
+        def basePath2 = grailsAttributes.getApplicationContext().getResource("/").getFile()
+        println "----basePath2 while serving report----?????????:" +basePath2
+
+        def basePath3 =grailsApplication.config.basePath
+        println "----basePath3 while serving report----?????????:" +basePath3
 
         try {
-            reportFile = new File(System.properties['base.dir']+"/reports/"+params.organizationId+"/"+fileName);
+            //reportFile = new File(System.properties['base.dir']+"/reports/"+params.organizationId+"/"+fileName);
+            reportFile = new File(basePath3+"/reports/"+params.organizationId+"/"+fileName);
             //response.setContentType("application/x-download");
         }
         catch(FileNotFoundException e) {

@@ -85,13 +85,23 @@ grails.spring.bean.packages = []
 environments {
     production {
         grails.serverURL = "http://localhost:8080/${appName}"
+        basePath = "/opt/tomcat7/webapps/ROOT"
+        jasper.dir.reports = '/opt/tomcat7/webapps/ROOT/reports'
+        //jasper.dir.reports = '/var/lib/tomcat6/webapps/ROOT/reports'
+        //jasper.dir.reports = '/tmp/reports'
     }
     development {
         //grails.serverURL = "http://localhost:8080/${appName}"
         grails.serverURL = "http://localhost:8080/"
+        basePath = "C:/GHG/ibLGHGCalc"
+        jasper.dir.reports = 'C:/GHG/ibLGHGCalc/reports'
     }
     test {
         grails.serverURL = "http://localhost:8080/${appName}"
+        basePath = "/opt/tomcat7/webapps/ROOT"
+        jasper.dir.reports = '/opt/tomcat7/webapps/ROOT/reports'
+        //jasper.dir.reports = '/var/lib/tomcat6/webapps/ROOT/reports'
+        //jasper.dir.reports = '/tmp/reports'
     }
 
 }
