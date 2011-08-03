@@ -32,7 +32,7 @@ class RegisterController extends grails.plugins.springsecurity.ui.RegisterContro
 		def user = lookupUserClass().newInstance(firstName: command.firstName,lastName: command.lastName,
                                 phoneNumber: command.phoneNumber,organizationName: command.organizationName,
                                 email: command.email, username: command.username,
-				password: password, accountLocked: true, enabled: true)
+				password: password, accountLocked: true, enabled: true, acceptTerms:command.acceptTerms)
 		if (!user.validate() || !user.save()) {
 			// TODO
 		}
@@ -125,6 +125,8 @@ class RegisterCommand {
 	String password
 	String password2
 
+        Boolean acceptTerms         
+        
 	static constraints = {
                 firstName blank: false, firstName: true
                 lastName blank: false, lastName: true
@@ -162,5 +164,9 @@ class RegisterCommand {
 		email blank: false, email: true
 		password blank: false, minSize: 8, maxSize: 64, validator: RegisterController.passwordValidator
 		password2 validator: RegisterController.password2Validator
+                acceptTerms (validator: {
+                        if (it != true) return 'registerCommand.acceptTerms.false'
+                        //if (it != true) return 'Please click on checkbox to accept terms'
+                })
 	}
 }

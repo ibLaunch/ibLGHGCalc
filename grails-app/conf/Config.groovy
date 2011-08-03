@@ -84,11 +84,17 @@ grails.spring.bean.packages = []
 // set per-environment serverURL stem for creating absolute links
 environments {
     production {
-        grails.serverURL = "http://localhost:8080/${appName}"
-        basePath = "/opt/tomcat7/webapps/ROOT"
-        jasper.dir.reports = '/opt/tomcat7/webapps/ROOT/reports'
+        //grails.serverURL = "http://localhost:8080/${appName}"
+        //basePath = "/opt/tomcat7/webapps/ROOT"
+        //jasper.dir.reports = '/opt/tomcat7/webapps/ROOT/reports'        
         //jasper.dir.reports = '/var/lib/tomcat6/webapps/ROOT/reports'
         //jasper.dir.reports = '/tmp/reports'
+        
+        //--rackspace
+        //jasper.dir.reports = "/usr/share/apache-tomcat-6.0.32/webapps/ibLGHGCalc/reports"
+        //basePath = "/usr/share/apache-tomcat-6.0.32/webapps/ibLGHGCalc"
+        jasper.dir.reports = "/home/iblaunch/reports"
+        basePath = "/home/iblaunch"
     }
     development {
         //grails.serverURL = "http://localhost:8080/${appName}"
@@ -97,9 +103,10 @@ environments {
         jasper.dir.reports = 'C:/GHG/ibLGHGCalc/reports'
     }
     test {
-        grails.serverURL = "http://localhost:8080/${appName}"
-        basePath = "/opt/tomcat7/webapps/ROOT"
-        jasper.dir.reports = '/opt/tomcat7/webapps/ROOT/reports'
+        //grails.serverURL = "http://localhost:8080/${appName}"
+        grails.serverURL = "http://localhost:8080/"
+        basePath = "C:/GHG/ibLGHGCalc"
+        jasper.dir.reports = 'C:/GHG/ibLGHGCalc/reports'
         //-this is a git test        
         //jasper.dir.reports = '/var/lib/tomcat6/webapps/ROOT/reports'
         //jasper.dir.reports = '/tmp/reports'

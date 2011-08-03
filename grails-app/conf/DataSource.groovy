@@ -37,18 +37,19 @@ environments {
     }
     test {
         dataSource {
-            /*
+            
             dbCreate = "update"
             url = "jdbc:mysql://localhost/ibLGHGCalc"
             username = "root"
             password = "root"
             //url = "jdbc:mysql://efootprint.db.7340731.hostedresource.com"
-            */
+            /*
             dbCreate = "update"
             username = "iblaunch"
             password = "iblaunch123"
             //url = "jdbc:mysql://iblghgcalc.ccdw5fdwq9ea.us-east-1.rds.amazonaws.com/ibLGHGCalc"
             url = "jdbc:mysql://iblghgcalc.ccdw5fdwq9ea.us-east-1.rds.amazonaws.com:3306/iblghgcalcdb"
+            */
         }
     }
     production {
@@ -64,8 +65,13 @@ environments {
             //url = "jdbc:mysql://dbmaster/ibLGHGCalc"
             //url = "jdbc:mysql://localhost/ibLGHGCalc"
             //url = "jdbc:mysql://https://rds.us-east-1.amazonaws.com:3306/ibLGHGCalc"
-            url = "jdbc:mysql://iblghgcalc.ccdw5fdwq9ea.us-east-1.rds.amazonaws.com:3306/iblghgcalcdb"
-
+            
+            //url = "jdbc:mysql://iblghgcalc.ccdw5fdwq9ea.us-east-1.rds.amazonaws.com:3306/iblghgcalcdb"
+            
+            //rackspace stuff
+            //url = "jdbc:mysql://50-57-115-126.static.cloud-ips.com:3306/iblghgcalcdb"
+            url = "jdbc:mysql://localhost/iblghgcalcdb"
+            
 
             //url = "jdbc:mysql://iblghgcalc.ccdw5fdwq9ea.us-east-1.rds.amazonaws.com/ibLGHGCalc"
         }

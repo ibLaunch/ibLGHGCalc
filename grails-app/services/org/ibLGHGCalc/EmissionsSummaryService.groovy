@@ -508,7 +508,10 @@ class EmissionsSummaryService {
        println "----------Base Directory-----------"+System.properties['base.dir']
        
        //-----------------------------------------------BEGIN
-       def reportDef = new JasperReportDef(name:'ghgReport.jasper',fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)
+       //def reportDef = new JasperReportDef(name:'ghgReport.jasper',fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)
+       def reportDef = new JasperReportDef(name:'ghgReportProdDB.jrxml',fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)
+       //def reportDef = new JasperReportDef(name:'reportTest.jrxml',fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)
+       
        def reportFileName = "Report-"+theOrganization.id+ "-"+ (new Date().format('yyyy-MM-dd-HH-mm-ssZ')).toString()+".pdf"
        //def reportDef = new JasperReportDef(name:'ghgReport.jasper',fileFormat:JasperExportFormat.HTML_FORMAT, parameters:reportParameters)
        //def reportFileName = "Report-"+theOrganization.id+ "-"+ (new Date().format('yyyy-MM-dd-HH-mm-ssZ')).toString()+".html"
@@ -542,12 +545,18 @@ class EmissionsSummaryService {
         def basePath = ConfigurationHolder.config.basePath
         println "----basePath----:" +basePath
         
+        //-testing
+        //def reportFileNameTest = "ThisIsTest"
+        //def file = new File(basePath+"/reports/"+orgId+"/"+reportFileNameTest)
+        
         //--Generate report now
         try {
             //FileUtils.writeByteArrayToFile(new File(System.properties['base.dir']+"/reports/"+orgId+"/"+reportFileName), jasperService.generateReport(reportDef).toByteArray())
             FileUtils.writeByteArrayToFile(new File(basePath+"/reports/"+orgId+"/"+reportFileName), jasperService.generateReport(reportDef).toByteArray())
         } catch (Exception e) {
             log.error e
+            println e
+            println e.printStackTrace()
             println "Report not Generated!"
         }
         //-- temporary approach below for now, need more better approach??

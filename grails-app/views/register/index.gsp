@@ -38,7 +38,6 @@
 		<s2ui:textFieldRow name='organizationName' labelCode='user.organizationName.label' bean="${command}"
                          size='40' labelCodeDefault='Organization Name' value="${command.organizationName}"/>
 
-
 		<s2ui:textFieldRow name='username' labelCode='user.username.label' bean="${command}"
                          size='40' labelCodeDefault='Username' value="${command.username}"/>
 
@@ -49,13 +48,14 @@
                              size='40' labelCodeDefault='Password' value="${command.password}"/>
 
 		<s2ui:passwordFieldRow name='password2' labelCode='user.password2.label' bean="${command}"
-                             size='40' labelCodeDefault='Password (again)' value="${command.password2}"/>
-
+                                       size='40' labelCodeDefault='Password (again)' value="${command.password2}"/>                                                                                                                                                             
+                
 	</tbody>
 	</table>
-        
-	<s2ui:submitButton elementId='create' form='registerForm' messageCode='spring.security.ui.register.submit'/>
-
+             <g:link controller='termsConditions' action='serveTermsConditionFile'>Terms and conditions:</g:link>
+             <s2ui:checkboxRow name='acceptTerms' labelCode='user.acceptTerms.label' bean="${command}"
+                   size='40' labelCodeDefault='I accept' value="${command.acceptTerms}"/>      
+              <s2ui:submitButton elementId='create' form='registerForm' messageCode='spring.security.ui.register.submit'/>
 	</g:else>
 
 </g:form>

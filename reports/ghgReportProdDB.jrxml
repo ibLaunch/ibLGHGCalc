@@ -3,131 +3,6 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<subDataset name="New Dataset 1">
-		<queryString language="SQL">
-			<![CDATA[SELECT
-     emissions_summary.`direct_emissions` AS emissions_summary_direct_emissions,
-     emissions_summary.`stationary_combustion_emissions` AS emissions_summary_stationary_combustion_emissions,
-     emissions_summary.`mobile_combustion_emissions` AS emissions_summary_mobile_combustion_emissions,
-     emissions_summary.`refridgeration_air_conditioning_emissions` AS emissions_summary_refridgeration_air_conditioning_emissions,
-     emissions_summary.`fire_suppressant_emissions` AS emissions_summary_fire_suppressant_emissions,
-     emissions_summary.`waste_stream_combustion_emissions` AS emissions_summary_waste_stream_combustion_emissions,
-
-     emissions_summary.`purchased_electricity_emissions` AS emissions_summary_purchased_electricity_emissions,
-     emissions_summary.`purchased_steam_emissions` AS emissions_summary_purchased_steam_emissions,
-
-
-     emissions_summary.`employee_business_travel_by_air_emissions` AS emissions_summary_employee_business_travel_by_air_emissions,
-     emissions_summary.`employee_business_travel_by_bus_emissions` AS emissions_summary_employee_business_travel_by_bus_emissions,
-     emissions_summary.`employee_business_travel_by_rail_emissions` AS emissions_summary_employee_business_travel_by_rail_emissions,
-     emissions_summary.`employee_business_travel_by_vehicle_emissions` AS emissions_summary_employee_business_travel_by_vehicle_emissions,
-     emissions_summary.`employee_commuting_by_bus_emissions` AS emissions_summary_employee_commuting_by_bus_emissions,
-     emissions_summary.`employee_commuting_by_rail_emissions` AS emissions_summary_employee_commuting_by_rail_emissions,
-     emissions_summary.`employee_commuting_by_vehicle_emissions` AS emissions_summary_employee_commuting_by_vehicle_emissions,
-     emissions_summary.`product_transport_by_heavy_duty_trucks_emissions` AS emissions_summary_product_transport_by_heavy_duty_trucks_emissio,
-     emissions_summary.`product_transport_by_rail_emissions` AS emissions_summary_product_transport_by_rail_emissions,
-     emissions_summary.`product_transport_by_vehicle_emissions` AS emissions_summary_product_transport_by_vehicle_emissions,
-     emissions_summary.`product_transport_by_water_air_emissions` AS emissions_summary_product_transport_by_water_air_emissions,
-
-     emissions_summary.`biomass_mobile_combustion_emissions` AS emissions_summary_biomass_mobile_combustion_emissions,
-     emissions_summary.`biomass_stationary_combustion_emissions` AS emissions_summary_biomass_stationary_combustion_emissions,
-
-     emissions_summary.`total_emissions` AS emissions_summary_total_emissions,
-
-     emissions_summary.`date_created` AS emissions_summary_date_created,
-     emissions_summary.`last_updated` AS emissions_summary_last_updated,
-     emissions_summary.`emissions_begin_date` AS emissions_summary_emissions_begin_date,
-     emissions_summary.`emissions_end_date` AS emissions_summary_emissions_end_date,
-     emissions_summary.`organization_id` AS emissions_summary_organization_id,
-     emissions_summary.`program_type` AS emissions_summary_program_type
-
-
-FROM
-     `emissions_summary` emissions_summary]]>
-		</queryString>
-		<field name="emissions_summary_direct_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_stationary_combustion_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_mobile_combustion_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_refridgeration_air_conditioning_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_fire_suppressant_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_waste_stream_combustion_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_purchased_electricity_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_purchased_steam_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_employee_business_travel_by_air_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_employee_business_travel_by_bus_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_employee_business_travel_by_rail_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_employee_business_travel_by_vehicle_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_employee_commuting_by_bus_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_employee_commuting_by_rail_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_employee_commuting_by_vehicle_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_product_transport_by_heavy_duty_trucks_emissio" class="java.lang.Double"/>
-		<field name="emissions_summary_product_transport_by_rail_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_product_transport_by_vehicle_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_product_transport_by_water_air_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_biomass_mobile_combustion_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_biomass_stationary_combustion_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_total_emissions" class="java.lang.Double"/>
-		<field name="emissions_summary_date_created" class="java.sql.Timestamp"/>
-		<field name="emissions_summary_last_updated" class="java.sql.Timestamp"/>
-		<field name="emissions_summary_emissions_begin_date" class="java.sql.Timestamp"/>
-		<field name="emissions_summary_emissions_end_date" class="java.sql.Timestamp"/>
-		<field name="emissions_summary_organization_id" class="java.lang.Long"/>
-		<field name="emissions_summary_program_type" class="java.lang.String"/>
-	</subDataset>
-	<subDataset name="New Dataset 2">
-		<parameter name="report_begin_date" class="java.util.Date">
-			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
-		</parameter>
-		<parameter name="report_end_date" class="java.lang.String">
-			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
-		</parameter>
-		<parameter name="report_organization_id" class="java.lang.Integer">
-			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
-		</parameter>
-		<queryString>
-			<![CDATA[SELECT
-     organization.`organization_name` AS organization_name,
-     organization.`point_of_contact` AS point_of_contact,
-     emissions_summary.`total_direct_emissions` AS emissions_summary_total_direct_emissions,
-     emissions_summary.`total_in_direct_emissions` AS emissions_summary_total_in_direct_emissions,
-     emissions_summary.`emissions_begin_date` AS emissions_summary_emissions_begin_date,
-     emissions_summary.`emissions_end_date` AS emissions_summary_emissions_end_date,
-     emissions_summary.`fire_suppressant_emissions` AS emissions_summary_fire_suppressant_emissions,
-     emissions_summary.`organization_id` AS emissions_summary_organization_id,
-     emissions_summary.`program_type` AS emissions_summary_program_type,
-     emissions_summary.`stationary_combustion_emissions` AS emissions_summary_stationary_combustion_emissions,
-     emissions_summary.`total_emissions` AS emissions_summary_total_emissions,
-     emissions_summary.`total_optional_emissions` AS emissions_summary_total_optional_emissions,
-     emissions_summary.`waste_stream_combustion_emissions` AS emissions_summary_waste_stream_combustion_emissions,
-     emissions_summary.`mobile_combustion_emissions` AS emissions_summary_mobile_combustion_emissions,
-     emissions_summary.`biomass_mobile_combustion_emissions` AS emissions_summary_biomass_mobile_combustion_emissions,
-     emissions_summary.`biomass_stationary_combustion_emissions` AS emissions_summary_biomass_stationary_combustion_emissions,
-     emissions_summary.`refridgeration_air_conditioning_emissions` AS emissions_summary_refridgeration_air_conditioning_emissions,
-     emissions_summary.`purchased_electricity_emissions` AS emissions_summary_purchased_electricity_emissions,
-     emissions_summary.`purchased_steam_emissions` AS emissions_summary_purchased_steam_emissions,
-     emissions_summary.`employee_business_travel_by_air_emissions` AS emissions_summary_employee_business_travel_by_air_emissions,
-     emissions_summary.`employee_business_travel_by_bus_emissions` AS emissions_summary_employee_business_travel_by_bus_emissions,
-     emissions_summary.`employee_business_travel_by_rail_emissions` AS emissions_summary_employee_business_travel_by_rail_emissions,
-     emissions_summary.`employee_business_travel_by_vehicle_emissions` AS emissions_summary_employee_business_travel_by_vehicle_emissions,
-     emissions_summary.`employee_commuting_by_bus_emissions` AS emissions_summary_employee_commuting_by_bus_emissions,
-     emissions_summary.`employee_commuting_by_rail_emissions` AS emissions_summary_employee_commuting_by_rail_emissions,
-     emissions_summary.`employee_commuting_by_vehicle_emissions` AS emissions_summary_employee_commuting_by_vehicle_emissions,
-     emissions_summary.`product_transport_by_heavy_duty_trucks_emissions` AS emissions_summary_product_transport_by_heavy_duty_trucks_emissio,
-     emissions_summary.`product_transport_by_rail_emissions` AS emissions_summary_product_transport_by_rail_emissions,
-     emissions_summary.`product_transport_by_vehicle_emissions` AS emissions_summary_product_transport_by_vehicle_emissions,
-     emissions_summary.`product_transport_by_water_air_emissions` AS emissions_summary_product_transport_by_water_air_emissions,
-     emissions_summary.`date_created` AS emissions_summary_date_created,
-     emissions_summary.`last_updated` AS emissions_summary_last_updated
-FROM
-     `emissions_summary` emissions_summary,
-     `organization` organization
-WHERE emissions_summary.organization_id=$P{report_organization_id}
-AND organization.id = $P{report_organization_id}
-AND DATE_FORMAT(emissions_begin_date,'%y-%m/%d') >= DATE_FORMAT($P{report_begin_date},'%y-%m/%d')
-AND DATE_FORMAT(emissions_end_date,'%y-%m/%d') <= DATE_FORMAT($P{report_end_date},'%y-%m/%d')]]>
-		</queryString>
-		<field name="emissions_summary_biomass_mobile_combustion_emissions" class="java.lang.Double"/>
-	</subDataset>
 	<subDataset name="New Dataset 3">
 		<queryString language="SQL">
 			<![CDATA[SELECT
@@ -263,7 +138,7 @@ AND DATE_FORMAT(emissions_end_date,'%y-%m/%d') <= DATE_FORMAT($P{report_end_date
 		<band height="52" splitType="Stretch">
 			<image scaleImage="Clip">
 				<reportElement x="0" y="0" width="555" height="32"/>
-				<imageExpression class="java.lang.String"><![CDATA["C:\\GHG\\ibLGHGCalc\\web-app\\images\\sun.gif"]]></imageExpression>
+				<imageExpression class="java.lang.String"><![CDATA["//home//iblaunch//reports//images//sun.gif"]]></imageExpression>
 			</image>
 			<frame>
 				<reportElement mode="Opaque" x="0" y="32" width="555" height="20" forecolor="#000000" backcolor="#99FFFF"/>
@@ -881,7 +756,7 @@ AND DATE_FORMAT(emissions_end_date,'%y-%m/%d') <= DATE_FORMAT($P{report_end_date
 			</staticText>
 			<image>
 				<reportElement x="475" y="0" width="79" height="54"/>
-				<imageExpression class="java.lang.String"><![CDATA["C:\\GHG\\ibLGHGCalc\\web-app\\images\\logo.gif"]]></imageExpression>
+				<imageExpression class="java.lang.String"><![CDATA["//home//iblaunch//reports//images//logo.gif"]]></imageExpression>
 			</image>
 			<staticText>
 				<reportElement x="1" y="24" width="198" height="20"/>

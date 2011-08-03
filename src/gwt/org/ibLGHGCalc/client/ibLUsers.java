@@ -201,7 +201,7 @@ public class ibLUsers implements EntryPoint {
     private final String eFUploadFormSubmitAction = "fileUpload";
     private final DynamicForm uploadForm = new DynamicForm();
 
-    private final FileUploadDS fileUploadDS = FileUploadDS.getInstance();
+    //private final FileUploadDS fileUploadDS = FileUploadDS.getInstance();
 
 //--Stationary Combustions
     private final VLayout stationaryCombustionLayout = new VLayout();
