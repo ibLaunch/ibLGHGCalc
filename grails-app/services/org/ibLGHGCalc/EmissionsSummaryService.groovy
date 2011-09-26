@@ -509,7 +509,9 @@ class EmissionsSummaryService {
        
        //-----------------------------------------------BEGIN
        //def reportDef = new JasperReportDef(name:'ghgReport.jasper',fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)
-       def reportDef = new JasperReportDef(name:'ghgReportProdDB.jrxml',fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)
+       //def reportDef = new JasperReportDef(name:'ghgReportProdDB.jrxml',fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)
+       def jasperReportFileName = ConfigurationHolder.config.jasperReportFileName
+       def reportDef = new JasperReportDef(name:jasperReportFileName,fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)
        //def reportDef = new JasperReportDef(name:'reportTest.jrxml',fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)
        
        def reportFileName = "Report-"+theOrganization.id+ "-"+ (new Date().format('yyyy-MM-dd-HH-mm-ssZ')).toString()+".pdf"

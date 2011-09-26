@@ -23,7 +23,8 @@ environments {
         dataSource {
             //
             dbCreate = "update" // one of 'create', 'create-drop','update'
-            url = "jdbc:mysql://localhost/ibLGHGCalc"
+            //url = "jdbc:mysql://localhost/ibLGHGCalc"
+            url = "jdbc:mysql://localhost/iblghgcalcdb"
             username = "root"
             password = "root"
             //url = "jdbc:mysql://efootprint.db.7340731.hostedresource.com"

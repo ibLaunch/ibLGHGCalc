@@ -123,7 +123,7 @@ class EmissionsSummaryController {
   }
 
 def serveReportFile = {
-
+    
     println "params:======"+params
     def  emissionsSummaryReportId = Long.decode(params.emissionsSummaryReportId)
     //def  emissionsSummaryReportId = params.emissionsSummaryReportId
@@ -152,7 +152,7 @@ def serveReportFile = {
             //response.setContentType("application/x-download");
         }
         catch(FileNotFoundException e) {
-            println "Report not Generated!!!!"
+//            println "Report not Generated!!!!"
             log.error e            
             //reportFound = 0
         }
@@ -196,5 +196,5 @@ def serveReportFile = {
 */
 
  }
-
+ 
 }
