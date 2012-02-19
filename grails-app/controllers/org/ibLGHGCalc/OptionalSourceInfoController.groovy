@@ -73,6 +73,10 @@ class OptionalSourceInfoController {
         airTravelType: optionalSourceInfo.airTravelType,
         transportType:optionalSourceInfo.transportType,
 
+        annualNumberOfHotelNights: optionalSourceInfo.annualNumberOfHotelNights,
+        EF_Hotel: optionalSourceInfo.EF_Hotel,
+        EF_Hotel_Unit: optionalSourceInfo.EF_Hotel_Unit,
+            
         passengerMiles: optionalSourceInfo.passengerMiles,
         tonMiles: optionalSourceInfo.tonMiles,
 

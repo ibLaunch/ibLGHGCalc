@@ -114,14 +114,14 @@ public class PurchasedSteamInfoDS extends RestDataSource {
     supplierN2OMultiplierUnitItem.setWidth("100%");
     supplierN2OMultiplierUnitField.setEditorType(supplierN2OMultiplierUnitItem);
 
-    DataSourceDateTimeField fuelUsedBeginDateField =
+    DataSourceDateTimeField fuelUsedBeginDateField = 
         new DataSourceDateTimeField("fuelUsedBeginDate", "Begin Date");
     //DateItem fuelUsedBeginDateItem = new DateItem();
     //fuelUsedBeginDateItem.setWidth("100%");
     //fuelUsedBeginDateField.setEditorType(fuelUsedBeginDateItem);
     fuelUsedBeginDateField.setType(FieldType.DATE);
     
-    DataSourceDateTimeField fuelUsedEndDateField =
+    DataSourceDateTimeField fuelUsedEndDateField = //new DataSourceDateTimeField("fuelUsedEndDate");
         new DataSourceDateTimeField("fuelUsedEndDate", "End Date");
     //DateItem fuelUsedEndDateItem = new DateItem();
     //fuelUsedEndDateItem.setWidth("100%");
@@ -150,6 +150,7 @@ public class PurchasedSteamInfoDS extends RestDataSource {
         new OperationBinding(DSOperationType.REMOVE,"purchasedSteamInfo/remove");
     remove.setDataProtocol(DSProtocol.POSTPARAMS);
     setOperationBindings(fetch, update, add, remove);
+    //setAutoDeriveTitles(Boolean.TRUE);
     //setClientOnly(true);
   }
 

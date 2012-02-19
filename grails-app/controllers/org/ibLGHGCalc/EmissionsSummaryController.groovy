@@ -2,13 +2,17 @@ package org.ibLGHGCalc
 
 import groovy.xml.MarkupBuilder
 import org.springframework.security.acls.domain.BasePermission
-
+import org.codehaus.groovy.grails.plugins.jasper.JasperExportFormat
+import org.codehaus.groovy.grails.plugins.jasper.JasperReportDef
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.apache.commons.io.FileUtils
 
 class EmissionsSummaryController {
   def emissionsSummaryService
   def aclUtilService
   def springSecurityService
   def grailsApplication
+  def jasperService  
   
   def list = {
     log.info "EmissionsSummaryController.list( ${params} )"
@@ -93,7 +97,10 @@ class EmissionsSummaryController {
         productTransportByHeavyDutyTrucksEmissions:emissionsSummary.productTransportByHeavyDutyTrucksEmissions,
         productTransportByRailEmissions:emissionsSummary.productTransportByRailEmissions,
         productTransportByWaterAirEmissions:emissionsSummary.productTransportByWaterAirEmissions,
-
+        
+        purchasedGoodsAndServicesEmissions:emissionsSummary.purchasedGoodsAndServicesEmissions,        
+        purchasedCapitalGoodsEmissions:emissionsSummary.purchasedCapitalGoodsEmissions,        
+        
         biomassStationaryCombustionEmissions: emissionsSummary.biomassStationaryCombustionEmissions,
         biomassMobileCombustionEmissions: emissionsSummary.biomassMobileCombustionEmissions,
 
@@ -106,7 +113,8 @@ class EmissionsSummaryController {
     	emissionsBeginDate: emissionsSummary.emissionsBeginDate?.format("yyyy-MM-dd"),
     	emissionsEndDate: emissionsSummary.emissionsEndDate?.format("yyyy-MM-dd"),
         reportFileName: emissionsSummary?.reportFileName,
-        lastUpdated: emissionsSummary.lastUpdated.format("yyyy-MM-dd")
+        lastUpdated: emissionsSummary.lastUpdated
+        //lastUpdated: emissionsSummary.lastUpdated.format("yyyy-MM-dd")
     )
   }
 
@@ -128,73 +136,49 @@ def serveReportFile = {
     def  emissionsSummaryReportId = Long.decode(params.emissionsSummaryReportId)
     //def  emissionsSummaryReportId = params.emissionsSummaryReportId
     def theEmissionsSummary = emissionsSummaryService.findEmissionsSummary(emissionsSummaryReportId);
-
+    
     if (theEmissionsSummary) {
         println "params:---"+params
-        String fileName = theEmissionsSummary?.reportFileName
-        def reportFile
         
-        //Get the basePAth
-        def basePath = grailsApplication.parentContext.getResource("/").file.toString()
-        println "----basePath while serving report----:" +basePath
+       def reportParameters = [:]
+       
+       Integer orgId =  (Integer) Long.decode(params?.organizationId)
+       Date beginDate = new Date().parse('yyyy-MM-dd',theEmissionsSummary?.emissionsBeginDate.toString())
+       Date endDate = new Date().parse('yyyy-MM-dd',theEmissionsSummary?.emissionsEndDate.toString())
 
-
-
-        def basePath2 = grailsAttributes.getApplicationContext().getResource("/").getFile()
-        println "----basePath2 while serving report----?????????:" +basePath2
-
-        def basePath3 =grailsApplication.config.basePath
-        println "----basePath3 while serving report----?????????:" +basePath3
-
+       println "---begin date is: ${theEmissionsSummary?.emissionsBeginDate}"
+       println "---end date is: ${theEmissionsSummary?.emissionsEndDate}"
+            
+       reportParameters.put("report_organization_id",orgId)
+       reportParameters.put("report_begin_date",beginDate)
+       reportParameters.put("report_end_date",endDate)
+       
+       def jasperReportFileName = ConfigurationHolder.config.jasperReportFileName
+       def reportDef = new JasperReportDef(name:jasperReportFileName,fileFormat:JasperExportFormat.PDF_FORMAT, parameters:reportParameters)       
+       def reportFileName = "Report-"+orgId+ "-"+ (new Date().format('yyyy-MM-dd-HH-mm-ssZ')).toString()+".pdf"
+       
+        //Get the basePath for file location
+        def basePath = ConfigurationHolder.config.basePath
+                
+        //--Generate report now
         try {
-            //reportFile = new File(System.properties['base.dir']+"/reports/"+params.organizationId+"/"+fileName);
-            reportFile = new File(basePath3+"/reports/"+params.organizationId+"/"+fileName);
-            //response.setContentType("application/x-download");
-        }
-        catch(FileNotFoundException e) {
-//            println "Report not Generated!!!!"
-            log.error e            
-            //reportFound = 0
-        }
-        catch (IOException e) {
-            println "Caught IOException: " + e.getMessage()
-        }
-
-        if (reportFile.size() > 0){
-            response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-            response.outputStream << reportFile.readBytes()            
-        } else {
-            response.outputStream << "Report file not generated"
-        }
-
-    } else {
-        println " No report found ---------------"
-        response.outputStream << " Either report not generated or you don't have access to this report, contact support if needed"
-    }
-
-/*
-    if (theEmissionsSummary) {
-        println "params:---"+params
-        String fileName = theEmissionsSummary?.reportFileName
-
-
-        if (fileName){
-            def rFile = new File(System.properties['base.dir']+"/reports/"+params.organizationId+"/"+fileName);
-            //response.setContentType("application/x-download");
-            response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-            response.outputStream << rFile.readBytes()
-        } 
-        else {       
+            //FileUtils.writeByteArrayToFile(new File(basePath+"/reports/"+orgId+"/"+reportFileName), jasperService.generateReport(reportDef).toByteArray())
+            //response.outputStream << "Report generated"
+            response.setHeader("Content-Disposition", "attachment; filename=" + reportFileName);
+            response.outputStream << jasperService.generateReport(reportDef).toByteArray()            
+        } catch (Exception e) {
+            println "----------------Exception Caught-----------------------"
             log.error e
+            println e
+            println e.printStackTrace()
             println "Report not Generated!"
-            response.outputStream << " No report found!!!!!"
-        }
-    } else {
+        }        
+                        
+    } else{
         println " No report found ---------------"
         response.outputStream << " Either report not generated or you don't have access to this report, contact support if needed"
     }
-*/
-
+    
  }
  
 }

@@ -168,7 +168,6 @@ class StationaryCombustionInfoService {
       theStationaryCombustionInfo.fuelUsedEndDate = fuelUsedEndDate
       //theStationaryCombustionInfo.isPublic = parameters.isPublic
 
-
       theStationaryCombustionInfo.isPublic =
          "true".equals(parameters.isPublic) ? true : false
 

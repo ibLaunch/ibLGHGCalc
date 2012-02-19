@@ -1,0 +1,1267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="38"/>
+	<subDataset name="New Dataset 3">
+		<queryString language="SQL">
+			<![CDATA[SELECT
+     emissions_summary.`stationary_combustion_emissions` AS emissions_summary_stationary_combustion_emissions,
+     emissions_summary.`mobile_combustion_emissions` AS emissions_summary_mobile_combustion_emissions,
+     emissions_summary.`refridgeration_air_conditioning_emissions` AS emissions_summary_refridgeration_air_conditioning_emissions,
+     emissions_summary.`fire_suppressant_emissions` AS emissions_summary_fire_suppressant_emissions,
+     emissions_summary.`waste_stream_combustion_emissions` AS emissions_summary_waste_stream_combustion_emissions,
+
+     emissions_summary.`purchased_electricity_emissions` AS emissions_summary_purchased_electricity_emissions,
+     emissions_summary.`purchased_steam_emissions` AS emissions_summary_purchased_steam_emissions,
+
+
+     emissions_summary.`employee_business_travel_by_air_emissions` AS emissions_summary_employee_business_travel_by_air_emissions,
+     emissions_summary.`employee_business_travel_by_bus_emissions` AS emissions_summary_employee_business_travel_by_bus_emissions,
+     emissions_summary.`employee_business_travel_by_rail_emissions` AS emissions_summary_employee_business_travel_by_rail_emissions,
+     emissions_summary.`employee_business_travel_by_vehicle_emissions` AS emissions_summary_employee_business_travel_by_vehicle_emissions,
+     emissions_summary.`employee_commuting_by_bus_emissions` AS emissions_summary_employee_commuting_by_bus_emissions,
+     emissions_summary.`employee_commuting_by_rail_emissions` AS emissions_summary_employee_commuting_by_rail_emissions,
+     emissions_summary.`employee_commuting_by_vehicle_emissions` AS emissions_summary_employee_commuting_by_vehicle_emissions,
+     emissions_summary.`product_transport_by_heavy_duty_trucks_emissions` AS emissions_summary_product_transport_by_heavy_duty_trucks_emissio,
+     emissions_summary.`product_transport_by_rail_emissions` AS emissions_summary_product_transport_by_rail_emissions,
+     emissions_summary.`product_transport_by_vehicle_emissions` AS emissions_summary_product_transport_by_vehicle_emissions,
+     emissions_summary.`product_transport_by_water_air_emissions` AS emissions_summary_product_transport_by_water_air_emissions,
+
+     emissions_summary.`biomass_mobile_combustion_emissions` AS emissions_summary_biomass_mobile_combustion_emissions,
+     emissions_summary.`biomass_stationary_combustion_emissions` AS emissions_summary_biomass_stationary_combustion_emissions,
+
+     emissions_summary.`total_emissions` AS emissions_summary_total_emissions,
+
+     emissions_summary.`date_created` AS emissions_summary_date_created,
+     emissions_summary.`last_updated` AS emissions_summary_last_updated,
+     emissions_summary.`emissions_begin_date` AS emissions_summary_emissions_begin_date,
+     emissions_summary.`emissions_end_date` AS emissions_summary_emissions_end_date,
+     emissions_summary.`organization_id` AS emissions_summary_organization_id,
+     emissions_summary.`program_type` AS emissions_summary_program_type
+
+
+FROM
+     `emissions_summary` emissions_summary]]>
+		</queryString>
+	</subDataset>
+	<parameter name="report_organization_id" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="report_begin_date" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="report_end_date" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+     organization.`organization_name` AS organization_name,
+     organization.`point_of_contact` AS point_of_contact,
+
+     emissions_summary.`emissions_begin_date` AS emissions_summary_emissions_begin_date,
+     emissions_summary.`emissions_end_date` AS emissions_summary_emissions_end_date,
+     emissions_summary.`organization_id` AS emissions_summary_organization_id,
+     emissions_summary.`program_type` AS emissions_summary_program_type,
+
+     emissions_summary.`stationary_combustion_emissions` AS emissions_summary_stationary_combustion_emissions,
+     emissions_summary.`mobile_combustion_emissions` AS emissions_summary_mobile_combustion_emissions,
+     emissions_summary.`refridgeration_air_conditioning_emissions` AS emissions_summary_refridgeration_air_conditioning_emissions,
+     emissions_summary.`fire_suppressant_emissions` AS emissions_summary_fire_suppressant_emissions,
+     emissions_summary.`waste_stream_combustion_emissions` AS emissions_summary_waste_stream_combustion_emissions,
+
+     emissions_summary.`biomass_mobile_combustion_emissions` AS emissions_summary_biomass_mobile_combustion_emissions,
+     emissions_summary.`biomass_stationary_combustion_emissions` AS emissions_summary_biomass_stationary_combustion_emissions,
+
+     emissions_summary.`purchased_electricity_emissions` AS emissions_summary_purchased_electricity_emissions,
+     emissions_summary.`purchased_steam_emissions` AS emissions_summary_purchased_steam_emissions,
+
+
+	emissions_summary.`purchased_goods_and_services_emissions`  AS purchased_goods_and_services_emissions,
+	emissions_summary.`purchased_capital_goods_emissions` AS purchased_capital_goods_emissions,
+
+	emissions_summary.`purchased_energy_emissions`  AS purchased_energy_emissions,
+
+	emissions_summary.`upstream_transportation_emissions`AS upstream_transportation_emissions,
+	emissions_summary.`downstream_transportation_emissions`  AS downstream_transportation_emissions,
+
+	emissions_summary.`upstream_distribution_emissions`  AS upstream_distribution_emissions,
+	emissions_summary.`downstream_distribution_emissions`  AS downstream_distribution_emissions,
+
+	emissions_summary.`waste_generated_in_operations_emissions` AS waste_generated_in_operations_emissions,
+
+	emissions_summary.`total_business_travel_emissions`AS total_business_travel_emissions,
+
+	emissions_summary.`total_employee_commuting_emissions`  AS total_employee_commuting_emissions,
+
+
+	emissions_summary.`upstream_leased_assets_emissions`  AS upstream_leased_assets_emissions,
+	emissions_summary.`downstream_leased_assets_emissions`  AS downstream_leased_assets_emissions,
+
+	emissions_summary.`processing_of_sold_products_emissions`  AS processing_of_sold_products_emissions,
+
+	emissions_summary.`direct_use_phase_emissions_for_sold_products_emissions`  AS direct_use_phase_emissions_for_sold_products_emissions,
+	emissions_summary.`in_direct_use_phase_emissions_for_sold_products_emissions`  AS in_direct_use_phase_emissions_for_sold_products_emissions,
+
+	emissions_summary.`end_of_life_treatment_of_sold_products_emissions`  AS end_of_life_treatment_of_sold_products_emissions,
+
+	emissions_summary.`franchises_emissions`  AS franchises_emissions,
+
+	emissions_summary.`investments_emissions` AS investments_emissions,
+	emissions_summary.`anticipated_lifetime_project_investments_emissions`  AS anticipated_lifetime_project_investments_emissions,
+	emissions_summary.`optional_investments_emissions` AS optional_investments_emissions,
+
+     emissions_summary.`employee_business_travel_by_air_emissions` AS emissions_summary_employee_business_travel_by_air_emissions,
+     emissions_summary.`employee_business_travel_by_bus_emissions` AS emissions_summary_employee_business_travel_by_bus_emissions,
+     emissions_summary.`employee_business_travel_by_rail_emissions` AS emissions_summary_employee_business_travel_by_rail_emissions,
+     emissions_summary.`employee_business_travel_by_vehicle_emissions` AS emissions_summary_employee_business_travel_by_vehicle_emissions,
+     emissions_summary.`employee_business_travel_hotel_stay_emissions` AS emissions_summary_employee_business_travel_hotel_stay_emissions,
+
+     emissions_summary.`employee_commuting_by_bus_emissions` AS emissions_summary_employee_commuting_by_bus_emissions,
+     emissions_summary.`employee_commuting_by_rail_emissions` AS emissions_summary_employee_commuting_by_rail_emissions,
+     emissions_summary.`employee_commuting_by_vehicle_emissions` AS emissions_summary_employee_commuting_by_vehicle_emissions,
+
+     emissions_summary.`product_transport_by_heavy_duty_trucks_emissions` AS emissions_summary_product_transport_by_heavy_duty_trucks_emissio,
+     emissions_summary.`product_transport_by_rail_emissions` AS emissions_summary_product_transport_by_rail_emissions,
+     emissions_summary.`product_transport_by_vehicle_emissions` AS emissions_summary_product_transport_by_vehicle_emissions,
+     emissions_summary.`product_transport_by_water_air_emissions` AS emissions_summary_product_transport_by_water_air_emissions,
+
+
+
+
+     emissions_summary.`total_direct_emissions` AS emissions_summary_total_direct_emissions,
+     emissions_summary.`total_in_direct_emissions` AS emissions_summary_total_in_direct_emissions,
+     emissions_summary.`total_emissions` AS emissions_summary_total_emissions,
+     emissions_summary.`total_optional_emissions` AS emissions_summary_total_optional_emissions,
+
+     emissions_summary.`date_created` AS emissions_summary_date_created,
+     emissions_summary.`last_updated` AS emissions_summary_last_updated
+FROM
+     `emissions_summary` emissions_summary,
+     `organization` organization
+WHERE emissions_summary.organization_id=$P{report_organization_id}
+AND organization.id = $P{report_organization_id}
+AND DATE_FORMAT(emissions_begin_date,'%y-%m/%d') >= DATE_FORMAT($P{report_begin_date},'%y-%m/%d')
+AND DATE_FORMAT(emissions_end_date,'%y-%m/%d') <= DATE_FORMAT($P{report_end_date},'%y-%m/%d')]]>
+	</queryString>
+	<field name="organization_name" class="java.lang.String"/>
+	<field name="point_of_contact" class="java.lang.String"/>
+	<field name="emissions_summary_emissions_begin_date" class="java.sql.Timestamp"/>
+	<field name="emissions_summary_emissions_end_date" class="java.sql.Timestamp"/>
+	<field name="emissions_summary_organization_id" class="java.lang.Long"/>
+	<field name="emissions_summary_program_type" class="java.lang.String"/>
+	<field name="emissions_summary_stationary_combustion_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_mobile_combustion_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_refridgeration_air_conditioning_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_fire_suppressant_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_waste_stream_combustion_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_biomass_mobile_combustion_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_biomass_stationary_combustion_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_purchased_electricity_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_purchased_steam_emissions" class="java.lang.Double"/>
+	<field name="purchased_goods_and_services_emissions" class="java.lang.Double"/>
+	<field name="purchased_capital_goods_emissions" class="java.lang.Double"/>
+	<field name="purchased_energy_emissions" class="java.lang.Double"/>
+	<field name="upstream_transportation_emissions" class="java.lang.Double"/>
+	<field name="downstream_transportation_emissions" class="java.lang.Double"/>
+	<field name="upstream_distribution_emissions" class="java.lang.Double"/>
+	<field name="downstream_distribution_emissions" class="java.lang.Double"/>
+	<field name="waste_generated_in_operations_emissions" class="java.lang.Double"/>
+	<field name="total_business_travel_emissions" class="java.lang.Double"/>
+	<field name="total_employee_commuting_emissions" class="java.lang.Double"/>
+	<field name="upstream_leased_assets_emissions" class="java.lang.Double"/>
+	<field name="downstream_leased_assets_emissions" class="java.lang.Double"/>
+	<field name="processing_of_sold_products_emissions" class="java.lang.Double"/>
+	<field name="direct_use_phase_emissions_for_sold_products_emissions" class="java.lang.Double"/>
+	<field name="in_direct_use_phase_emissions_for_sold_products_emissions" class="java.lang.Double"/>
+	<field name="end_of_life_treatment_of_sold_products_emissions" class="java.lang.Double"/>
+	<field name="franchises_emissions" class="java.lang.Double"/>
+	<field name="investments_emissions" class="java.lang.Double"/>
+	<field name="anticipated_lifetime_project_investments_emissions" class="java.lang.Double"/>
+	<field name="optional_investments_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_employee_business_travel_by_air_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_employee_business_travel_by_bus_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_employee_business_travel_by_rail_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_employee_business_travel_by_vehicle_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_employee_business_travel_hotel_stay_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_employee_commuting_by_bus_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_employee_commuting_by_rail_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_employee_commuting_by_vehicle_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_product_transport_by_heavy_duty_trucks_emissio" class="java.lang.Double"/>
+	<field name="emissions_summary_product_transport_by_rail_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_product_transport_by_vehicle_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_product_transport_by_water_air_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_total_direct_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_total_in_direct_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_total_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_total_optional_emissions" class="java.lang.Double"/>
+	<field name="emissions_summary_date_created" class="java.sql.Timestamp"/>
+	<field name="emissions_summary_last_updated" class="java.sql.Timestamp"/>
+	<group name="emissions_summary_organization_id">
+		<groupExpression><![CDATA[$F{emissions_summary_organization_id}]]></groupExpression>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="52" splitType="Stretch">
+			<image scaleImage="Clip">
+				<reportElement x="0" y="0" width="555" height="32"/>
+				<imageExpression class="java.lang.String"><![CDATA["C:\\GHG\\ibLGHGCalc\\web-app\\images\\sun.gif"]]></imageExpression>
+			</image>
+			<frame>
+				<reportElement mode="Opaque" x="0" y="32" width="555" height="20" forecolor="#000000" backcolor="#99FFFF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<staticText>
+					<reportElement x="1" y="0" width="81" height="20" forecolor="#666666"/>
+					<textElement>
+						<font size="12" isBold="false" isItalic="false" isUnderline="false"/>
+					</textElement>
+					<text><![CDATA[Organization  :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Transparent" x="382" y="0" width="51" height="20" forecolor="#666666" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="SansSerif" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<text><![CDATA[Contact :]]></text>
+				</staticText>
+			</frame>
+			<textField>
+				<reportElement x="82" y="32" width="237" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{organization_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="120" y="0" width="312" height="20" backcolor="#FF6600"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14"/>
+				</textElement>
+				<text><![CDATA[Greenhouse Gas Emissions Report]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="433" y="32" width="122" height="20"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{point_of_contact}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="66" splitType="Stretch">
+			<frame>
+				<reportElement mode="Opaque" x="0" y="0" width="555" height="20" forecolor="#000000" backcolor="#99FFFF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<staticText>
+					<reportElement mode="Transparent" x="0" y="0" width="82" height="20" forecolor="#666666" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="SansSerif" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<text><![CDATA[Program Type:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="82" y="0" width="237" height="20"/>
+					<textElement>
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{emissions_summary_program_type}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MMMMM dd, yyyy">
+					<reportElement positionType="Float" x="434" y="0" width="121" height="20" forecolor="#000000"/>
+					<textElement textAlignment="Left">
+						<font size="12"/>
+					</textElement>
+					<textFieldExpression class="java.util.Date"><![CDATA[$F{emissions_summary_last_updated}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Transparent" x="343" y="0" width="90" height="20" forecolor="#666666" backcolor="#FFFFFF"/>
+					<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+						<font fontName="SansSerif" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					</textElement>
+					<text><![CDATA[Date Produced :]]></text>
+				</staticText>
+			</frame>
+			<frame>
+				<reportElement mode="Opaque" x="48" y="20" width="446" height="20" forecolor="#000000" backcolor="#99FFFF"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<staticText>
+					<reportElement x="133" y="0" width="172" height="20"/>
+					<textElement>
+						<font size="14" isBold="false" isItalic="false" isUnderline="false"/>
+					</textElement>
+					<text><![CDATA[GHG Emissions Summary]]></text>
+				</staticText>
+			</frame>
+			<frame>
+				<reportElement mode="Opaque" x="48" y="40" width="446" height="16" forecolor="#000000" backcolor="#CCCCCC"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textField pattern="MMMMM dd, yyyy">
+					<reportElement x="334" y="0" width="112" height="16"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Left">
+						<font size="10" isItalic="false"/>
+					</textElement>
+					<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{emissions_summary_emissions_end_date}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Transparent" x="305" y="0" width="94" height="16"/>
+					<box>
+						<pen lineWidth="0.25"/>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Left">
+						<font size="10" isBold="false" isItalic="false" isUnderline="false"/>
+					</textElement>
+					<text><![CDATA[Until :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Transparent" x="7" y="0" width="39" height="16" backcolor="#FFFFFF"/>
+					<box>
+						<pen lineWidth="0.25"/>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Left">
+						<font size="10" isBold="false" isItalic="false" isUnderline="false"/>
+					</textElement>
+					<text><![CDATA[From :]]></text>
+				</staticText>
+				<textField pattern="MMMMM dd, yyyy">
+					<reportElement x="46" y="0" width="141" height="16"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<textElement textAlignment="Left">
+						<font size="10" isItalic="false"/>
+					</textElement>
+					<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{emissions_summary_emissions_begin_date}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="583" splitType="Stretch">
+			<staticText>
+				<reportElement x="48" y="149" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Stationary Combustion]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="53" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Total GHG Emissions (not including Optional Emissions)
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="73" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Total Optional Emissions
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="189" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{emissions_summary_refridgeration_air_conditioning_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="169" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{emissions_summary_mobile_combustion_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="73" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{emissions_summary_total_optional_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="149" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{emissions_summary_stationary_combustion_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="189" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Refrigeration / AC Equip. Use / Fire Suppression]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="284" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Purchased and Consumed Steam
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="53" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{emissions_summary_total_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="169" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Mobile Sources	]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="264" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Purchased and Consumed Electricity
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="284" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{emissions_summary_purchased_steam_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="264" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{emissions_summary_purchased_electricity_emissions}]]></textFieldExpression>
+			</textField>
+			<frame>
+				<reportElement mode="Opaque" x="48" y="117" width="446" height="32" forecolor="#000000" backcolor="#CCCCCC"/>
+				<staticText>
+					<reportElement x="0" y="12" width="257" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Scope 1 Emisssions]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="257" y="12" width="189" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<text><![CDATA[CO2-e(Metric Ton)]]></text>
+				</staticText>
+			</frame>
+			<frame>
+				<reportElement mode="Opaque" x="48" y="232" width="446" height="32" forecolor="#000000" backcolor="#CCCCCC"/>
+				<staticText>
+					<reportElement x="0" y="12" width="257" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Scope 2 Emisssions]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="257" y="12" width="189" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<text><![CDATA[CO2-e(Metric Ton)]]></text>
+				</staticText>
+			</frame>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="209" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{emissions_summary_total_direct_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="304" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{emissions_summary_total_in_direct_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="440" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Upstream transportation and distribution
+
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="406" width="257" height="34"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Fuel- and energy-related activities
+(not included in scope 1 or scope 2)
+]]></text>
+			</staticText>
+			<frame>
+				<reportElement mode="Opaque" x="48" y="336" width="446" height="32" forecolor="#000000" backcolor="#CCCCCC"/>
+				<staticText>
+					<reportElement x="0" y="12" width="257" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Upstream scope 3 emissions	]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="257" y="12" width="189" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<text><![CDATA[CO2-e(Metric Ton)]]></text>
+				</staticText>
+			</frame>
+			<staticText>
+				<reportElement x="48" y="366" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Purchased goods and services
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="520" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{upstream_leased_assets_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="480" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Business travel	]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="460" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{waste_generated_in_operations_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="440" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{upstream_transportation_emissions}+$F{upstream_distribution_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="540" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{purchased_goods_and_services_emissions}+
+$F{purchased_capital_goods_emissions}+
+$F{purchased_energy_emissions}+
+$F{upstream_transportation_emissions}+
+$F{upstream_distribution_emissions}+
+$F{waste_generated_in_operations_emissions}+
+$F{total_business_travel_emissions}+
+$F{total_employee_commuting_emissions}+
+$F{upstream_leased_assets_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="406" width="189" height="34"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{purchased_energy_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="366" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{purchased_goods_and_services_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="520" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Upstream leased assets]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="500" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Employee commuting]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="386" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{purchased_capital_goods_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="480" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{total_business_travel_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="460" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Waste generated in operations]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="386" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Capital goods
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="500" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{total_employee_commuting_emissions}]]></textFieldExpression>
+			</textField>
+			<frame>
+				<reportElement mode="Opaque" x="48" y="21" width="446" height="32" forecolor="#000000" backcolor="#CCCCCC"/>
+				<staticText>
+					<reportElement x="0" y="12" width="257" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Total Emisssions]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="257" y="12" width="189" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<text><![CDATA[CO2-e(Metric Ton)]]></text>
+				</staticText>
+			</frame>
+		</band>
+		<band height="393">
+			<staticText>
+				<reportElement x="48" y="104" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Use of sold products
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="104" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{direct_use_phase_emissions_for_sold_products_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="64" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{downstream_transportation_emissions}+$F{downstream_distribution_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="144" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{downstream_leased_assets_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="164" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Franchises]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="204" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{downstream_transportation_emissions}+
+$F{downstream_distribution_emissions}+
+$F{processing_of_sold_products_emissions}+
+$F{end_of_life_treatment_of_sold_products_emissions}+
+$F{downstream_leased_assets_emissions}+
+$F{franchises_emissions}+
+$F{investments_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="124" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{end_of_life_treatment_of_sold_products_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="124" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[End-of-life treatment of sold products
+
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="84" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{processing_of_sold_products_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="184" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Investments]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="144" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Downstream leased assets]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="64" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Downstream transportation and distribution
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="164" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{franchises_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="84" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Processing of sold products
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="184" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{investments_emissions}]]></textFieldExpression>
+			</textField>
+			<frame>
+				<reportElement mode="Opaque" x="48" y="32" width="446" height="32" forecolor="#000000" backcolor="#CCCCCC"/>
+				<staticText>
+					<reportElement x="0" y="12" width="257" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Downstream scope 3 emissions	]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="257" y="12" width="189" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<text><![CDATA[CO2-e(Metric Ton)]]></text>
+				</staticText>
+			</frame>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="307" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{anticipated_lifetime_project_investments_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="287" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[In-Direct Use of sold products
+]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="287" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{in_direct_use_phase_emissions_for_sold_products_emissions}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="327" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{optional_investments_emissions}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="327" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Optional Investments]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="307" width="257" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement/>
+				<text><![CDATA[Anticipated lifetime project investments]]></text>
+			</staticText>
+			<textField pattern="#,##0.0000;(-#,##0.0000)">
+				<reportElement x="305" y="347" width="189" height="20"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{in_direct_use_phase_emissions_for_sold_products_emissions}+
+$F{anticipated_lifetime_project_investments_emissions}+
+$F{optional_investments_emissions}]]></textFieldExpression>
+			</textField>
+			<frame>
+				<reportElement mode="Opaque" x="48" y="255" width="446" height="32" forecolor="#000000" backcolor="#CCCCCC"/>
+				<staticText>
+					<reportElement x="0" y="12" width="257" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement/>
+					<text><![CDATA[Optional downstream scope 3 emissions	]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="257" y="12" width="189" height="20" backcolor="#CCCCFF"/>
+					<box>
+						<pen lineWidth="0.25" lineColor="#000000"/>
+						<topPen lineWidth="0.25" lineColor="#000000"/>
+						<leftPen lineWidth="0.25" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.25" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<text><![CDATA[CO2-e(Metric Ton)]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch">
+			<staticText>
+				<reportElement x="279" y="24" width="186" height="20"/>
+				<textElement/>
+				<text><![CDATA[Powered by ibLaunch Energy, Inc.]]></text>
+			</staticText>
+			<image>
+				<reportElement x="475" y="0" width="79" height="54"/>
+				<imageExpression class="java.lang.String"><![CDATA["C:\\GHG\\ibLGHGCalc\\web-app\\images\\logo.gif"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="1" y="24" width="198" height="20"/>
+				<textElement/>
+				<text><![CDATA[Contact:  support@ibLaunchEnergy.com]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

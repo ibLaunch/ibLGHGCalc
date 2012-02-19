@@ -59,6 +59,7 @@ class OrganizationService {
       theOrganization.organizationWebsite= parameters.organizationWebsite
       theOrganization.organizationHQ= parameters.organizationHQ
       theOrganization.pointOfContact= parameters.pointOfContact
+      theOrganization.consolidationApproach= parameters.consolidationApproach
 
       //aclUtilService.addPermission(theOrganization, springSecurityService.authentication.name, BasePermission.ADMINISTRATION)
       println "springSecurityService.authentication.name : " + springSecurityService.authentication.name

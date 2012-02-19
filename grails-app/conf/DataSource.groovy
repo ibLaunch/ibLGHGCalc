@@ -21,7 +21,11 @@ hibernate {
 environments {
     development {
         dataSource {
-            //
+            
+            //--print GORM queries to console
+            //logSql = "true"
+            
+            
             dbCreate = "update" // one of 'create', 'create-drop','update'
             //url = "jdbc:mysql://localhost/ibLGHGCalc"
             url = "jdbc:mysql://localhost/iblghgcalcdb"

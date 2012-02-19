@@ -90,6 +90,10 @@ public class OptionalSourceInfoDS extends RestDataSource {
     //passengerMilesField.setEditorType(passengerMilesItem);
     passengerMilesField.setType(ibLUsers.floatSimpleType);
 
+    IblDataSourceFloatField annualNumberOfHotelNights = new IblDataSourceFloatField("annualNumberOfHotelNights", "Hotel Nights");
+    DataSourceTextField EF_Hotel = new DataSourceTextField("EF_Hotel", "Emission Factor for Hotel");
+    DataSourceTextField EF_Hotel_Unit = new DataSourceTextField("EF_Hotel_Unit", "Unit");
+    
     DataSourceTextField transportTypeField =
         new DataSourceTextField("transportType", "Product transport Type");
     TextItem transportTypeItem = new TextItem();
@@ -118,7 +122,9 @@ public class OptionalSourceInfoDS extends RestDataSource {
 
     setFields(idField,organizationIdField,optionalSourceTypeField,sourceDescriptionField,
                 vehicleTypeField,railTypeField,busTypeField,airTravelTypeField,
-                passengerMilesField,tonMilesField,fuelUsedBeginDateField,fuelUsedEndDateField);
+                passengerMilesField,tonMilesField,
+                annualNumberOfHotelNights,EF_Hotel,EF_Hotel_Unit,
+                fuelUsedBeginDateField,fuelUsedEndDateField);
     
 //setup operations
     //1. fetch

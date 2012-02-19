@@ -7,10 +7,12 @@ import java.util.Date;
 public class IblDateItem extends DateItem {
 
 	public IblDateItem(String name, Date beginDate, Date endDate, DateRangeValidator validateDateRange ) {
-            this.setName(name);
+            this.setName(name);         
             this.setStartDate(beginDate);
             this.setEndDate(endDate);
-            this.setValidators(validateDateRange);
+            //this.setDefaultValue(beginDate);
+            //this.setDefaultValue(endDate);            
+            this.setValidators(validateDateRange);            
             this.setValidateOnExit(Boolean.TRUE);
             this.setValidateOnChange(Boolean.TRUE);	
 	}

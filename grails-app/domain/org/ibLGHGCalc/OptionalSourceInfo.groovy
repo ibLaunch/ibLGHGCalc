@@ -28,6 +28,12 @@ class OptionalSourceInfo {
     String airTravelType
     //Double airTravelPassengerMiles
 
+//--Employee Business Travel - By Air    
+    Double annualNumberOfHotelNights  //(nights)
+    Double EF_Hotel
+    String EF_Hotel_Unit //(Kg CO2e/night)
+    
+    
 //--Common to all optional source types except for sources that used tonMiles se below
     Double passengerMiles
 
@@ -58,7 +64,11 @@ class OptionalSourceInfo {
             busType(nullable:true)
             airTravelType(nullable:true)
             transportType(nullable:true)
-                
+
+            annualNumberOfHotelNights (nullable:true)
+            EF_Hotel(nullable:true)
+            EF_Hotel_Unit(nullable:true, maxsize:255)
+        
             passengerMiles(nullable:true)
             tonMiles(nullable:true)
 

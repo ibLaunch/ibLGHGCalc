@@ -7,7 +7,7 @@ class RefridgerationAirConditioningInfo {
 	//-company-wide material balance fields
 	String gasType
 
-	Double inventoryChange
+	Double inventoryChange  
 	Double transferredAmount
 	Double capacityChange
 

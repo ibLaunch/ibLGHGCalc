@@ -30,7 +30,14 @@ public class TabLayout extends VLayout {
         this.dataForm = df;
         this.dataFormWindow = dfw;
         this.dataGrid = dg;
-
+        this.dataForm.setDataPath("/");
+        //set the width of the dialog window
+        this.dataFormWindow.setWidth("50%");
+        //this.dataForm.setAlign(Alignment.CENTER);
+        this.dataForm.setNumCols(4);//Align(Alignment.CENTER);
+        //this.dataForm.setColWidths("20%","30%","20%","30%");        
+        //this.dataForm.setItemLayout(FormLayoutType.TABLE)Overflow(Overflow.AUTO);
+        
         Label tabLabel = new Label(labelString);
         tabLabel.setHeight(15);
         tabLabel.setWidth100();
@@ -47,6 +54,8 @@ public class TabLayout extends VLayout {
                 //dataForm.setValidateOnExit(Boolean.TRUE);
                 dataForm.editNewRecord();
                 dataForm.setValues(getInitialValues());
+                //ListGrid testThisItem = (ListGrid)((IblGridEditorItem) dataForm.getItem("materialUsedBy_T1S_Info")).getCanvas();
+                //testThisItem.setData(new ListGridRecord[] {});
                 dataFormWindow.show();
             }
         });
@@ -59,11 +68,17 @@ public class TabLayout extends VLayout {
      }
 
     private HashMap getInitialValues() {
+            
         Date currentInventoryBeginDateMin = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryBeginDate").getValue();
         Date currentInventoryEndDateMax = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryEndDate").getValue();
         HashMap formDefaultValue = new HashMap();
         formDefaultValue.put("fuelUsedBeginDate", currentInventoryBeginDateMin);
         formDefaultValue.put("fuelUsedEndDate", currentInventoryEndDateMax);
+        
+        //below date fields are used starting scope3 changes in Dec 2011.  Goal is replace above date names with below for scope1 and scope2 as well.
+        formDefaultValue.put("dataBeginDate", currentInventoryBeginDateMin);
+        formDefaultValue.put("dataEndDate", currentInventoryEndDateMax);
+        
         return formDefaultValue;
     }
 }  

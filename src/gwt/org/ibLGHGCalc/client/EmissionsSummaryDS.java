@@ -10,6 +10,7 @@ import com.smartgwt.client.data.fields.DataSourceTextField;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
 import com.smartgwt.client.widgets.form.fields.DateItem;
+import com.smartgwt.client.widgets.form.fields.DateTimeItem;
 import com.smartgwt.client.widgets.form.fields.FloatItem;
 import com.smartgwt.client.widgets.form.fields.IntegerItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
@@ -250,8 +251,8 @@ public class EmissionsSummaryDS extends RestDataSource {
     reportFileNameField.setCanEdit(false);
     reportFileNameField.setHidden(Boolean.TRUE);
 
-    DataSourceDateField reportGeneratedDateField = new DataSourceDateField("lastUpdated", "Report Generation Date");
-    DateItem reportGeneratedDateItem = new DateItem();
+    DataSourceDateField reportGeneratedDateField = new DataSourceDateField("lastUpdated", "Summary Creation Date");
+    DateTimeItem reportGeneratedDateItem = new DateTimeItem();
     reportGeneratedDateField.setEditorType(reportGeneratedDateItem);
     reportGeneratedDateField.setCanEdit(false);
 
@@ -264,7 +265,9 @@ public class EmissionsSummaryDS extends RestDataSource {
             productTransportByHeavyDutyTrucksEmissionsField,productTransportByRailEmissionsField,
             productTransportByWaterAirEmissionsField,
             biomassStationaryCombustionEmissionsField,
-            biomassMobileCombustionEmissionsField, totalEmissionsField, totalOptionalEmissionsField, totalDirectEmissionsField, totalInDirectEmissionsField, totalNumberOfSourcesField, programTypeField, emissionsBeginDateField, emissionsEndDateField, reportFileNameField,reportGeneratedDateField);
+            biomassMobileCombustionEmissionsField, totalEmissionsField, totalOptionalEmissionsField, totalDirectEmissionsField, 
+            totalInDirectEmissionsField, totalNumberOfSourcesField, programTypeField, emissionsBeginDateField, emissionsEndDateField, 
+            reportFileNameField,reportGeneratedDateField);
     //setup operations
     //1. fetch
     OperationBinding fetch =

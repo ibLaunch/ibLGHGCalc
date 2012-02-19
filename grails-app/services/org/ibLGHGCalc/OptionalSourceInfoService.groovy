@@ -80,24 +80,12 @@ class OptionalSourceInfoService {
       calculateEmissionParameters.put("busType", parameters.busType)
       calculateEmissionParameters.put("airTravelType", parameters.airTravelType)
       calculateEmissionParameters.put("transportType", parameters.transportType)
-      if (parameters.passengerMiles){calculateEmissionParameters.put("passengerMiles",  parameters.passengerMiles.toDouble())}
-      if (parameters.tonMiles){calculateEmissionParameters.put("tonMiles",  parameters.tonMiles.toDouble())}
+      if (parameters.passengerMiles){calculateEmissionParameters.put("passengerMiles",  parameters.passengerMiles?.toDouble())}
+      if (parameters.tonMiles){calculateEmissionParameters.put("tonMiles",  parameters.tonMiles?.toDouble())}
+      if (parameters.annualNumberOfHotelNights){calculateEmissionParameters.put("annualNumberOfHotelNights",  parameters.annualNumberOfHotelNights?.toDouble())}
+      if (parameters.EF_Hotel){calculateEmissionParameters.put("EF_Hotel",  parameters.EF_Hotel?.toDouble())}
 
-/*
-	//-create parameters map to send to calcualteEmissions()
-	def calculateEmissionParameters = [:]
-	calculateEmissionParameters.put("fuelType",parameters.fuelType)
-	calculateEmissionParameters.put("boilerEfficiencyPercent", parameters.boilerEfficiencyPercent.toDouble())
-	calculateEmissionParameters.put("optionalSource", parameters.optionalSource.toDouble())
-	calculateEmissionParameters.put("optionalSourceUnit", parameters.optionalSourceUnit)
-	//--All the supplier provided emission factors are suppose to have some value or zero
-	calculateEmissionParameters.put("supplierCO2Multiplier", parameters.supplierCO2Multiplier.toDouble())
-	calculateEmissionParameters.put("supplierCH4Multiplier", parameters.supplierCH4Multiplier.toDouble())
-	calculateEmissionParameters.put("supplierN2OMultiplier", parameters.supplierN2OMultiplier.toDouble())
-	calculateEmissionParameters.put("supplierCO2MultiplierUnit", parameters.supplierCO2MultiplierUnit)
-	calculateEmissionParameters.put("supplierCH4MultiplierUnit", parameters.supplierCH4MultiplierUnit)
-	calculateEmissionParameters.put("supplierN2OMultiplierUnit", parameters.supplierN2OMultiplierUnit)
-*/
+      
       //-define emissions map
       def Map<String,String> emissions
 
@@ -109,10 +97,12 @@ class OptionalSourceInfoService {
         emissions = calculateEmissions(calculateEmissionParameters, programType, emissionsType)
 
         //set the emissions details
+        theEmissionsDetails.combinedEmissions = emissions.get("combinedEmissions").toDouble()
         theEmissionsDetails.CO2Emissions = emissions.get("CO2Emissions").toDouble()
         theEmissionsDetails.biomassCO2Emissions = emissions.get("biomassCO2Emissions").toDouble()
         theEmissionsDetails.CH4Emissions = emissions.get("CH4Emissions").toDouble()
         theEmissionsDetails.N2OEmissions = emissions.get("N2OEmissions").toDouble()
+        theEmissionsDetails.combinedEmissionsUnit = emissions.get("combinedEmissionsUnit")
         theEmissionsDetails.CO2EmissionsUnit = emissions.get("CO2EmissionsUnit")
         theEmissionsDetails.biomassCO2EmissionsUnit = emissions.get("biomassCO2EmissionsUnit")
         theEmissionsDetails.CH4EmissionsUnit = emissions.get("CH4EmissionsUnit")
@@ -132,10 +122,12 @@ class OptionalSourceInfoService {
           emissions = calculateEmissions(calculateEmissionParameters, programType, emissionsType)
           println "called calculateEmissions"
           //--update the emissionsDetails
+          theEmissionsDetails.combinedEmissions = emissions.get("combinedEmissions").toDouble()
           theEmissionsDetails.CO2Emissions = emissions.get("CO2Emissions").toDouble()
           theEmissionsDetails.CH4Emissions = emissions.get("CH4Emissions").toDouble()
           theEmissionsDetails.N2OEmissions = emissions.get("N2OEmissions").toDouble()
           theEmissionsDetails.biomassCO2Emissions = emissions.get("biomassCO2Emissions").toDouble()
+          theEmissionsDetails.combinedEmissionsUnit = emissions.get("combinedEmissionsUnit")
           theEmissionsDetails.CO2EmissionsUnit = emissions.get("CO2EmissionsUnit")
           theEmissionsDetails.biomassCO2EmissionsUnit = emissions.get("biomassCO2EmissionsUnit")
           theEmissionsDetails.CH4EmissionsUnit = emissions.get("CH4EmissionsUnit")
@@ -162,8 +154,11 @@ class OptionalSourceInfoService {
       theOptionalSourceInfo.airTravelType = parameters.airTravelType
       theOptionalSourceInfo.transportType = parameters.transportType
 
-      if(parameters.passengerMiles) { theOptionalSourceInfo.passengerMiles = parameters.passengerMiles.toDouble() }
-      if(parameters.tonMiles) { theOptionalSourceInfo.tonMiles = parameters.tonMiles.toDouble() }
+      if(parameters.passengerMiles) { theOptionalSourceInfo.passengerMiles = parameters.passengerMiles?.toDouble() }
+      if(parameters.tonMiles) { theOptionalSourceInfo.tonMiles = parameters.tonMiles?.toDouble() }
+      if(parameters.annualNumberOfHotelNights) { theOptionalSourceInfo.annualNumberOfHotelNights = parameters.annualNumberOfHotelNights?.toDouble() }
+      if(parameters.EF_Hotel) { theOptionalSourceInfo.EF_Hotel = parameters.EF_Hotel?.toDouble() }
+      theOptionalSourceInfo.EF_Hotel_Unit = parameters.EF_Hotel_Unit
 
       theOptionalSourceInfo.fuelUsedBeginDate = fuelUsedBeginDate
       theOptionalSourceInfo.fuelUsedEndDate = fuelUsedEndDate
@@ -214,10 +209,11 @@ class OptionalSourceInfoService {
 
     def Map<String,String> calculateEmissions(Map<String, String> parameters, String programType, String emissionsType){
         def emissions = [:]
-        def Double CO2Emissions
-        def Double biomassCO2Emissions
-        def Double CH4Emissions
-        def Double N2OEmissions
+        def Double combinedEmissions=0 
+        def Double CO2Emissions =0
+        def Double biomassCO2Emissions=0
+        def Double CH4Emissions=0
+        def Double N2OEmissions=0
 
         def theEF_OptionalSource_EPA
 
@@ -227,45 +223,51 @@ class OptionalSourceInfoService {
                     //- Get the emission factor object
                      theEF_OptionalSource_EPA = EF_VehicleType_EPA.findByVehicleType(parameters.vehicleType)
 
-                     CO2Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
-                     CH4Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
-                     N2OEmissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
+                     CO2Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
+                     CH4Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
+                     N2OEmissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
                      break
 
                 case"Employee Business Travel - By Air" :
                     //- Get the emission factor object
                      theEF_OptionalSource_EPA = EF_AirTravelType_EPA.findByAirTravelType(parameters.airTravelType)
 
-                     CO2Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
-                     CH4Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
-                     N2OEmissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
+                     CO2Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
+                     CH4Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
+                     N2OEmissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
                      break
 
+                case"Employee Business Travel - Hotel Stay" :
+                    //- Get the emission factor object
+                     combinedEmissions = parameters.annualNumberOfHotelNights?.toDouble() * parameters.EF_Hotel?.toDouble()
+                     
+                     break
+            
                 case ["Employee Business Travel - By Bus","Employee Commuting - By Bus"] :
                     //- Get the emission factor object
                      theEF_OptionalSource_EPA = EF_BusType_EPA.findByBusType(parameters.busType)
 
-                     CO2Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
-                     CH4Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
-                     N2OEmissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
+                     CO2Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
+                     CH4Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
+                     N2OEmissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
                      break
 
                 case ["Employee Business Travel - By Rail","Employee Commuting - By Rail"] :
                     //- Get the emission factor object
                      theEF_OptionalSource_EPA = EF_RailType_EPA.findByRailType(parameters.railType)
 
-                     CO2Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
-                     CH4Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
-                     N2OEmissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
+                     CO2Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
+                     CH4Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
+                     N2OEmissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
                      break
                  
                 case ["Product Transport - By Vehicle"]:
                     //- Get the emission factor object
                      theEF_OptionalSource_EPA = EF_ProductTransport_VehicleType_EPA.findByVehicleType(parameters.vehicleType)
 
-                     CO2Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
-                     CH4Emissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
-                     N2OEmissions = parameters.passengerMiles.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
+                     CO2Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
+                     CH4Emissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
+                     N2OEmissions = parameters.passengerMiles?.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
                      break
 
                 case ["Product Transport - By Heavy Duty Trucks", "Product Transport - By Rail", "Product Transport - By Water or Air"] :
@@ -279,9 +281,9 @@ class OptionalSourceInfoService {
                      */
                      theEF_OptionalSource_EPA = EF_ProductTransportType_EPA.findByTransportType(parameters.transportType)
 
-                     CO2Emissions = parameters.tonMiles.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
-                     CH4Emissions = parameters.tonMiles.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
-                     N2OEmissions = parameters.tonMiles.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
+                     CO2Emissions = parameters.tonMiles?.toDouble()*theEF_OptionalSource_EPA.CO2Multiplier
+                     CH4Emissions = parameters.tonMiles?.toDouble()*theEF_OptionalSource_EPA.CH4Multiplier
+                     N2OEmissions = parameters.tonMiles?.toDouble()*theEF_OptionalSource_EPA.N2OMultiplier
                      break
 
                default: 
@@ -292,10 +294,13 @@ class OptionalSourceInfoService {
              
              //--biomass CO2 is zero by default
              biomassCO2Emissions = 0
+             emissions.put("combinedEmissions", combinedEmissions)		 
              emissions.put("CO2Emissions", CO2Emissions)
              emissions.put("biomassCO2Emissions", biomassCO2Emissions)
              emissions.put("CH4Emissions", CH4Emissions)
              emissions.put("N2OEmissions", N2OEmissions)
+             
+             emissions.put("combinedEmissionsUnit", "Kg")
              emissions.put("CO2EmissionsUnit", 'Kg')
              //emissions.put("biomassCO2EmissionsUnit", theEF_OptionalSource_EPA.CO2MultiplierUnit)
              emissions.put("biomassCO2EmissionsUnit", '')

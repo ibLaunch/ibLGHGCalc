@@ -1,16 +1,12 @@
 package org.ibLGHGCalc.client;
 
-import com.google.gwt.core.client.GWT;
 import com.smartgwt.client.data.OperationBinding;
 import com.smartgwt.client.data.RestDataSource;
-import com.smartgwt.client.data.fields.DataSourceDateField;
 import com.smartgwt.client.data.fields.DataSourceDateTimeField;
 import com.smartgwt.client.data.fields.DataSourceIntegerField;
 import com.smartgwt.client.data.fields.DataSourceTextField;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.DSProtocol;
-import com.smartgwt.client.types.DateDisplayFormat;
-import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.form.fields.DateItem;
 import com.smartgwt.client.widgets.form.fields.StaticTextItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
@@ -113,11 +109,16 @@ public class OrganizationDS extends RestDataSource {
     TextItem pointOfContactItem = new TextItem();
     pointOfContactItem.setWidth("100%");
     pointOfContactField.setEditorType(pointOfContactItem);
+
+    DataSourceTextField consolidationApproach = new DataSourceTextField("consolidationApproach", "Consolidation Approach", FIELD_WIDTH, true);
+    //TextItem pointOfContactItem = new TextItem();
+    //consolidationApproach.setWidth("*");
+    //pointOfContactField.setEditorType(pointOfContactItem);
     
     setFields(idField, organizationNameField,currentInventoryBeginDateField, currentInventoryEndDateField,
                 organizationStreetAddress1Field,organizationStreetAddress2Field,organizationCityField,
                 organizationStateField,organizationZipCodeField,organizationCountryField,organizationWebsiteField,
-                organizationHQField,pointOfContactField);
+                organizationHQField,pointOfContactField,consolidationApproach);
     //setup operations
     //1. fetch
 

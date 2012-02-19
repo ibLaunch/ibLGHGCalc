@@ -31,7 +31,7 @@ public class UserOrganizationHeader extends VLayout {
   //public static final DateItem currentInventoryBeginDateInHeader = new DateItem("currentInventoryBeginDate");
   //public static final DateItem currentInventoryEndDateInHeader = new DateItem("currentInventoryEndDate");
   public static final StaticTextItem organizationName = new StaticTextItem("organizationName");
-  public static final IntegerItem organizationId = new IntegerItem();
+  public static final IntegerItem organizationId = new IntegerItem("organizationId");
   
   public static final StaticTextItem programType = new StaticTextItem("programType");
   public static StaticTextItem currentInventoryBeginDateInHeader = new StaticTextItem("currentInventoryBeginDate");

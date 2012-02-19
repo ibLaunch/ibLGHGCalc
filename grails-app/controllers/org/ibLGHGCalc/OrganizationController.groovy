@@ -69,6 +69,7 @@ class OrganizationController {
         currentInventoryBeginDate:organization.currentInventoryBeginDate?.format("yyyy-MM-dd"),
         currentInventoryEndDate:organization.currentInventoryEndDate?.format("yyyy-MM-dd"),
         programType: organization.programType,
+        consolidationApproach: organization.consolidationApproach,
 	dateCreated: organization.dateCreated?.format("yyyy-MM-dd"),
 	lastUpdated: organization.lastUpdated?.format("yyyy-MM-dd")
 

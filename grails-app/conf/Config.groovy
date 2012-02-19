@@ -95,14 +95,17 @@ environments {
         //basePath = "/usr/share/apache-tomcat-6.0.32/webapps/ibLGHGCalc"
         jasper.dir.reports = "/home/iblaunch/reports"
         basePath = "/home/iblaunch"
-        jasperReportFileName = "ghgReportProdDB.jrxml"
+        //jasperReportFileName = "ghgReportProdDB.jrxml"
+        jasperReportFileName = "ghgReportDevlDB_NEW_20120214_v2_PROD.jrxml"
         termsConditionsFileName = "iGreenLaunchTermsConditions.pdf"
     }
     development {
         //grails.serverURL = "http://localhost:8080/${appName}"
         grails.serverURL = "http://localhost:8080/"
         basePath = "C:/GHG/ibLGHGCalc"
-        jasperReportFileName = "ghgReportDevlDB_NEW.jasper"
+        //jasperReportFileName = "ghgReportDevlDB_NEW.jasper"
+        //jasperReportFileName = "ghgReportDevlDB_NEW_20120210.jasper"
+        jasperReportFileName = "ghgReportDevlDB_NEW_20120214_v2.jasper"
         jasper.dir.reports = 'C:/GHG/ibLGHGCalc/reports'
         termsConditionsFileName = "iGreenLaunchTermsConditions.pdf"
     }

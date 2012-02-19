@@ -39,10 +39,15 @@ import com.smartgwt.client.core.DataClass;
 import com.smartgwt.client.data.DSCallback;
 import com.smartgwt.client.data.DSRequest;
 import com.smartgwt.client.data.DSResponse;
+import com.smartgwt.client.data.RecordList;
 import com.smartgwt.client.data.RestDataSource;
 import com.smartgwt.client.data.SimpleType;
 import com.smartgwt.client.data.SimpleTypeFormatter;
+import com.smartgwt.client.data.SimpleTypeParser;
 import com.smartgwt.client.util.DateDisplayFormatter;
+import com.smartgwt.client.widgets.form.FormItemIfFunction;
+import com.smartgwt.client.widgets.form.fields.events.ChangeEvent;
+import com.smartgwt.client.widgets.form.fields.events.ChangeHandler;
 import com.smartgwt.client.widgets.form.validator.DateRangeValidator;
 import com.smartgwt.client.widgets.form.validator.FloatPrecisionValidator;
 import com.smartgwt.client.widgets.form.validator.IsFloatValidator;
@@ -63,6 +68,8 @@ import java.util.HashMap;
 import com.smartgwt.client.widgets.form.validator.RegExpValidator;
 import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
 import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -92,6 +99,13 @@ public class ibLUsers implements EntryPoint {
     private static final String EDIT_BUTTON_FIELD_WIDTH = "5%";
     private static final String REMOVE_BUTTON_FIELD_WIDTH = "9%";
 
+    private static final String NAME_FIELD_WIDTH = "15%";
+    private static final String TYPE_FIELD_WIDTH = "15%";
+    private static final String QUANTITY_FIELD_WIDTH = "5%";
+    private static final String UNIT_FIELD_WIDTH = "5%";
+    private static final String EF_UNIT_FIELD_WIDTH = "10%";
+    private static final String EF_FIELD_WIDTH = "5%";
+    
     //-- purchased Electricity fields width
     private static final String eGRIDSubregion_FIELD_WIDTH = "15%";
     private static final String purchasedElectricityUnit_FIELD_WIDTH = "5%";
@@ -101,8 +115,6 @@ public class ibLUsers implements EntryPoint {
 
     //-- purchased Electricity fields width
     //private static final String VEHICLE_TYPE_FIELD_WIDTH = "20%";
-
-
     private static final String PROGRAM_TYPE_FIELD_WIDTH = "15%";
     private static final String TOTAL_EMISSIONS_FIELD_WIDTH = "20%";
     private static final String REPORT_FILE_NAME_FIELD_WIDTH = "20%";
@@ -203,6 +215,7 @@ public class ibLUsers implements EntryPoint {
 
     //private final FileUploadDS fileUploadDS = FileUploadDS.getInstance();
 
+    
 //--Stationary Combustions
     private final VLayout stationaryCombustionLayout = new VLayout();
     private final TabSet stationaryCombustionTabSet = new TabSet();
@@ -246,7 +259,7 @@ public class ibLUsers implements EntryPoint {
     private final IblListGrid refridgerationAirConditioningDataGrid_3 = new IblListGrid(refridgerationAirConditioningInfoDS, 
                                                                                         refridgerationAirConditioningForm_3,
                                                                                         refridgerationAirConditioningFormWindow_3 );
-    
+
     /*private final ListGrid refridgerationAirConditioningDataGrid_3 = new ListGrid(){
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
@@ -922,6 +935,12 @@ private final ListGrid emissionsSummaryDataGrid = new ListGrid()
     private final EF_AirTravelType_EPADS theEF_AirTravelType_EPADS = EF_AirTravelType_EPADS.getInstance();
     private final IblListGrid employeeBusinessTravelByAirDataGrid = new IblListGrid(optionalSourceInfoDS, employeeBusinessTravelByAirForm, employeeBusinessTravelByAirFormWindow);
 
+//--employeeBusinessHotelStay
+    private final Window employeeBusinessTravelHotelStayFormWindow = new Window();
+    private final DynamicForm employeeBusinessTravelHotelStayForm = new DynamicForm();
+    //private final BusinessTravelInfo_HotelStay_DS businessTravelInfo_HotelStay_DS = BusinessTravelInfo_HotelStay_DS.getInstance();    
+    private final IblListGrid employeeBusinessTravelHotelStayDataGrid = new IblListGrid(optionalSourceInfoDS, employeeBusinessTravelHotelStayForm, employeeBusinessTravelHotelStayFormWindow);
+    
 //--employeeCommuting
     private final TabSet employeeCommutingTabSet = new TabSet();
     private final VLayout employeeCommutingLayout = new VLayout(15);
@@ -981,6 +1000,369 @@ private final ListGrid emissionsSummaryDataGrid = new ListGrid()
     private final DynamicForm wasteStreamCombustionForm = new DynamicForm();
     private final WasteStreamCombustionInfoDS wasteStreamCombustionInfoDS= WasteStreamCombustionInfoDS.getInstance();
     //private final ListGrid wasteStreamCombustionDataGrid = new ListGrid();
+
+//--Purchased Product
+    private final TabSet purchasedProductTabSet = new TabSet();
+    private final VLayout purchasedProductLayout = new VLayout(15);
+        
+//-- Purchased Product For Product Level method
+    private final Window purchasedProductFormWindow_1 = new Window();
+    private final DynamicForm purchasedProductForm_1 = new DynamicForm();
+    private final PurchasedProductInfoDS_1 purchasedProductInfoDS_1 = PurchasedProductInfoDS_1.getInstance();
+    private final IblListGrid purchasedProductDataGrid_1 = new IblListGrid(purchasedProductInfoDS_1, 
+                                                                                        purchasedProductForm_1,
+                                                                                        purchasedProductFormWindow_1);
+
+//-- Purchased Product For Supplier Specific Level method
+    private final Window purchasedProductFormWindow_2 = new Window();
+    private final Window purchasedProductFormWindow_2_1 = new Window();
+    private final DynamicForm purchasedProductForm_2 = new DynamicForm();
+    private final PurchasedProductInfoDS_2 purchasedProductInfoDS_2 = PurchasedProductInfoDS_2.getInstance();
+    /*
+    private final IblListGrid purchasedProductDataGrid_2 = new IblListGrid(purchasedProductInfoDS_2, 
+                                                                                        purchasedProductForm_2,
+                                                                                        purchasedProductFormWindow_2);
+     * 
+     */
+    private final MaterialUsedBy_T1S_InfoDS materialUsedBy_T1S_InfoDS = MaterialUsedBy_T1S_InfoDS.getInstance();    
+    private final MaterialTransportTo_T1S_InfoDS materialTransportTo_T1S_InfoDS = MaterialTransportTo_T1S_InfoDS.getInstance();        
+    private final WasteOutputFrom_T1S_InfoDS wasteOutputFrom_T1S_InfoDS = WasteOutputFrom_T1S_InfoDS.getInstance();        
+    
+    private final Criteria purchasedProductCriteria = new Criteria();
+    private final IblCompoundEditor cEditor = new IblCompoundEditor(materialUsedBy_T1S_InfoDS, purchasedProductCriteria);    
+    
+    private final IblListGrid purchasedProductDataGrid_2 = new IblListGrid(purchasedProductInfoDS_2, 
+                                                                                    purchasedProductForm_2,
+                                                                                    purchasedProductFormWindow_2){
+        @Override
+        protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
+
+            String fieldName = this.getFieldName(colNum);
+
+            if (fieldName.equals("materialUsedBy_T1S")) {
+                EditImageButton editImg = new EditImageButton();
+                editImg.addClickHandler(new ClickHandler() {
+                    public void onClick(ClickEvent event) {
+                        Date currentInventoryBeginDateMin = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryBeginDate").getValue();
+                        Date currentInventoryEndDateMax = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryEndDate").getValue();
+                        Integer purchasedProductInfoId = (Integer) record.getAttributeAsInt("id");
+                        String purchasedProductType = (String)record.getAttribute("purchasedProductType");
+
+                        Criteria criteria = new Criteria();
+                        criteria.addCriteria("inventoryYearBeginDate", currentInventoryBeginDateMin);
+                        criteria.addCriteria("inventoryYearEndDate", currentInventoryEndDateMax);            
+                        criteria.addCriteria("purchasedProductInfoId", purchasedProductInfoId);            
+                        criteria.addCriteria("purchasedProductType", purchasedProductType);            
+
+                        //Map<String, Integer> parentKeyMap = new HashMap<String, Integer>();
+                        //parentKeyMap.put("purchasedProductInfoId",purchasedProductInfoId);
+                        //String parentKey  = "purchasedProductInfoId";
+                        //Integer parentKeyValue= purchasedProductInfoId;
+                        //final IblCompoundEditor c2Editor = new IblCompoundEditor(materialUsedBy_T1S_InfoDS, criteria,getMaterialUsedBy_T1S_FormFields());
+                        //FormItem[] formFields = getMaterialUsedBy_T1S_FormFields();
+                        cEditor.setDatasourceAndCriteria(materialUsedBy_T1S_InfoDS, criteria, getMaterialUsedBy_T1S_FormFields());
+                        purchasedProductFormWindow_2_1.show();
+                    }
+                });
+
+                return editImg;
+            } else if (fieldName.equals("materialTransportTo_T1S")) {
+                //RemoveIButton button = new RemoveIButton();
+                EditImageButton editImg = new EditImageButton();
+                editImg.addClickHandler(new ClickHandler() {
+                    public void onClick(ClickEvent event) {
+                        Date currentInventoryBeginDateMin = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryBeginDate").getValue();
+                        Date currentInventoryEndDateMax = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryEndDate").getValue();
+                        Integer purchasedProductInfoId = (Integer) record.getAttributeAsInt("id");
+                        String purchasedProductType = (String)record.getAttribute("purchasedProductType");
+                        
+                        Criteria criteria = new Criteria();
+                        criteria.addCriteria("inventoryYearBeginDate", currentInventoryBeginDateMin);
+                        criteria.addCriteria("inventoryYearEndDate", currentInventoryEndDateMax);            
+                        criteria.addCriteria("purchasedProductInfoId", purchasedProductInfoId);            
+                        criteria.addCriteria("purchasedProductType", purchasedProductType);            
+                        
+                        cEditor.setDatasourceAndCriteria(materialTransportTo_T1S_InfoDS, criteria,getMaterialTransportTo_T1S_FormFields());
+                        purchasedProductFormWindow_2_1.show();
+                    }
+                });
+                return editImg;
+            } else if (fieldName.equals("wasteOutputFrom_T1S")) {
+                //RemoveIButton button = new RemoveIButton();
+                EditImageButton editImg = new EditImageButton();
+                editImg.addClickHandler(new ClickHandler() {
+                    public void onClick(ClickEvent event) {
+                        Date currentInventoryBeginDateMin = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryBeginDate").getValue();
+                        Date currentInventoryEndDateMax = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryEndDate").getValue();
+                        Integer purchasedProductInfoId = (Integer) record.getAttributeAsInt("id");
+                        String purchasedProductType = (String)record.getAttribute("purchasedProductType");
+                        
+                        Criteria criteria = new Criteria();
+                        criteria.addCriteria("inventoryYearBeginDate", currentInventoryBeginDateMin);
+                        criteria.addCriteria("inventoryYearEndDate", currentInventoryEndDateMax);            
+                        criteria.addCriteria("purchasedProductInfoId", purchasedProductInfoId);            
+                        criteria.addCriteria("purchasedProductType", purchasedProductType);            
+                        
+                        cEditor.setDatasourceAndCriteria(wasteOutputFrom_T1S_InfoDS, criteria,getWasteOutputFrom_T1S_FormFields());
+                        purchasedProductFormWindow_2_1.show();
+                    }
+                });
+                return editImg;
+            } else {
+                return null;
+            }
+        }
+    };
+         
+//-- Purchased Product For Material or Spend-Based Calculation Method
+    private final Window purchasedProductFormWindow_3 = new Window();
+    private final DynamicForm purchasedProductForm_3 = new DynamicForm();
+    private final PurchasedProductInfoDS_3 purchasedProductInfoDS_3 = PurchasedProductInfoDS_3.getInstance();
+    private final IblListGrid purchasedProductDataGrid_3 = new IblListGrid(purchasedProductInfoDS_3, 
+                                                                                        purchasedProductForm_3,
+                                                                                        purchasedProductFormWindow_3);
+    
+    
+    
+//--PurchasedEnergyInfo
+    private final TabSet purchasedEnergyTabSet = new TabSet();
+    private final VLayout purchasedEnergyLayout = new VLayout(15);
+/*
+    private final PurchasedEnergyInfoDS purchasedEnergyInfoDS = PurchasedEnergyInfoDS.getInstance();
+  
+    private final Window purchasedEnergyFormWindow = new Window();
+    private final DynamicForm purchasedEnergyForm = new DynamicForm();
+    private final IblListGrid purchasedEnergyDataGrid = new IblListGrid(purchasedEnergyInfoDS, 
+                                                                                        purchasedEnergyForm,
+                                                                                        purchasedEnergyFormWindow);
+*/    
+
+    private final PurchasedEnergyInfoDS_1 purchasedEnergyInfoDS_1 = PurchasedEnergyInfoDS_1.getInstance();    
+    private final Window purchasedEnergyFormWindow_1 = new Window();
+    private final DynamicForm purchasedEnergyForm_1 = new DynamicForm();
+    private final IblListGrid purchasedEnergyDataGrid_1 = new IblListGrid(purchasedEnergyInfoDS_1, 
+                                                                                        purchasedEnergyForm_1,
+                                                                                        purchasedEnergyFormWindow_1);
+
+    private final PurchasedEnergyInfoDS_2 purchasedEnergyInfoDS_2 = PurchasedEnergyInfoDS_2.getInstance();    
+    private final Window purchasedEnergyFormWindow_2 = new Window();
+    private final DynamicForm purchasedEnergyForm_2 = new DynamicForm();
+    private final IblListGrid purchasedEnergyDataGrid_2 = new IblListGrid(purchasedEnergyInfoDS_2, 
+                                                                                        purchasedEnergyForm_2,
+                                                                                        purchasedEnergyFormWindow_2);
+
+    private final PurchasedEnergyInfoDS_3 purchasedEnergyInfoDS_3 = PurchasedEnergyInfoDS_3.getInstance();    
+    private final Window purchasedEnergyFormWindow_3 = new Window();
+    private final DynamicForm purchasedEnergyForm_3 = new DynamicForm();
+    private final IblListGrid purchasedEnergyDataGrid_3 = new IblListGrid(purchasedEnergyInfoDS_3, 
+                                                                                        purchasedEnergyForm_3,
+                                                                                        purchasedEnergyFormWindow_3);
+
+    private final PurchasedEnergyInfoDS_4 purchasedEnergyInfoDS_4 = PurchasedEnergyInfoDS_4.getInstance();        
+    private final Window purchasedEnergyFormWindow_4 = new Window();
+    private final DynamicForm purchasedEnergyForm_4 = new DynamicForm();
+    private final IblListGrid purchasedEnergyDataGrid_4 = new IblListGrid(purchasedEnergyInfoDS_4, 
+                                                                                        purchasedEnergyForm_4,
+                                                                                        purchasedEnergyFormWindow_4);
+    
+    
+//--Transportation
+    private final TabSet transportationTabSet = new TabSet();
+    private final VLayout transportationLayout = new VLayout(15);
+        
+//--Transportation For Fuel Based Method -  transport emission		
+    private final Window transportationFormWindow_1 = new Window();
+    private final DynamicForm transportationForm_1 = new DynamicForm();
+    private final TransportationInfoDS_1 transportationInfoDS_1 = TransportationInfoDS_1.getInstance();
+    private final IblListGrid transportationDataGrid_1 = new IblListGrid(transportationInfoDS_1, 
+                                                                                        transportationForm_1,
+                                                                                        transportationFormWindow_1);
+    
+//--Transportation For Fuel Based Method -  transport emission		
+    private final Window transportationFormWindow_2 = new Window();
+    private final DynamicForm transportationForm_2 = new DynamicForm();
+    private final TransportationInfoDS_2 transportationInfoDS_2 = TransportationInfoDS_2.getInstance();
+    private final IblListGrid transportationDataGrid_2 = new IblListGrid(transportationInfoDS_2, 
+                                                                                        transportationForm_2,
+                                                                                        transportationFormWindow_2);
+//--Distribution
+    private final TabSet distributionTabSet = new TabSet();
+    private final VLayout distributionLayout = new VLayout(15);
+        
+//-- Distribution For Site Specific Method - distribution emission								
+    private final Window distributionFormWindow_1 = new Window();
+    private final DynamicForm distributionForm_1 = new DynamicForm();
+    private final DistributionInfoDS_1 distributionInfoDS_1 = DistributionInfoDS_1.getInstance();
+    private final IblListGrid distributionDataGrid_1 = new IblListGrid(distributionInfoDS_1, 
+                                                                                        distributionForm_1,
+                                                                                        distributionFormWindow_1);    
+//-- Distribution For Site Specific Method - distribution emission								
+    private final Window distributionFormWindow_2 = new Window();
+    private final DynamicForm distributionForm_2 = new DynamicForm();
+    private final DistributionInfoDS_2 distributionInfoDS_2 = DistributionInfoDS_2.getInstance();
+    private final IblListGrid distributionDataGrid_2 = new IblListGrid(distributionInfoDS_2, 
+                                                                                        distributionForm_2,
+                                                                                        distributionFormWindow_2);
+
+//--WasteGeneratedInOperationsInfo
+    private final TabSet wasteGeneratedInOperationsTabSet = new TabSet();
+    private final VLayout wasteGeneratedInOperationsLayout = new VLayout(15);
+
+    private final WasteGeneratedInOperationsInfoDS_1 wasteGeneratedInOperationsInfoDS_1 = WasteGeneratedInOperationsInfoDS_1.getInstance();    
+    private final Window wasteGeneratedInOperationsFormWindow_1 = new Window();
+    private final DynamicForm wasteGeneratedInOperationsForm_1 = new DynamicForm();
+    private final IblListGrid wasteGeneratedInOperationsDataGrid_1 = new IblListGrid(wasteGeneratedInOperationsInfoDS_1, 
+                                                                                        wasteGeneratedInOperationsForm_1,
+                                                                                        wasteGeneratedInOperationsFormWindow_1);
+
+    private final WasteGeneratedInOperationsInfoDS_2 wasteGeneratedInOperationsInfoDS_2 = WasteGeneratedInOperationsInfoDS_2.getInstance();    
+    private final Window wasteGeneratedInOperationsFormWindow_2 = new Window();
+    private final DynamicForm wasteGeneratedInOperationsForm_2 = new DynamicForm();
+    private final IblListGrid wasteGeneratedInOperationsDataGrid_2 = new IblListGrid(wasteGeneratedInOperationsInfoDS_2, 
+                                                                                        wasteGeneratedInOperationsForm_2,
+                                                                                        wasteGeneratedInOperationsFormWindow_2);
+  //--Business Travel Info
+    private final TabSet businessTravelTabSet = new TabSet();
+    private final VLayout businessTravelLayout = new VLayout(15);
+
+    private final BusinessTravelInfoDS businessTravelInfoDS = BusinessTravelInfoDS.getInstance();    
+    private final Window businessTravelFormWindow = new Window();
+    private final DynamicForm businessTravelForm = new DynamicForm();
+    private final IblListGrid businessTravelDataGrid = new IblListGrid(businessTravelInfoDS, 
+                                                                                        businessTravelForm,
+                                                                                        businessTravelFormWindow);
+
+    //Leased Assets Info
+    private final TabSet leasedAssetsTabSet = new TabSet();
+    private final VLayout leasedAssetsLayout = new VLayout(15);
+    
+    private final LeasedAssetsInfoDS_1 leasedAssetsInfoDS_1 = LeasedAssetsInfoDS_1.getInstance();    
+    private final Window leasedAssetsFormWindow_1 = new Window();
+    private final DynamicForm leasedAssetsForm_1 = new DynamicForm();
+    private final IblListGrid leasedAssetsDataGrid_1 = new IblListGrid(leasedAssetsInfoDS_1, 
+                                                                                        leasedAssetsForm_1,
+                                                                                        leasedAssetsFormWindow_1);
+
+    private final LeasedAssetsInfoDS_2 leasedAssetsInfoDS_2 = LeasedAssetsInfoDS_2.getInstance();    
+    private final Window leasedAssetsFormWindow_2 = new Window();
+    private final DynamicForm leasedAssetsForm_2 = new DynamicForm();
+    private final IblListGrid leasedAssetsDataGrid_2 = new IblListGrid(leasedAssetsInfoDS_2, 
+                                                                                        leasedAssetsForm_2,
+                                                                                        leasedAssetsFormWindow_2);    
+
+    
+    //Processing Of Sold Products Info
+    private final TabSet processingOfSoldProductsTabSet = new TabSet();
+    private final VLayout processingOfSoldProductsLayout = new VLayout(15);
+    
+    private final ProcessingOfSoldProductsInfoDS_1 processingOfSoldProductsInfoDS_1 = ProcessingOfSoldProductsInfoDS_1.getInstance();    
+    private final Window processingOfSoldProductsFormWindow_1 = new Window();
+    private final DynamicForm processingOfSoldProductsForm_1 = new DynamicForm();
+    private final IblListGrid processingOfSoldProductsDataGrid_1 = new IblListGrid(processingOfSoldProductsInfoDS_1, 
+                                                                                        processingOfSoldProductsForm_1,
+                                                                                        processingOfSoldProductsFormWindow_1);
+
+    private final ProcessingOfSoldProductsInfoDS_2 processingOfSoldProductsInfoDS_2 = ProcessingOfSoldProductsInfoDS_2.getInstance();    
+    private final Window processingOfSoldProductsFormWindow_2 = new Window();
+    private final DynamicForm processingOfSoldProductsForm_2 = new DynamicForm();
+    private final IblListGrid processingOfSoldProductsDataGrid_2 = new IblListGrid(processingOfSoldProductsInfoDS_2, 
+                                                                                        processingOfSoldProductsForm_2,
+                                                                                        processingOfSoldProductsFormWindow_2);    
+    
+    
+
+    //DirectUsePhaseEmissions Info
+    private final TabSet directUsePhaseEmissionsTabSet = new TabSet();
+    private final VLayout directUsePhaseEmissionsLayout = new VLayout(15);
+    
+    private final DirectUsePhaseEmissionsInfoDS_1 directUsePhaseEmissionsInfoDS_1 = DirectUsePhaseEmissionsInfoDS_1.getInstance();    
+    private final Window directUsePhaseEmissionsFormWindow_1 = new Window();
+    private final DynamicForm directUsePhaseEmissionsForm_1 = new DynamicForm();
+    private final IblListGrid directUsePhaseEmissionsDataGrid_1 = new IblListGrid(directUsePhaseEmissionsInfoDS_1, 
+                                                                                        directUsePhaseEmissionsForm_1,
+                                                                                        directUsePhaseEmissionsFormWindow_1);
+
+    private final DirectUsePhaseEmissionsInfoDS_2 directUsePhaseEmissionsInfoDS_2 = DirectUsePhaseEmissionsInfoDS_2.getInstance();    
+    private final Window directUsePhaseEmissionsFormWindow_2 = new Window();
+    private final DynamicForm directUsePhaseEmissionsForm_2 = new DynamicForm();
+    private final IblListGrid directUsePhaseEmissionsDataGrid_2 = new IblListGrid(directUsePhaseEmissionsInfoDS_2, 
+                                                                                        directUsePhaseEmissionsForm_2,
+                                                                                        directUsePhaseEmissionsFormWindow_2);    
+																						
+    private final DirectUsePhaseEmissionsInfoDS_3 directUsePhaseEmissionsInfoDS_3 = DirectUsePhaseEmissionsInfoDS_3.getInstance();    
+    private final Window directUsePhaseEmissionsFormWindow_3 = new Window();
+    private final DynamicForm directUsePhaseEmissionsForm_3 = new DynamicForm();
+    private final IblListGrid directUsePhaseEmissionsDataGrid_3 = new IblListGrid(directUsePhaseEmissionsInfoDS_3, 
+                                                                                        directUsePhaseEmissionsForm_3,
+                                                                                        directUsePhaseEmissionsFormWindow_3);    
+
+
+    //InDirectUsePhaseEmissions Info
+    private final TabSet inDirectUsePhaseEmissionsTabSet = new TabSet();
+    private final VLayout inDirectUsePhaseEmissionsLayout = new VLayout(15);
+    
+    private final InDirectUsePhaseEmissionsInfoDS_1 inDirectUsePhaseEmissionsInfoDS_1 = InDirectUsePhaseEmissionsInfoDS_1.getInstance();    
+    private final Window inDirectUsePhaseEmissionsFormWindow_1 = new Window();
+    private final DynamicForm inDirectUsePhaseEmissionsForm_1 = new DynamicForm();
+    private final IblListGrid inDirectUsePhaseEmissionsDataGrid_1 = new IblListGrid(inDirectUsePhaseEmissionsInfoDS_1, 
+                                                                                        inDirectUsePhaseEmissionsForm_1,
+                                                                                        inDirectUsePhaseEmissionsFormWindow_1);
+
+    private final InDirectUsePhaseEmissionsInfoDS_2 inDirectUsePhaseEmissionsInfoDS_2 = InDirectUsePhaseEmissionsInfoDS_2.getInstance();    
+    private final Window inDirectUsePhaseEmissionsFormWindow_2 = new Window();
+    private final DynamicForm inDirectUsePhaseEmissionsForm_2 = new DynamicForm();
+    private final IblListGrid inDirectUsePhaseEmissionsDataGrid_2 = new IblListGrid(inDirectUsePhaseEmissionsInfoDS_2, 
+                                                                                        inDirectUsePhaseEmissionsForm_2,
+                                                                                        inDirectUsePhaseEmissionsFormWindow_2);    
+
+
+    //endOfLifeTreatmentOfSoldProductsInfo
+    private final TabSet endOfLifeTreatmentOfSoldProductsTabSet = new TabSet();
+    private final VLayout endOfLifeTreatmentOfSoldProductsLayout = new VLayout(15);
+    
+    private final EndOfLifeTreatmentOfSoldProductsInfoDS endOfLifeTreatmentOfSoldProductsInfoDS = EndOfLifeTreatmentOfSoldProductsInfoDS.getInstance();    
+    private final Window endOfLifeTreatmentOfSoldProductsFormWindow = new Window();
+    private final DynamicForm endOfLifeTreatmentOfSoldProductsForm = new DynamicForm();
+    private final IblListGrid endOfLifeTreatmentOfSoldProductsDataGrid = new IblListGrid(endOfLifeTreatmentOfSoldProductsInfoDS, 
+                                                                                        endOfLifeTreatmentOfSoldProductsForm,
+                                                                                        endOfLifeTreatmentOfSoldProductsFormWindow);
+
+
+//--FranchisesInfo
+    private final TabSet franchisesTabSet = new TabSet();
+    private final VLayout franchisesLayout = new VLayout(15);
+
+    private final FranchisesInfoDS_1 franchisesInfoDS_1 = FranchisesInfoDS_1.getInstance();    
+    private final Window franchisesFormWindow_1 = new Window();
+    private final DynamicForm franchisesForm_1 = new DynamicForm();
+    private final IblListGrid franchisesDataGrid_1 = new IblListGrid(franchisesInfoDS_1, 
+                                                                                        franchisesForm_1,
+                                                                                        franchisesFormWindow_1);
+
+    private final FranchisesInfoDS_2 franchisesInfoDS_2 = FranchisesInfoDS_2.getInstance();    
+    private final Window franchisesFormWindow_2 = new Window();
+    private final DynamicForm franchisesForm_2 = new DynamicForm();
+    private final IblListGrid franchisesDataGrid_2 = new IblListGrid(franchisesInfoDS_2, 
+                                                                                        franchisesForm_2,
+                                                                                        franchisesFormWindow_2);
+
+//--InvestmentsInfo
+    private final TabSet investmentsTabSet = new TabSet();
+    private final VLayout investmentsLayout = new VLayout(15);
+
+    private final InvestmentsInfoDS_1 investmentsInfoDS_1 = InvestmentsInfoDS_1.getInstance();    
+    private final Window investmentsFormWindow_1 = new Window();
+    private final DynamicForm investmentsForm_1 = new DynamicForm();
+    private final IblListGrid investmentsDataGrid_1 = new IblListGrid(investmentsInfoDS_1, 
+                                                                                        investmentsForm_1,
+                                                                                        investmentsFormWindow_1);
+
+    private final InvestmentsInfoDS_2 investmentsInfoDS_2 = InvestmentsInfoDS_2.getInstance();    
+    private final Window investmentsFormWindow_2 = new Window();
+    private final DynamicForm investmentsForm_2 = new DynamicForm();
+    private final IblListGrid investmentsDataGrid_2 = new IblListGrid(investmentsInfoDS_2, 
+                                                                                        investmentsForm_2,
+                                                                                        investmentsFormWindow_2);
     
     private final IblListGrid wasteStreamCombustionDataGrid = new IblListGrid(wasteStreamCombustionInfoDS, wasteStreamCombustionForm, wasteStreamCombustionFormWindow);
 
@@ -1098,6 +1480,7 @@ public void onModuleLoad() {
         //DateTimeFormat dateFormatter = DateTimeFormat.getFormat("dd-MM-yyyy"+" "+"h:mm:a" );
         //return displayDateFormatter.format(date, TimeZone.createTimeZone(0));
         return displayDateFormatter.format(date);
+        //return inputDateFormatter.format(date);
         /*
         final DateTimeFormat dateFormatter = DateTimeFormat.getFormat("MMM d, yyyy");
         String format = dateFormatter.format(date);
@@ -1113,10 +1496,39 @@ public void onModuleLoad() {
             @Override
             public String format(Object value, DataClass field,
                             DataBoundComponent component, Record record) {
-                    if (value == null) return "";
-                    return floatSimpleFormat.format(Double.valueOf(value.toString()));
+                    //if (value == null) return "";                    
+                    //if (value == "") return "";
+                    String valueString = value.toString().replaceAll("&nbsp;","");
+                    if (valueString.isEmpty()) return null;
+                    //if (value.toString().replaceAll("&nbsp;","").equals("")) return "";
+                    //return floatSimpleFormat.format(Double.valueOf(value.toString().replaceAll("&nbsp;","")));
+                    return floatSimpleFormat.format(Double.valueOf(valueString));
             }
     });
+
+/*    
+//-Below is not working as of 08/04/2011    
+    floatSimpleType.setEditParser(new SimpleTypeParser() {
+        @Override
+        public Object parseInput(String value, DataClass field,
+                DataBoundComponent component, Record record) {
+            if (value==null) value = "0";
+            try {
+                // Remove anything but digits and the decimal point
+                String strippedValue = value.toString().replaceAll("[^0-9\\.]", "");
+                Double valueDouble = Double.valueOf(strippedValue.length()==0 ? "0" : strippedValue);
+               // if ("0".equals(IPGui.homeCurrencyDecimals))
+                //    return valueDouble/100d;
+                //else
+                    return valueDouble;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+    });    
+  
+* 
+*/
     floatSimpleType.register();
 
 
@@ -1603,6 +2015,7 @@ public void onModuleLoad() {
     optionalEmissionsSourcesSection.setResizeable(Boolean.FALSE);
     //optionalEmissionsSourcesSection.setHeight(150);
 
+    /*
     Label getEmployeeBusinessTravelInfoLabel = getSectionLink("Employee Business Travel", new ClickHandler() {
        @Override
        public void onClick(ClickEvent event) {
@@ -1626,7 +2039,193 @@ public void onModuleLoad() {
        }
     });
     optionalEmissionsSourcesSection.addItem(getProductTransportInfoLabel);
+*/
+    
+    Label purchasedGoodsAndServicesLabel = getSectionLink("Purchased Goods and Services", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Purchased Goods and Services");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(purchasedGoodsAndServicesLabel);
+/*    
+//------------------------------------------------
+    Label capitalGoodsLabel = getSectionLink("Capital Goods", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Capital Goods");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(capitalGoodsLabel);	
+*/
+//------------------------------------------------
+    Label purchasedEnergyLabel = getSectionLink("Fuel and Energy Related Activities", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Purchased Energy");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(purchasedEnergyLabel);
+/*        
+//------------------------------------------------
+    Label upstreamEmissionsFromPurchasedFuelLabel = getSectionLink("Upstream Emissions From Purchased Fuel", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Upstream Emissions From Purchased Fuel");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(upstreamEmissionsFromPurchasedFuelLabel);	
 
+	
+//------------------------------------------------
+    Label upstreamEmissionsFromPurchasedElectricityLabel = getSectionLink("Upstream Emissions From Purchased Electricity", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Upstream Emissions From Purchased Electricity");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(upstreamEmissionsFromPurchasedElectricityLabel);	
+
+//------------------------------------------------
+    Label emissionsFromTransAndDistLossesLabel = getSectionLink("Emissions From Transmission And Distribution Losses", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Emissions From Transmission And Distribution Losses");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(emissionsFromTransAndDistLossesLabel);	
+
+//------------------------------------------------
+
+    Label emissionsFromPowerPurchasedAndSoldLabel = getSectionLink("Emissions From Power Purchased And Sold", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Emissions From Power Purchased And Sold");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(emissionsFromPowerPurchasedAndSoldLabel);	
+*/
+//------------------------------------------------
+    Label transportationLabel = getSectionLink("Transportation", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Transportation");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(transportationLabel);	
+
+//------------------------------------------------
+    Label distributionLabel = getSectionLink("Distribution", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Distribution");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(distributionLabel);	
+
+//------------------------------------------------
+    Label wasteGeneratedInOperationsLabel = getSectionLink("Waste Generated In Operations", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Waste Generated In Operations");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(wasteGeneratedInOperationsLabel);	
+
+//------------------------------------------------
+/*
+    Label businessTravelLabel = getSectionLink("Business Travel", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Business Travel");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(businessTravelLabel);	
+*/
+    Label getEmployeeBusinessTravelInfoLabel = getSectionLink("Employee Business Travel", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Employee Business Travel");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(getEmployeeBusinessTravelInfoLabel);
+    
+//------------------------------------------------
+    Label employeeCommutingLabel = getSectionLink("Employee Commuting", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Employee Commuting");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(employeeCommutingLabel);	
+
+//------------------------------------------------
+    Label leasedAssetsLabel = getSectionLink("Leased Assets", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Leased Assets");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(leasedAssetsLabel);	
+
+
+//------------------------------------------------
+    Label processingOfSoldProductsLabel = getSectionLink("Processing Of Sold Products", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Processing Of Sold Products");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(processingOfSoldProductsLabel);	
+
+//------------------------------------------------
+    Label directUsePhaseEmissionsForSoldProductsLabel = getSectionLink("Direct Use Phase Emissions For Sold Products", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Direct Use Phase Emissions For Sold Products");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(directUsePhaseEmissionsForSoldProductsLabel);	
+
+//------------------------------------------------
+    Label inDirectUsePhaseEmissionsForSoldProductsLabel = getSectionLink("In-Direct Use Phase Emissions For Sold Products", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("In-Direct Use Phase Emissions For Sold Products");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(inDirectUsePhaseEmissionsForSoldProductsLabel);	
+
+//------------------------------------------------
+
+    Label endOfLifeTreatmentOfSoldProductsLabel = getSectionLink("End Of Life Treatment Of Sold Products", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("End Of Life Treatment Of Sold Products");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(endOfLifeTreatmentOfSoldProductsLabel);	
+
+
+//------------------------------------------------
+    Label franchisesLabel = getSectionLink("Franchises", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Franchises");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(franchisesLabel);	
+
+//------------------------------------------------
+
+    Label investmentsLabel = getSectionLink("Investments", new ClickHandler() {
+       @Override
+       public void onClick(ClickEvent event) {
+          displayEmissionSourceInfo("Investments");
+       }
+    });
+    optionalEmissionsSourcesSection.addItem(investmentsLabel);	
+           
     leftSectionStack.addSection(optionalEmissionsSourcesSection);
 
 //-- Calculate Emissions Section
@@ -1785,7 +2384,10 @@ public void onModuleLoad() {
     tabSet.setWidth100();
     tabSet.setHeight100();
 
-
+//-Set the ID for dynamic Form
+    
+    purchasedProductForm_2.setID("purchasedProductForm_2");    
+    
 //intitialize generic components
     initializeDataLayout();
     initializeDataForm();
@@ -1911,6 +2513,10 @@ public void onModuleLoad() {
     employeeCommutingByBusTab();
     initEmployeeCommutingByBusEditForm();
 
+    //--employeeBusinessTravelHotelStay
+    employeeBusinessTravelHotelStayTab();
+    initEmployeeBusinessTravelHotelStayEditForm();
+    
     //--productTransportByVehicle
     productTransportByVehicleTab();
     initProductTransportByVehicleEditForm();
@@ -1926,7 +2532,60 @@ public void onModuleLoad() {
     //--productTransportByWaterAir
     productTransportByWaterAirTab();
     initProductTransportByWaterAirEditForm();
+    
+    //--purchasedProduct - Goods, Service, Capital Goods
+    purchasedProductTab();
+    initPurchasedProductEditForm();
 
+    //Purchased energy Info    
+    purchasedEnergyInfoTab();
+    initPurchasedEnergyEditForm();
+    
+    //Transportation Emissions
+    transportationInfoTab();
+    initTransportationEditForm();
+
+    //Distribution Emissions
+    distributionInfoTab();
+    initDistributionEditForm();
+ 
+    //wasteGeneratedInOperationsInfo
+    wasteGeneratedInOperationsInfoTab();
+    initWasteGeneratedInOperationsEditForm();
+    
+    //businessTravelInfo
+    businessTravelInfoTab();
+    initBusinessTravelEditForm();
+    
+    //leasedAssetsInfo
+    leasedAssetsInfoTab();
+    initLeasedAssetsEditForm();
+    
+    //processingOfSoldProductsInfo
+    processingOfSoldProductsInfoTab();
+    initProcessingOfSoldProductsEditForm();
+
+    //directUsePhaseEmissions
+    directUsePhaseEmissionsInfoTab();
+    initDirectUsePhaseEmissionsEditForm();
+
+    //franchises
+    inDirectUsePhaseEmissionsInfoTab();
+    initInDirectUsePhaseEmissionsEditForm();
+    
+    
+    //endOfLifeTreatmentOfSoldProducts
+    endOfLifeTreatmentOfSoldProductsInfoTab();
+    initEndOfLifeTreatmentOfSoldProductsEditForm();
+
+    //franchisesInfo
+    franchisesInfoTab();
+    initFranchisesEditForm();
+
+    //investmentsInfo
+    investmentsInfoTab();
+    initInvestmentsEditForm();    
+    
 //-- Add optinal emission tabset to Layouts
     employeeBusinessTravelLayout.addMember(employeeBusinessTravelTabSet);
     employeeCommutingLayout.addMember(employeeCommutingTabSet);
@@ -2322,9 +2981,9 @@ private void emissionsSummaryTab() {
         reportFileNameField.setBaseStyle("listgridField");
         reportFileNameField.setCellFormatter(new CellFormatter() {
             public String format(Object value, ListGridRecord record, int rowNum, int colNum) {
-                if (value == null) return null;
+                //if (value == null) return null;
                 try {
-                    return "Click to download";
+                    return "Click to download Report";
                 } catch (Exception e) {
                     return value.toString();
                 }
@@ -2415,8 +3074,27 @@ private void emissionsSummaryTab() {
                         Integer orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
                         //String fileName = record.getAttribute("reportFileName");
                         String emissionsSummaryReportId = (String)record.getAttribute("id");
-                        String url = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
-                        com.google.gwt.user.client.Window.open(url,null,null);
+                        
+                        String fullContextPath = GWT.getHostPageBaseURL();
+                        String[] contextPathArray = fullContextPath.split("/");
+                        String contextPath= contextPathArray[contextPathArray.length - 1];
+                        System.out.println("Context Path is: "+contextPath);
+                        //SC.say("contextPath is: " + contextPath);
+                        //String contextPath= fullContextPath.substring(fullContextPath.lastIndexOf('/') + 1);
+                        //HttpServletRequest request = this.getThreadLocalRequest();
+                        //String contextPath = ServletContext.getContextPath();
+                        
+                        
+                        //String url = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+                        //String url = "/"+contextPath+"/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+                        
+                        String reportUrl;
+                        if (contextPath.contains("igreenlaunch")) {
+                            reportUrl = "/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+                        } else {
+                            reportUrl = "/"+contextPath+"/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;        
+                        }                        
+                        com.google.gwt.user.client.Window.open(reportUrl,null,null);
                 }
             }
         });        
@@ -2533,18 +3211,37 @@ public static void initializeValidators(){
     validateDateRange.setErrorMessage("Date is not within reporting period");
     
     //IsFloatValidator floatValidator = new IsFloatValidator();
-    floatValidator.setErrorMessage("Not a valid float value");
+    //sfloatValidator.setErrorMessage("Not a valid float value");
 
-    //FloatPrecisionValidator floatPrecisionValidator = new FloatPrecisionValidator();
+    FloatPrecisionValidator floatPrecisionValidator = new FloatPrecisionValidator();
     floatPrecisionValidator.setErrorMessage("Need to have 2 decimal places");
 
 }
-private HashMap getInitialValues() {
+public static HashMap getInitialValues() {
     HashMap formDefaultValue = new HashMap();
     formDefaultValue.put("fuelUsedBeginDate", currentInventoryBeginDateMin);
     formDefaultValue.put("fuelUsedEndDate", currentInventoryEndDateMax);
+
+    formDefaultValue.put("dataBeginDate", currentInventoryBeginDateMin);
+    formDefaultValue.put("dataEndDate", currentInventoryEndDateMax);
+    
     return formDefaultValue;
 }
+
+public static Criteria getCurrentInventoryYear() {
+
+    Date currentInventoryBeginDateMin = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryBeginDate").getValue();
+    Date currentInventoryEndDateMax = (Date)UserOrganizationHeader.organizationSelectForm.getField("currentInventoryEndDate").getValue();
+    //Integer organizationId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
+
+    Criteria criteria = new Criteria();
+    criteria.addCriteria("inventoryYearBeginDate", currentInventoryBeginDateMin);
+    criteria.addCriteria("inventoryYearEndDate", currentInventoryEndDateMax);            
+    //criteria.addCriteria("organizationId", organizationId);            
+    
+    return criteria;
+}
+						
 
 private void stationaryCombustionTab() {
 
@@ -2913,6 +3610,33 @@ private void initEmployeeBusinessTravelByAirEditForm() {
                           employeeBusinessTravelByAirFormWindow, employeeBusinessTravelByAirDataGrid );
  }
 
+//--employeeBusinessTravelHotelStay
+private void employeeBusinessTravelHotelStayTab() {
+
+	//VLayout employeeBusinessTravelHotelStayLayout = new VLayout(15);
+	final ListGridField[] listGridFields = getOptionalSourceListGridFields("employeeBusinessTravelHotelStay");
+        //final ListGridField[] listGridFields = getBusinessTravelHotelStayListGridFields();
+	employeeBusinessTravelHotelStayDataGrid.setFields(listGridFields);
+
+	TabLayout employeeBusinessTravelHotelStayLayout = new TabLayout("Current Sources of Employee Business Travel Hotel Stay", employeeBusinessTravelHotelStayForm,
+	                                                     employeeBusinessTravelHotelStayFormWindow, employeeBusinessTravelHotelStayDataGrid);
+//--Defining employeeBusinessTravel By Vehicle
+	final Tab employeeBusinessTravelHotelStayTab = new Tab("Employee Business Travel Hotel Stay");
+	employeeBusinessTravelHotelStayTab.setPane(employeeBusinessTravelHotelStayLayout);
+
+//---Adding employeeBusinessTravel By Vehicle tab to tabSet
+	employeeBusinessTravelTabSet.addTab(employeeBusinessTravelHotelStayTab);
+}
+private void initEmployeeBusinessTravelHotelStayEditForm() {
+    FormItem[] formItemFields = getOptionalSourceFormFields("employeeBusinessTravelHotelStay");
+    //FormItem[] formItemFields = getBusinessTravelHotelStayFormFields();
+    employeeBusinessTravelHotelStayForm.setItems(formItemFields);
+    employeeBusinessTravelHotelStayForm.hideItem("optionalSourceType");
+    //employeeBusinessTravelHotelStayForm.hideItem("activityType");
+    setIbLFormWindow("Please enter employee business travel hotel stay information:", employeeBusinessTravelHotelStayForm,
+                          employeeBusinessTravelHotelStayFormWindow, employeeBusinessTravelHotelStayDataGrid );
+ }
+
 //--employeeCommutingByVehicle
 private void employeeCommutingByVehicleTab() {
 
@@ -3123,6 +3847,832 @@ private void initWasteStreamCombustionEditForm() {
 
  }
 
+//purchasedProduct
+private void purchasedProductTab() {
+
+        purchasedProductLayout.setWidth100();
+        purchasedProductLayout.setHeight100();
+
+	//--Product Level Method fields		
+        final ListGridField[] listGridFields_1 = getPurchasedProductListGridFields_1();
+        purchasedProductDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout purchasedProductTabLayout_1 = new TabLayout("Current purchased products(Goods, Services, Capital Goods) sources", purchasedProductForm_1,
+	                                                     purchasedProductFormWindow_1, purchasedProductDataGrid_1);
+
+ 	//--Supplier Specific Level Method fields		
+        final ListGridField[] listGridFields_2 = getPurchasedProductListGridFields_2_0();
+        purchasedProductDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout purchasedProductTabLayout_2 = new TabLayout("Current purchased products(Goods, Services, Capital Goods) sources", purchasedProductForm_2,
+	                                                     purchasedProductFormWindow_2, purchasedProductDataGrid_2);
+
+//---Temporary setting        
+        purchasedProductFormWindow_2_1.setShowShadow(true);
+        purchasedProductFormWindow_2_1.setIsModal(true);
+        purchasedProductFormWindow_2_1.setMinWidth(200);
+        purchasedProductFormWindow_2_1.setMinHeight(200);
+        purchasedProductFormWindow_2_1.setAutoSize(Boolean.TRUE);
+        purchasedProductFormWindow_2_1.setShowMinimizeButton(true);
+        purchasedProductFormWindow_2_1.setShowCloseButton(true);
+        purchasedProductFormWindow_2_1.setShowModalMask(true);
+        //purchasedProductFormWindow_2_1.centerInPage();
+        purchasedProductFormWindow_2_1.setAutoCenter(Boolean.TRUE);
+        //purchasedProductFormWindow_2_1.setTitle(windowTitleString);
+        //purchasedProductFormWindow_2_1.setStyleName("labels");
+        //purchasedProductFormWindow_2_1.addItem(dialog);
+        purchasedProductFormWindow_2_1.setDefaultLayoutAlign(Alignment.CENTER);
+        purchasedProductFormWindow_2_1.setTitle("Please eneter following values");
+        purchasedProductFormWindow_2_1.addItem(cEditor);  
+        
+        
+        
+        
+ 	//--Material or Spend-Based Calculation Method fields		
+        final ListGridField[] listGridFields_3 = getPurchasedProductListGridFields_3();
+        purchasedProductDataGrid_3.setFields(listGridFields_3);
+
+	TabLayout purchasedProductTabLayout_3 = new TabLayout("Current purchased products(Goods, Services, Capital Goods) sources", purchasedProductForm_3,
+	                                                     purchasedProductFormWindow_3, purchasedProductDataGrid_3);
+														 
+//--Defining Purchased Product tab
+        final Tab purchasedProductTab_1 = new Tab("Product Level Method");
+        purchasedProductTab_1.setPane(purchasedProductTabLayout_1);
+        
+	final Tab purchasedProductTab_2 = new Tab("Supplier Specific Level Method");		
+        purchasedProductTab_2.setPane(purchasedProductTabLayout_2);
+		
+        final Tab purchasedProductTab_3 = new Tab("Material or Spend-Based Calculation Method");		
+        purchasedProductTab_3.setPane(purchasedProductTabLayout_3);
+
+//---Adding Purchased Product tab to tabSet
+        purchasedProductTabSet.addTab(purchasedProductTab_1);
+	purchasedProductTabSet.addTab(purchasedProductTab_2);
+	purchasedProductTabSet.addTab(purchasedProductTab_3);
+        purchasedProductLayout.addMember(purchasedProductTabSet);
+}
+private void initPurchasedProductEditForm() {
+//-- Form_1 fields  -------------------------------------------------------------------
+
+    FormItem[] formItemFields_1 = getPurchasedProductFormFields_1();
+    purchasedProductForm_1.setItems(formItemFields_1);
+    purchasedProductForm_1.setDataSource(purchasedProductInfoDS_1);
+    purchasedProductForm_1.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter purchased products(Goods, Services, Capital Goods) information:", purchasedProductForm_1,
+                          purchasedProductFormWindow_1, purchasedProductDataGrid_1 );
+
+//-- Form_2 fields  -------------------------------------------------------------------
+    
+    FormItem[] formItemFields_2 = getPurchasedProductFormFields_2();
+    purchasedProductForm_2.setItems(formItemFields_2);
+    purchasedProductForm_2.setDataSource(purchasedProductInfoDS_2);       
+    purchasedProductForm_2.hideItem("methodType");
+    purchasedProductForm_2.setNumCols(6);
+
+/*
+    ListGrid materialUsedBy_T1S_InfoGrid = new ListGrid();    
+    materialUsedBy_T1S_InfoGrid.setID("materialUsedBy_T1S_Grid");
+    materialUsedBy_T1S_InfoGrid.setFields(getPurchasedProductListGridFields_2_2());
+    materialUsedBy_T1S_InfoGrid.setDataSource(materialUsedBy_T1S_InfoDS);
+    materialUsedBy_T1S_InfoGrid.setCanEdit(Boolean.TRUE); 
+    materialUsedBy_T1S_InfoGrid.setModalEditing(Boolean.TRUE);
+    materialUsedBy_T1S_InfoGrid.setEditEvent(ListGridEditEvent.CLICK);
+    materialUsedBy_T1S_InfoGrid.setListEndEditAction(RowEndEditAction.NEXT);
+    materialUsedBy_T1S_InfoGrid.setCanRemoveRecords(true);  
+    materialUsedBy_T1S_InfoGrid.setHeight(190);
+    materialUsedBy_T1S_InfoGrid.setWidth(190);
+    
+    setIbLFormWindow2("Please enter purchased products(Goods, Services, Capital Goods) information:", purchasedProductForm_2,
+                          purchasedProductFormWindow_2, purchasedProductDataGrid_2,materialUsedBy_T1S_InfoGrid  );          
+*/
+    
+    setIbLFormWindow("Please enter purchased products(Goods, Services, Capital Goods) information:", purchasedProductForm_2,
+                          purchasedProductFormWindow_2, purchasedProductDataGrid_2);          
+    
+//-- Form_3 fields  -------------------------------------------------------------------
+    FormItem[] formItemFields_3 = getPurchasedProductFormFields_3();
+    purchasedProductForm_3.setItems(formItemFields_3);
+    purchasedProductForm_3.setDataSource(purchasedProductInfoDS_3);        
+    purchasedProductForm_3.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter purchased products(Goods, Services, Capital Goods) information:", purchasedProductForm_3,
+                          purchasedProductFormWindow_3, purchasedProductDataGrid_3 );
+						  
+ }
+
+//purchasedEnergy
+private void purchasedEnergyInfoTab() {
+
+        purchasedEnergyLayout.setWidth100();
+        purchasedEnergyLayout.setHeight100();
+/*
+	//--Energy Level Method fields		
+        final ListGridField[] listGridFields = getPurchasedEnergyListGridFields();
+        purchasedEnergyDataGrid.setFields(listGridFields);
+
+      	TabLayout purchasedEnergyTabLayout = new TabLayout("Fuel and Energy Related Activities Not Included in Scope 1 and 2", purchasedEnergyForm,
+	                                                     purchasedEnergyFormWindow, purchasedEnergyDataGrid);
+											 
+        final Tab purchasedEnergyTab = new Tab("Fuel and Energy Related Activities Included in Scope 1 and 2");
+        purchasedEnergyTab.setPane(purchasedEnergyTabLayout);
+
+//---Adding tab to topTab
+        purchasedEnergyTabSet.addTab(purchasedEnergyTab);                 
+        purchasedEnergyLayout.addMember(purchasedEnergyTabSet);
+*/
+        
+	//--Upstream Emissions Of Purchased Fuels
+        final ListGridField[] listGridFields_1 = getPurchasedEnergyListGridFields_1();
+        purchasedEnergyDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout purchasedEnergyTabLayout_1 = new TabLayout("Upstream Emissions Of Purchased Fuels", purchasedEnergyForm_1,
+	                                                     purchasedEnergyFormWindow_1, purchasedEnergyDataGrid_1);
+
+ 	//--Upstream Emissions Of Purchased Energy
+        final ListGridField[] listGridFields_2 = getPurchasedEnergyListGridFields_2();
+        purchasedEnergyDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout purchasedEnergyTabLayout_2 = new TabLayout("Upstream Emissions Of Purchased Energy", purchasedEnergyForm_2,
+	                                                     purchasedEnergyFormWindow_2, purchasedEnergyDataGrid_2);
+
+ 	//--Transmission & Distribution Losses
+        final ListGridField[] listGridFields_3 = getPurchasedEnergyListGridFields_3();
+        purchasedEnergyDataGrid_3.setFields(listGridFields_3);
+
+	TabLayout purchasedEnergyTabLayout_3 = new TabLayout("Transmission & Distribution Losses", purchasedEnergyForm_3,
+	                                                     purchasedEnergyFormWindow_3, purchasedEnergyDataGrid_3);
+
+ 	//--Generation Of Purchased Electricity That Is Sold To End Users
+        final ListGridField[] listGridFields_4 = getPurchasedEnergyListGridFields_4();
+        purchasedEnergyDataGrid_4.setFields(listGridFields_4);
+
+	TabLayout purchasedEnergyTabLayout_4 = new TabLayout("Generation Of Purchased Energy That Is Sold To End Users", purchasedEnergyForm_4,
+	                                                     purchasedEnergyFormWindow_4, purchasedEnergyDataGrid_4);        
+//--Defining Purchased Energy tab
+        final Tab purchasedEnergyTab_1 = new Tab("Upstream Emissions Of Purchased Fuels");
+        purchasedEnergyTab_1.setPane(purchasedEnergyTabLayout_1);
+        
+	final Tab purchasedEnergyTab_2 = new Tab("Upstream Emissions Of Purchased Energy");		
+        purchasedEnergyTab_2.setPane(purchasedEnergyTabLayout_2);
+		
+        final Tab purchasedEnergyTab_3 = new Tab("Transmission & Distribution Losses");		
+        purchasedEnergyTab_3.setPane(purchasedEnergyTabLayout_3);
+
+        final Tab purchasedEnergyTab_4 = new Tab("Generation Of Purchased Energy That Is Sold To End Users");
+        purchasedEnergyTab_4.setPane(purchasedEnergyTabLayout_4);
+        
+        
+//---Adding Purchased Product tab to tabSet
+        purchasedEnergyTabSet.addTab(purchasedEnergyTab_1);
+	purchasedEnergyTabSet.addTab(purchasedEnergyTab_2);
+	purchasedEnergyTabSet.addTab(purchasedEnergyTab_3);
+        purchasedEnergyTabSet.addTab(purchasedEnergyTab_4);        
+        purchasedEnergyLayout.addMember(purchasedEnergyTabSet);
+        
+}
+private void initPurchasedEnergyEditForm() {
+/*
+    FormItem[] formItemFields = getPurchasedEnergyFormFields();
+    purchasedEnergyForm.setItems(formItemFields);
+    purchasedEnergyForm.setDataSource(purchasedEnergyInfoDS);
+    purchasedEnergyForm.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter Fuel and Energy Related Activities Not Included in Scope 1 and 2:", purchasedEnergyForm,
+                          purchasedEnergyFormWindow, purchasedEnergyDataGrid );
+
+*/
+
+    FormItem[] formItemFields_1 = getPurchasedEnergyFormFields_1();
+    purchasedEnergyForm_1.setItems(formItemFields_1);
+    purchasedEnergyForm_1.setDataSource(purchasedEnergyInfoDS_1);
+    purchasedEnergyForm_1.hideItem("methodType");
+    purchasedEnergyForm_1.hideItem("activityType");
+    
+    setIbLFormWindow("Please enter purchased fuel information:", purchasedEnergyForm_1,
+                          purchasedEnergyFormWindow_1, purchasedEnergyDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getPurchasedEnergyFormFields_2();
+    purchasedEnergyForm_2.setItems(formItemFields_2);
+    purchasedEnergyForm_2.setDataSource(purchasedEnergyInfoDS_2);
+    purchasedEnergyForm_2.hideItem("methodType");
+    purchasedEnergyForm_2.hideItem("activityType");
+    
+    setIbLFormWindow("Please enter purchased energy information:", purchasedEnergyForm_2,
+                          purchasedEnergyFormWindow_2, purchasedEnergyDataGrid_2 );
+
+    FormItem[] formItemFields_3 = getPurchasedEnergyFormFields_3();
+    purchasedEnergyForm_3.setItems(formItemFields_3);
+    purchasedEnergyForm_3.setDataSource(purchasedEnergyInfoDS_3);
+    purchasedEnergyForm_3.hideItem("methodType");
+    purchasedEnergyForm_3.hideItem("activityType");
+    
+    setIbLFormWindow("Please enter transmission and distribution loss information:", purchasedEnergyForm_3,
+                          purchasedEnergyFormWindow_3, purchasedEnergyDataGrid_3 );
+
+
+    FormItem[] formItemFields_4 = getPurchasedEnergyFormFields_4();
+    purchasedEnergyForm_4.setItems(formItemFields_4);
+    purchasedEnergyForm_4.setDataSource(purchasedEnergyInfoDS_4);
+    purchasedEnergyForm_4.hideItem("methodType");
+    purchasedEnergyForm_4.hideItem("activityType");
+    
+    setIbLFormWindow("Please enter purchased energy that is sold to end users:", purchasedEnergyForm_4,
+                          purchasedEnergyFormWindow_4, purchasedEnergyDataGrid_4 );
+
+    
+ }
+
+//transportationInfo
+private void transportationInfoTab() {
+
+	transportationLayout.setWidth100();
+	transportationLayout.setHeight100();
+        
+	//--Upstream Emissions Of Purchased Fuels
+	final ListGridField[] listGridFields_1 = getTransportationListGridFields_1();
+	transportationDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout transportationTabLayout_1 = new TabLayout("Fuel Based Method - Transportation Emissions", transportationForm_1,
+	                                                     transportationFormWindow_1, transportationDataGrid_1);
+
+ 	//--Upstream Emissions Of Transportation
+	final ListGridField[] listGridFields_2 = getTransportationListGridFields_2();
+	transportationDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout transportationTabLayout_2 = new TabLayout("Distance Based Method - Transportation Emissions", transportationForm_2,
+	                                                     transportationFormWindow_2, transportationDataGrid_2);
+
+//--Defining Trasnportation tab
+	final Tab transportationTab_1 = new Tab("Fuel Based Method");
+	transportationTab_1.setPane(transportationTabLayout_1);
+        
+	final Tab transportationTab_2 = new Tab("Distance Based Method");		
+	transportationTab_2.setPane(transportationTabLayout_2);		        
+        
+//---Adding Trasnportation tab to tabSet
+	transportationTabSet.addTab(transportationTab_1);
+	transportationTabSet.addTab(transportationTab_2);
+	transportationLayout.addMember(transportationTabSet);
+        
+}
+private void initTransportationEditForm() {
+
+    FormItem[] formItemFields_1 = getTransportationFormFields_1();
+    transportationForm_1.setItems(formItemFields_1);
+    transportationForm_1.setDataSource(transportationInfoDS_1);
+    transportationForm_1.hideItem("methodType");
+    transportationForm_1.setNumCols(6);
+    //transportationForm_1.hideItem("streamType");
+    
+    setIbLFormWindow("Please enter transportation information:", transportationForm_1,
+                          transportationFormWindow_1, transportationDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getTransportationFormFields_2();
+    transportationForm_2.setItems(formItemFields_2);
+    transportationForm_2.setDataSource(transportationInfoDS_2);
+    transportationForm_2.hideItem("methodType");
+    //transportationForm_2.hideItem("streamType");
+    
+    setIbLFormWindow("Please enter transportation information:", transportationForm_2,
+                          transportationFormWindow_2, transportationDataGrid_2 );
+    
+ }
+
+//distributionInfo
+private void distributionInfoTab() {
+
+	distributionLayout.setWidth100();
+	distributionLayout.setHeight100();
+        
+	//--Upstream Emissions Of Purchased Fuels
+	final ListGridField[] listGridFields_1 = getDistributionListGridFields_1();
+	distributionDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout distributionTabLayout_1 = new TabLayout("Site Specific Method - Distribution Emissions", distributionForm_1,
+	                                                     distributionFormWindow_1, distributionDataGrid_1);
+
+ 	//--Upstream Emissions Of Distribution
+	final ListGridField[] listGridFields_2 = getDistributionListGridFields_2();
+	distributionDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout distributionTabLayout_2 = new TabLayout("Average Data Method - Distribution Emissions", distributionForm_2,
+	                                                     distributionFormWindow_2, distributionDataGrid_2);
+
+//--Defining Trasnportation tab
+	final Tab distributionTab_1 = new Tab("Site Specific Method");
+	distributionTab_1.setPane(distributionTabLayout_1);
+        
+	final Tab distributionTab_2 = new Tab("Average Data Method");		
+	distributionTab_2.setPane(distributionTabLayout_2);		        
+        
+//---Adding Trasnportation tab to tabSet
+	distributionTabSet.addTab(distributionTab_1);
+	distributionTabSet.addTab(distributionTab_2);
+	distributionLayout.addMember(distributionTabSet);
+        
+}
+private void initDistributionEditForm() {
+
+    FormItem[] formItemFields_1 = getDistributionFormFields_1();
+    distributionForm_1.setItems(formItemFields_1);
+    distributionForm_1.setDataSource(distributionInfoDS_1);
+    distributionForm_1.hideItem("methodType");
+    //distributionForm_1.hideItem("streamType");
+    //distributionForm_1.setNumCols(8);
+    
+    setIbLFormWindow("Please enter distribution information:", distributionForm_1,
+                          distributionFormWindow_1, distributionDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getDistributionFormFields_2();
+    distributionForm_2.setItems(formItemFields_2);
+    distributionForm_2.setDataSource(distributionInfoDS_2);
+    distributionForm_2.hideItem("methodType");
+    //distributionForm_2.hideItem("streamType");
+    
+    setIbLFormWindow("Please enter distribution information:", distributionForm_2,
+                          distributionFormWindow_2, distributionDataGrid_2 );
+    
+ }
+
+//wasteGeneratedInOperationsInfo
+private void wasteGeneratedInOperationsInfoTab() {
+
+	wasteGeneratedInOperationsLayout.setWidth100();
+	wasteGeneratedInOperationsLayout.setHeight100();
+        
+	//--Waste Type Specific Method - Waste Generated In Operations
+	final ListGridField[] listGridFields_1 = getWasteGeneratedInOperationsListGridFields_1();
+	wasteGeneratedInOperationsDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout wasteGeneratedInOperationsTabLayout_1 = new TabLayout("Waste Type Specific Method - Waste Generated In Operations", wasteGeneratedInOperationsForm_1,
+	                                                     wasteGeneratedInOperationsFormWindow_1, wasteGeneratedInOperationsDataGrid_1);
+
+ 	//--Average Data Method - Waste Generated In Operations
+	final ListGridField[] listGridFields_2 = getWasteGeneratedInOperationsListGridFields_2();
+	wasteGeneratedInOperationsDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout wasteGeneratedInOperationsTabLayout_2 = new TabLayout("Average Data Method - Waste Generated In Operations", wasteGeneratedInOperationsForm_2,
+	                                                     wasteGeneratedInOperationsFormWindow_2, wasteGeneratedInOperationsDataGrid_2);
+
+//--Defining wasteGeneratedInOperations tab
+	final Tab wasteGeneratedInOperationsTab_1 = new Tab("Site Specific Method");
+	wasteGeneratedInOperationsTab_1.setPane(wasteGeneratedInOperationsTabLayout_1);
+        
+	final Tab wasteGeneratedInOperationsTab_2 = new Tab("Average Data Method");		
+	wasteGeneratedInOperationsTab_2.setPane(wasteGeneratedInOperationsTabLayout_2);		        
+        
+//---Adding wasteGeneratedInOperations tab to tabSet
+	wasteGeneratedInOperationsTabSet.addTab(wasteGeneratedInOperationsTab_1);
+	wasteGeneratedInOperationsTabSet.addTab(wasteGeneratedInOperationsTab_2);
+	wasteGeneratedInOperationsLayout.addMember(wasteGeneratedInOperationsTabSet);
+        
+}
+private void initWasteGeneratedInOperationsEditForm() {
+
+    FormItem[] formItemFields_1 = getWasteGeneratedInOperationsFormFields_1();
+    wasteGeneratedInOperationsForm_1.setItems(formItemFields_1);
+    wasteGeneratedInOperationsForm_1.setDataSource(wasteGeneratedInOperationsInfoDS_1);
+    wasteGeneratedInOperationsForm_1.hideItem("methodType");
+    //wasteGeneratedInOperationsForm_1.hideItem("streamType");
+    //wasteGeneratedInOperationsForm_1.setNumCols(8);
+    
+    setIbLFormWindow("Please enter Waste Generated In Operations information:", wasteGeneratedInOperationsForm_1,
+                          wasteGeneratedInOperationsFormWindow_1, wasteGeneratedInOperationsDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getWasteGeneratedInOperationsFormFields_2();
+    wasteGeneratedInOperationsForm_2.setItems(formItemFields_2);
+    wasteGeneratedInOperationsForm_2.setDataSource(wasteGeneratedInOperationsInfoDS_2);
+    wasteGeneratedInOperationsForm_2.hideItem("methodType");
+    //wasteGeneratedInOperationsForm_2.hideItem("streamType");
+    
+    setIbLFormWindow("Please enter WasteGenerated In Operations information:", wasteGeneratedInOperationsForm_2,
+                          wasteGeneratedInOperationsFormWindow_2, wasteGeneratedInOperationsDataGrid_2 );
+    
+ }
+
+//businessTravelInfo
+private void businessTravelInfoTab() {
+
+	businessTravelLayout.setWidth100();
+	businessTravelLayout.setHeight100();
+        
+	//--Distance Based Method
+	final ListGridField[] listGridFields = getBusinessTravelListGridFields();
+	businessTravelDataGrid.setFields(listGridFields);
+
+	TabLayout businessTravelTabLayout = new TabLayout("Business Travel", businessTravelForm,
+	                                                     businessTravelFormWindow, businessTravelDataGrid);
+
+//--Defining businessTravel tab
+	final Tab businessTravelTab = new Tab("Distance Based Method");
+	businessTravelTab.setPane(businessTravelTabLayout);
+        
+        
+//---Adding businessTravel tab to tabSet
+	businessTravelTabSet.addTab(businessTravelTab);
+	businessTravelLayout.addMember(businessTravelTabSet);
+        
+}
+private void initBusinessTravelEditForm() {
+
+    FormItem[] formItemFields = getBusinessTravelFormFields();
+    businessTravelForm.setItems(formItemFields);
+    businessTravelForm.setDataSource(businessTravelInfoDS);
+    businessTravelForm.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter business travel information:", businessTravelForm,
+                          businessTravelFormWindow, businessTravelDataGrid );
+    
+ }
+
+//leasedAssetsInfo
+private void leasedAssetsInfoTab() {
+
+	leasedAssetsLayout.setWidth100();
+	leasedAssetsLayout.setHeight100();
+        
+	//--Upstream Emissions Of Leased Assets 
+	final ListGridField[] listGridFields_1 = getLeasedAssetsListGridFields_1();
+	leasedAssetsDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout leasedAssetsTabLayout_1 = new TabLayout("Site Specific Method - Leased Assets Emissions", leasedAssetsForm_1,
+	                                                     leasedAssetsFormWindow_1, leasedAssetsDataGrid_1);
+
+ 	//--Upstream Emissions Of Leased Assets
+	final ListGridField[] listGridFields_2 = getLeasedAssetsListGridFields_2();
+	leasedAssetsDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout leasedAssetsTabLayout_2 = new TabLayout("Average Data Method - Leased Assets Emissions", leasedAssetsForm_2,
+	                                                     leasedAssetsFormWindow_2, leasedAssetsDataGrid_2);
+
+//--Defining Leased Assets tab
+	final Tab leasedAssetsTab_1 = new Tab("Site Specific Method");
+	leasedAssetsTab_1.setPane(leasedAssetsTabLayout_1);
+        
+	final Tab leasedAssetsTab_2 = new Tab("Average Data Method");		
+	leasedAssetsTab_2.setPane(leasedAssetsTabLayout_2);		        
+        
+//---Adding Leased Assets tab to tabSet
+	leasedAssetsTabSet.addTab(leasedAssetsTab_1);
+	leasedAssetsTabSet.addTab(leasedAssetsTab_2);
+	leasedAssetsLayout.addMember(leasedAssetsTabSet);
+        
+}
+private void initLeasedAssetsEditForm() {
+
+    FormItem[] formItemFields_1 = getLeasedAssetsFormFields_1();
+    leasedAssetsForm_1.setItems(formItemFields_1);
+    leasedAssetsForm_1.setDataSource(leasedAssetsInfoDS_1);
+    leasedAssetsForm_1.hideItem("methodType");
+    //leasedAssetsForm_1.hideItem("streamType");
+    //leasedAssetsForm_1.setNumCols(8);
+    
+    setIbLFormWindow("Please enter Leased Assets information:", leasedAssetsForm_1,
+                          leasedAssetsFormWindow_1, leasedAssetsDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getLeasedAssetsFormFields_2();
+    leasedAssetsForm_2.setItems(formItemFields_2);
+    leasedAssetsForm_2.setDataSource(leasedAssetsInfoDS_2);
+    leasedAssetsForm_2.hideItem("methodType");
+    //leasedAssetsForm_2.hideItem("streamType");
+    
+    setIbLFormWindow("Please enter Leased Assets information:", leasedAssetsForm_2,
+                          leasedAssetsFormWindow_2, leasedAssetsDataGrid_2 );
+    
+ }
+
+//processingOfSoldProductsInfo
+private void processingOfSoldProductsInfoTab() {
+
+	processingOfSoldProductsLayout.setWidth100();
+	processingOfSoldProductsLayout.setHeight100();
+        
+	//--Downstream Emissions Of Purchased Fuels
+	final ListGridField[] listGridFields_1 = getProcessingOfSoldProductsListGridFields_1();
+	processingOfSoldProductsDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout processingOfSoldProductsTabLayout_1 = new TabLayout("Site Specific Method - Processing Of Sold Products Emissions", processingOfSoldProductsForm_1,
+	                                                     processingOfSoldProductsFormWindow_1, processingOfSoldProductsDataGrid_1);
+
+ 	//--Downstream Emissions Of Processing Of Sold Products
+	final ListGridField[] listGridFields_2 = getProcessingOfSoldProductsListGridFields_2();
+	processingOfSoldProductsDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout processingOfSoldProductsTabLayout_2 = new TabLayout("Average Data Method - Processing Of Sold Products Emissions", processingOfSoldProductsForm_2,
+	                                                     processingOfSoldProductsFormWindow_2, processingOfSoldProductsDataGrid_2);
+
+//--Defining Processing Of Sold Products tab
+	final Tab processingOfSoldProductsTab_1 = new Tab("Site Specific Method");
+	processingOfSoldProductsTab_1.setPane(processingOfSoldProductsTabLayout_1);
+        
+	final Tab processingOfSoldProductsTab_2 = new Tab("Average Data Method");		
+	processingOfSoldProductsTab_2.setPane(processingOfSoldProductsTabLayout_2);		        
+        
+//---Adding Processing Of Sold Products tab to tabSet
+	processingOfSoldProductsTabSet.addTab(processingOfSoldProductsTab_1);
+	processingOfSoldProductsTabSet.addTab(processingOfSoldProductsTab_2);
+	processingOfSoldProductsLayout.addMember(processingOfSoldProductsTabSet);
+        
+}
+private void initProcessingOfSoldProductsEditForm() {
+
+    FormItem[] formItemFields_1 = getProcessingOfSoldProductsFormFields_1();
+    processingOfSoldProductsForm_1.setItems(formItemFields_1);
+    processingOfSoldProductsForm_1.setDataSource(processingOfSoldProductsInfoDS_1);
+    processingOfSoldProductsForm_1.hideItem("methodType");
+    //processingOfSoldProductsForm_1.hideItem("streamType");
+    //processingOfSoldProductsForm_1.setNumCols(8);
+    
+    setIbLFormWindow("Please enter processing of sold products information:", processingOfSoldProductsForm_1,
+                          processingOfSoldProductsFormWindow_1, processingOfSoldProductsDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getProcessingOfSoldProductsFormFields_2();
+    processingOfSoldProductsForm_2.setItems(formItemFields_2);
+    processingOfSoldProductsForm_2.setDataSource(processingOfSoldProductsInfoDS_2);
+    processingOfSoldProductsForm_2.hideItem("methodType");
+    //processingOfSoldProductsForm_2.hideItem("streamType");
+    
+    setIbLFormWindow("Please enter processing of sold products information:", processingOfSoldProductsForm_2,
+                          processingOfSoldProductsFormWindow_2, processingOfSoldProductsDataGrid_2 );
+    
+ }
+
+//directUsePhaseEmissions
+private void directUsePhaseEmissionsInfoTab() {
+
+        directUsePhaseEmissionsLayout.setWidth100();
+        directUsePhaseEmissionsLayout.setHeight100();
+        
+	//--Upstream Emissions Of Purchased Fuels
+        final ListGridField[] listGridFields_1 = getDirectUsePhaseEmissionsListGridFields_1();
+        directUsePhaseEmissionsDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout directUsePhaseEmissionsTabLayout_1 = new TabLayout("Lifetime Uses Method – Energy Using Products", directUsePhaseEmissionsForm_1,
+	                                                     directUsePhaseEmissionsFormWindow_1, directUsePhaseEmissionsDataGrid_1);
+
+ 	//--Upstream Emissions Of Purchased Energy
+        final ListGridField[] listGridFields_2 = getDirectUsePhaseEmissionsListGridFields_2();
+        directUsePhaseEmissionsDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout directUsePhaseEmissionsTabLayout_2 = new TabLayout("Combustion Method - Direct Use Phase Emissions – Fuels and Feedstocks", directUsePhaseEmissionsForm_2,
+	                                                     directUsePhaseEmissionsFormWindow_2, directUsePhaseEmissionsDataGrid_2);
+
+ 	//--Transmission & Distribution Losses
+        final ListGridField[] listGridFields_3 = getDirectUsePhaseEmissionsListGridFields_3();
+        directUsePhaseEmissionsDataGrid_3.setFields(listGridFields_3);
+
+	TabLayout directUsePhaseEmissionsTabLayout_3 = new TabLayout("GHG released Method - Product Containing GHGs that are Emitted During Use", directUsePhaseEmissionsForm_3,
+	                                                     directUsePhaseEmissionsFormWindow_3, directUsePhaseEmissionsDataGrid_3);
+//--Defining Purchased Energy tab
+        final Tab directUsePhaseEmissionsTab_1 = new Tab("Energy Using Products");
+        directUsePhaseEmissionsTab_1.setPane(directUsePhaseEmissionsTabLayout_1);
+        
+	final Tab directUsePhaseEmissionsTab_2 = new Tab("Fuels and Feedstocks");		
+        directUsePhaseEmissionsTab_2.setPane(directUsePhaseEmissionsTabLayout_2);
+		
+        final Tab directUsePhaseEmissionsTab_3 = new Tab("Product Containing GHGs that are Emitted During Use");		
+        directUsePhaseEmissionsTab_3.setPane(directUsePhaseEmissionsTabLayout_3);
+                
+//---Adding Purchased Product tab to tabSet
+        directUsePhaseEmissionsTabSet.addTab(directUsePhaseEmissionsTab_1);
+		directUsePhaseEmissionsTabSet.addTab(directUsePhaseEmissionsTab_2);
+		directUsePhaseEmissionsTabSet.addTab(directUsePhaseEmissionsTab_3);        
+        directUsePhaseEmissionsLayout.addMember(directUsePhaseEmissionsTabSet);
+        
+}
+private void initDirectUsePhaseEmissionsEditForm() {
+
+    FormItem[] formItemFields_1 = getDirectUsePhaseEmissionsFormFields_1();
+    directUsePhaseEmissionsForm_1.setItems(formItemFields_1);
+    directUsePhaseEmissionsForm_1.setDataSource(directUsePhaseEmissionsInfoDS_1);
+    directUsePhaseEmissionsForm_1.hideItem("methodType");
+    //directUsePhaseEmissionsForm_1.hideItem("activityType");
+    //directUsePhaseEmissionsForm_1.setNumCols(6);
+    setIbLFormWindow("Please enter direct use phase emissions for sold products information:", directUsePhaseEmissionsForm_1,
+                          directUsePhaseEmissionsFormWindow_1, directUsePhaseEmissionsDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getDirectUsePhaseEmissionsFormFields_2();
+    directUsePhaseEmissionsForm_2.setItems(formItemFields_2);
+    directUsePhaseEmissionsForm_2.setDataSource(directUsePhaseEmissionsInfoDS_2);
+    directUsePhaseEmissionsForm_2.hideItem("methodType");
+    //directUsePhaseEmissionsForm_2.hideItem("activityType");
+    
+    setIbLFormWindow("Please enter direct use phase emissions for sold products information:", directUsePhaseEmissionsForm_2,
+                          directUsePhaseEmissionsFormWindow_2, directUsePhaseEmissionsDataGrid_2 );
+
+    FormItem[] formItemFields_3 = getDirectUsePhaseEmissionsFormFields_3();
+    directUsePhaseEmissionsForm_3.setItems(formItemFields_3);
+    directUsePhaseEmissionsForm_3.setDataSource(directUsePhaseEmissionsInfoDS_3);
+    directUsePhaseEmissionsForm_3.hideItem("methodType");
+    //directUsePhaseEmissionsForm_3.hideItem("activityType");
+    
+    setIbLFormWindow("Please enter direct use phase emissions for sold products information:", directUsePhaseEmissionsForm_3,
+                          directUsePhaseEmissionsFormWindow_3, directUsePhaseEmissionsDataGrid_3 );
+
+    
+ }
+
+//inDirectUsePhaseEmissions
+private void inDirectUsePhaseEmissionsInfoTab() {
+
+        inDirectUsePhaseEmissionsLayout.setWidth100();
+        inDirectUsePhaseEmissionsLayout.setHeight100();
+        
+	//--Typical Use Phase Profile Method - In-Direct Use Phase Emissions
+        final ListGridField[] listGridFields_1 = getInDirectUsePhaseEmissionsListGridFields_1();
+        inDirectUsePhaseEmissionsDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout inDirectUsePhaseEmissionsTabLayout_1 = new TabLayout("Typical Use Phase Profile Method", inDirectUsePhaseEmissionsForm_1,
+	                                                     inDirectUsePhaseEmissionsFormWindow_1, inDirectUsePhaseEmissionsDataGrid_1);
+
+ 	//--Functional Unit Method - Emissions Intensity Metrics - In-Direct Use Phase Emissions
+        final ListGridField[] listGridFields_2 = getInDirectUsePhaseEmissionsListGridFields_2();
+        inDirectUsePhaseEmissionsDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout inDirectUsePhaseEmissionsTabLayout_2 = new TabLayout("Functional Unit Method - Emissions Intensity Metrics", inDirectUsePhaseEmissionsForm_2,
+	                                                     inDirectUsePhaseEmissionsFormWindow_2, inDirectUsePhaseEmissionsDataGrid_2);
+
+//--Defining  tab
+        final Tab inDirectUsePhaseEmissionsTab_1 = new Tab("Typical Use Phase Profile Method");
+        inDirectUsePhaseEmissionsTab_1.setPane(inDirectUsePhaseEmissionsTabLayout_1);
+        
+	final Tab inDirectUsePhaseEmissionsTab_2 = new Tab("Functional Unit Method - Emissions Intensity Metrics");		
+        inDirectUsePhaseEmissionsTab_2.setPane(inDirectUsePhaseEmissionsTabLayout_2);
+		
+                
+//---Adding Purchased Product tab to tabSet
+        inDirectUsePhaseEmissionsTabSet.addTab(inDirectUsePhaseEmissionsTab_1);
+		inDirectUsePhaseEmissionsTabSet.addTab(inDirectUsePhaseEmissionsTab_2);
+        inDirectUsePhaseEmissionsLayout.addMember(inDirectUsePhaseEmissionsTabSet);
+        
+}
+private void initInDirectUsePhaseEmissionsEditForm() {
+
+    FormItem[] formItemFields_1 = getInDirectUsePhaseEmissionsFormFields_1();
+    inDirectUsePhaseEmissionsForm_1.setItems(formItemFields_1);
+    inDirectUsePhaseEmissionsForm_1.setDataSource(inDirectUsePhaseEmissionsInfoDS_1);
+    inDirectUsePhaseEmissionsForm_1.hideItem("methodType");
+    inDirectUsePhaseEmissionsForm_1.hideItem("activityType");
+    
+    setIbLFormWindow("Please enter in-direct use phase emissions for sold products information:", inDirectUsePhaseEmissionsForm_1,
+                          inDirectUsePhaseEmissionsFormWindow_1, inDirectUsePhaseEmissionsDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getInDirectUsePhaseEmissionsFormFields_2();
+    inDirectUsePhaseEmissionsForm_2.setItems(formItemFields_2);
+    inDirectUsePhaseEmissionsForm_2.setDataSource(inDirectUsePhaseEmissionsInfoDS_2);
+    inDirectUsePhaseEmissionsForm_2.hideItem("methodType");
+    inDirectUsePhaseEmissionsForm_2.hideItem("activityType");
+    
+    setIbLFormWindow("Please enter in-direct use phase emissions for sold products information:", inDirectUsePhaseEmissionsForm_2,
+                          inDirectUsePhaseEmissionsFormWindow_2, inDirectUsePhaseEmissionsDataGrid_2 );
+
+
+    
+ }
+
+
+//endOfLifeTreatmentOfSoldProducts
+private void endOfLifeTreatmentOfSoldProductsInfoTab() {
+
+        endOfLifeTreatmentOfSoldProductsLayout.setWidth100();
+        endOfLifeTreatmentOfSoldProductsLayout.setHeight100();
+        
+	//--Typical Use Phase Profile Method - In-Direct Use Phase Emissions
+        final ListGridField[] listGridFields = getEndOfLifeTreatmentOfSoldProductsListGridFields();
+        endOfLifeTreatmentOfSoldProductsDataGrid.setFields(listGridFields);
+
+	TabLayout endOfLifeTreatmentOfSoldProductsTabLayout = new TabLayout("End Of Life Treatment Of Sold Products", endOfLifeTreatmentOfSoldProductsForm,
+	                                                     endOfLifeTreatmentOfSoldProductsFormWindow, endOfLifeTreatmentOfSoldProductsDataGrid);
+
+//--Defining  tab
+        final Tab endOfLifeTreatmentOfSoldProductsTab = new Tab("Calculation Method");
+        endOfLifeTreatmentOfSoldProductsTab.setPane(endOfLifeTreatmentOfSoldProductsTabLayout);
+        		                
+//---Adding  Product tab to tabSet
+        endOfLifeTreatmentOfSoldProductsTabSet.addTab(endOfLifeTreatmentOfSoldProductsTab);
+        endOfLifeTreatmentOfSoldProductsLayout.addMember(endOfLifeTreatmentOfSoldProductsTabSet);
+        
+}
+private void initEndOfLifeTreatmentOfSoldProductsEditForm() {
+
+    FormItem[] formItemFields = getEndOfLifeTreatmentOfSoldProductsFormFields();
+    endOfLifeTreatmentOfSoldProductsForm.setItems(formItemFields);
+    endOfLifeTreatmentOfSoldProductsForm.setDataSource(endOfLifeTreatmentOfSoldProductsInfoDS);
+    endOfLifeTreatmentOfSoldProductsForm.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter end of life treatment of sold products information:", endOfLifeTreatmentOfSoldProductsForm,
+                          endOfLifeTreatmentOfSoldProductsFormWindow, endOfLifeTreatmentOfSoldProductsDataGrid );
+    
+    
+ }
+
+//franchisesInfo
+private void franchisesInfoTab() {
+
+	franchisesLayout.setWidth100();
+	franchisesLayout.setHeight100();
+        
+	//--
+	final ListGridField[] listGridFields_1 = getFranchisesListGridFields_1();
+	franchisesDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout franchisesTabLayout_1 = new TabLayout("Franchise Specific Method", franchisesForm_1,
+	                                                     franchisesFormWindow_1, franchisesDataGrid_1);
+
+ 	//--
+	final ListGridField[] listGridFields_2 = getFranchisesListGridFields_2();
+	franchisesDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout franchisesTabLayout_2 = new TabLayout("Average Data Method", franchisesForm_2,
+	                                                     franchisesFormWindow_2, franchisesDataGrid_2);
+
+//--Defining  tab
+	final Tab franchisesTab_1 = new Tab("Franchise Specific Method");
+	franchisesTab_1.setPane(franchisesTabLayout_1);
+        
+	final Tab franchisesTab_2 = new Tab("Average Data Method");		
+	franchisesTab_2.setPane(franchisesTabLayout_2);		        
+        
+//---Adding  tab to tabSet
+	franchisesTabSet.addTab(franchisesTab_1);
+	franchisesTabSet.addTab(franchisesTab_2);
+	franchisesLayout.addMember(franchisesTabSet);
+        
+}
+private void initFranchisesEditForm() {
+
+    FormItem[] formItemFields_1 = getFranchisesFormFields_1();
+    franchisesForm_1.setItems(formItemFields_1);
+    franchisesForm_1.setDataSource(franchisesInfoDS_1);
+    franchisesForm_1.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter franchise information:", franchisesForm_1,
+                          franchisesFormWindow_1, franchisesDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getFranchisesFormFields_2();
+    franchisesForm_2.setItems(formItemFields_2);
+    franchisesForm_2.setDataSource(franchisesInfoDS_2);
+    franchisesForm_2.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter franchise information:", franchisesForm_2,
+                          franchisesFormWindow_2, franchisesDataGrid_2 );
+    
+ }
+
+//investmentsInfo
+private void investmentsInfoTab() {
+
+	investmentsLayout.setWidth100();
+	investmentsLayout.setHeight100();
+        
+	//--
+	final ListGridField[] listGridFields_1 = getInvestmentsListGridFields_1();
+	investmentsDataGrid_1.setFields(listGridFields_1);
+
+	TabLayout investmentsTabLayout_1 = new TabLayout("Investment Specific Method", investmentsForm_1,
+	                                                     investmentsFormWindow_1, investmentsDataGrid_1);
+
+ 	//--
+	final ListGridField[] listGridFields_2 = getInvestmentsListGridFields_2();
+	investmentsDataGrid_2.setFields(listGridFields_2);
+        
+	TabLayout investmentsTabLayout_2 = new TabLayout("Economic Data Method", investmentsForm_2,
+	                                                     investmentsFormWindow_2, investmentsDataGrid_2);
+
+//--Defining  tab
+	final Tab investmentsTab_1 = new Tab("Investments Specific Method");
+	investmentsTab_1.setPane(investmentsTabLayout_1);
+        
+	final Tab investmentsTab_2 = new Tab("Economic Data Method");		
+	investmentsTab_2.setPane(investmentsTabLayout_2);		        
+        
+//---Adding  tab to tabSet
+	investmentsTabSet.addTab(investmentsTab_1);
+	investmentsTabSet.addTab(investmentsTab_2);
+	investmentsLayout.addMember(investmentsTabSet);
+        
+}
+private void initInvestmentsEditForm() {
+
+    FormItem[] formItemFields_1 = getInvestmentsFormFields_1();
+    investmentsForm_1.setItems(formItemFields_1);
+    investmentsForm_1.setDataSource(investmentsInfoDS_1);
+    investmentsForm_1.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter investment information:", investmentsForm_1,
+                          investmentsFormWindow_1, investmentsDataGrid_1 );
+
+    FormItem[] formItemFields_2 = getInvestmentsFormFields_2();
+    investmentsForm_2.setItems(formItemFields_2);
+    investmentsForm_2.setDataSource(investmentsInfoDS_2);
+    investmentsForm_2.hideItem("methodType");
+    
+    setIbLFormWindow("Please enter investment information:", investmentsForm_2,
+                          investmentsFormWindow_2, investmentsDataGrid_2 );
+    
+ }
+
 private void initOrganizationProfileEditForm() {
 
     organizationProfileForm.setCellPadding(5);
@@ -3204,6 +4754,10 @@ private void initOrganizationProfileEditForm() {
     pointOfContactItem.setValidateOnChange(Boolean.TRUE);
     organizationNameItem.setWidth(200);
 
+    SelectItem consolidationApproach= new SelectItem("consolidationApproach");
+    consolidationApproach.setValueMap("Equity share", "Financial control", "Operational control");
+    consolidationApproach.setDefaultValue("Equity share");
+    
     //organizationProfileForm.setIsGroup(Boolean.TRUE);
     //organizationProfileForm.setGroupTitle("Update your organization profile");
     //organizationProfileForm.setRedrawOnResize(true);
@@ -3211,7 +4765,7 @@ private void initOrganizationProfileEditForm() {
     organizationProfileForm.setItems(organizationNameItem, 
                                         organizationStreetAddress1Item,
                                         organizationCityItem,organizationStateItem,organizationZipCodeItem,
-                                        organizationCountryItem,organizationWebsiteItem,pointOfContactItem);
+                                        organizationCountryItem,organizationWebsiteItem,pointOfContactItem, consolidationApproach);
 
     final IButton organizationProfileCancelButton = new IButton();
     final IButton organizationProfileSaveButton = new IButton();
@@ -3288,7 +4842,6 @@ private void initOrganizationProfileEditForm() {
     organizationProfileFormWindow.addItem(dialog);
     */
 }
-
 private void initOrganizationInventoryYearEditForm() {
 
     organizationInventoryYearVLayout.setWidth100();
@@ -3581,7 +5134,7 @@ public void displayDetailInfo(ListGrid listGrid, DetailViewerField[] fieldList) 
     //middleBottomHLayout.addMember(detailViewerVLayout);
     middleBottomHLayout.addMember(detailViewerWindow);
     middleBottomHLayout.show();
-    */
+        */  
 }
 
 public void displayEmissionsReport(String emissionsReportChoice, String emissionsSummaryReportId) {
@@ -3597,7 +5150,19 @@ public void displayEmissionsReport(String emissionsReportChoice, String emission
     */
     
     orgId = (Integer)UserOrganizationHeader.organizationSelectForm.getField("id").getValue();
-    String reportUrl = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+    //String reportUrl = "/ibLGHGCalc/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+    String fullContextPath = GWT.getHostPageBaseURL();
+    String[] contextPathArray = fullContextPath.split("/");
+    String contextPath= contextPathArray[contextPathArray.length - 1];
+    //System.out.println("Context Path is: "+contextPath);
+    
+    String reportUrl;
+    if (contextPath.contains("igreenlaunch")) {
+        reportUrl = "/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;
+    } else {
+        reportUrl = "/"+contextPath+"/reports?emissionsSummaryReportId="+emissionsSummaryReportId+"&organizationId="+orgId;        
+    }
+    
     com.google.gwt.user.client.Window.open(reportUrl,null,null);
 
     /*
@@ -3838,10 +5403,15 @@ public void displayEmissionSourceInfo(String emissionSourceChoice) {
                 employeeBusinessTravelByAirFetchCriteria.addCriteria(fetchCriteria);
                 employeeBusinessTravelByAirFetchCriteria.addCriteria("optionalSourceType", "Employee Business Travel - By Air");
 
+                Criteria employeeBusinessTravelHotelStayFetchCriteria = new Criteria();
+                employeeBusinessTravelHotelStayFetchCriteria.addCriteria(fetchCriteria);
+                employeeBusinessTravelHotelStayFetchCriteria.addCriteria("methodType", "Employee Business Travel - Hotel Stay");
+                
                 employeeBusinessTravelByVehicleDataGrid.filterData(employeeBusinessTravelByVehicleFetchCriteria);
                 employeeBusinessTravelByRailDataGrid.filterData(employeeBusinessTravelByRailFetchCriteria);
                 employeeBusinessTravelByBusDataGrid.filterData(employeeBusinessTravelByBusFetchCriteria);
                 employeeBusinessTravelByAirDataGrid.filterData(employeeBusinessTravelByAirFetchCriteria);
+                employeeBusinessTravelHotelStayDataGrid.filterData(employeeBusinessTravelHotelStayFetchCriteria);
 
                 middleMiddleHLayout.addChild(employeeBusinessTravelLayout);
             } else if (emissionSourceChoice.equals("Employee Commuting")){
@@ -3887,7 +5457,195 @@ public void displayEmissionSourceInfo(String emissionSourceChoice) {
                 productTransportByWaterAirDataGrid.filterData(productTransportByWaterAirFetchCriteria);
 
                 middleMiddleHLayout.addChild(productTransportLayout);
-            }
+            } else if (emissionSourceChoice.equals("Purchased Goods and Services")){
+               //--Display Purchased Goods and Services
+               Criteria purchasedProductLevelFetchCriteria = new Criteria();
+               purchasedProductLevelFetchCriteria.addCriteria("methodType", "Purchased Goods and Services - Product Level Method");
+               purchasedProductLevelFetchCriteria.addCriteria(fetchCriteria);
+               purchasedProductDataGrid_1.filterData(purchasedProductLevelFetchCriteria);               
+
+               Criteria purchasedProductSupplierSpecificFetchCriteria = new Criteria();
+               purchasedProductSupplierSpecificFetchCriteria.addCriteria("methodType", "Purchased Goods and Services - Supplier Specific Method");
+               purchasedProductSupplierSpecificFetchCriteria.addCriteria(fetchCriteria);
+               purchasedProductDataGrid_2.filterData(purchasedProductSupplierSpecificFetchCriteria);               
+
+               Criteria purchasedProductMaterialOrSpendBasedFetchCriteria = new Criteria();
+               purchasedProductMaterialOrSpendBasedFetchCriteria.addCriteria("methodType", "Purchased Goods and Services - Material Or Spend Based Method");
+               purchasedProductMaterialOrSpendBasedFetchCriteria.addCriteria(fetchCriteria);
+               purchasedProductDataGrid_3.filterData(purchasedProductMaterialOrSpendBasedFetchCriteria);               
+               
+               middleMiddleHLayout.addChild(purchasedProductLayout);
+            } else if (emissionSourceChoice.equals("Purchased Energy")){
+               //--Display Purchased Energy
+               /*
+               Criteria purchasedEnergyLevelFetchCriteria = new Criteria();
+               purchasedEnergyLevelFetchCriteria.addCriteria("methodType", "Fuel and Energy Related Activities");
+               purchasedEnergyLevelFetchCriteria.addCriteria(fetchCriteria);
+               purchasedEnergyDataGrid.filterData(purchasedEnergyLevelFetchCriteria);               
+               */
+               Criteria purchasedEnergyFetchCriteria_1 = new Criteria();
+               purchasedEnergyFetchCriteria_1.addCriteria("activityType", "Upstream Emissions Of Purchased Fuels");
+               purchasedEnergyFetchCriteria_1.addCriteria(fetchCriteria);
+               purchasedEnergyDataGrid_1.filterData(purchasedEnergyFetchCriteria_1);               
+                
+
+               Criteria purchasedEnergyFetchCriteria_2 = new Criteria();
+               purchasedEnergyFetchCriteria_2.addCriteria("activityType", "Upstream Emissions Of Purchased Energy");
+               purchasedEnergyFetchCriteria_2.addCriteria(fetchCriteria);
+               purchasedEnergyDataGrid_2.filterData(purchasedEnergyFetchCriteria_2);               
+
+               
+               Criteria purchasedEnergyFetchCriteria_3 = new Criteria();
+               purchasedEnergyFetchCriteria_3.addCriteria("activityType", "Transmission & Distribution Losses");
+               purchasedEnergyFetchCriteria_3.addCriteria(fetchCriteria);
+               purchasedEnergyDataGrid_3.filterData(purchasedEnergyFetchCriteria_3);               
+
+               Criteria purchasedEnergyFetchCriteria_4 = new Criteria();
+               purchasedEnergyFetchCriteria_4.addCriteria("activityType", "Generation Of Purchased Energy That Is Sold To End Users");
+               purchasedEnergyFetchCriteria_4.addCriteria(fetchCriteria);
+               purchasedEnergyDataGrid_4.filterData(purchasedEnergyFetchCriteria_4);               
+               
+               middleMiddleHLayout.addChild(purchasedEnergyLayout);
+            } else if (emissionSourceChoice.equals("Transportation")){
+                
+               Criteria transportationFetchCriteria_1 = new Criteria();
+               transportationFetchCriteria_1.addCriteria("methodType", "Fuel Based Method - Transportation Emissions");
+               transportationFetchCriteria_1.addCriteria(fetchCriteria);
+               transportationDataGrid_1.filterData(transportationFetchCriteria_1);               
+                
+               Criteria transportationFetchCriteria_2 = new Criteria();
+               transportationFetchCriteria_2.addCriteria("methodType", "Distance Based Method - Transportation Emissions");
+               transportationFetchCriteria_2.addCriteria(fetchCriteria);
+               transportationDataGrid_2.filterData(transportationFetchCriteria_2);               
+                              
+               middleMiddleHLayout.addChild(transportationLayout);
+            }else if (emissionSourceChoice.equals("Distribution")){
+                
+               Criteria distributionFetchCriteria_1 = new Criteria();
+               distributionFetchCriteria_1.addCriteria("methodType", "Site Specific Method - Distribution Emissions");
+               distributionFetchCriteria_1.addCriteria(fetchCriteria);
+               distributionDataGrid_1.filterData(distributionFetchCriteria_1);               
+                
+               Criteria distributionFetchCriteria_2 = new Criteria();
+               distributionFetchCriteria_2.addCriteria("methodType", "Average Data Method - Distribution Emissions");
+               distributionFetchCriteria_2.addCriteria(fetchCriteria);
+               distributionDataGrid_2.filterData(distributionFetchCriteria_2);               
+                              
+               middleMiddleHLayout.addChild(distributionLayout);
+            }else if (emissionSourceChoice.equals("Waste Generated In Operations")){
+                
+               Criteria wasteGeneratedInOperationsFetchCriteria_1 = new Criteria();
+               wasteGeneratedInOperationsFetchCriteria_1.addCriteria("methodType", "Waste Type Specific Method - Waste Generated In Operations");
+               wasteGeneratedInOperationsFetchCriteria_1.addCriteria(fetchCriteria);
+               wasteGeneratedInOperationsDataGrid_1.filterData(wasteGeneratedInOperationsFetchCriteria_1);               
+                
+               Criteria wasteGeneratedInOperationsFetchCriteria_2 = new Criteria();
+               wasteGeneratedInOperationsFetchCriteria_2.addCriteria("methodType", "Average Data Method - Waste Generated In Operations");
+               wasteGeneratedInOperationsFetchCriteria_2.addCriteria(fetchCriteria);
+               wasteGeneratedInOperationsDataGrid_2.filterData(wasteGeneratedInOperationsFetchCriteria_2);               
+                              
+               middleMiddleHLayout.addChild(wasteGeneratedInOperationsLayout);
+            }else if (emissionSourceChoice.equals("Business Travel")){
+                
+               Criteria businessTravelFetchCriteria = new Criteria();
+               businessTravelFetchCriteria.addCriteria("methodType", "Distance Based Method - Business Travel Emissions");
+               businessTravelFetchCriteria.addCriteria(fetchCriteria);
+               businessTravelDataGrid.filterData(businessTravelFetchCriteria);               
+                              
+               middleMiddleHLayout.addChild(businessTravelLayout);
+            }else if (emissionSourceChoice.equals("Leased Assets")){
+                
+               Criteria leasedAssetsFetchCriteria_1 = new Criteria();
+               leasedAssetsFetchCriteria_1.addCriteria("methodType", "Site Specific Method - Leased Assets");
+               leasedAssetsFetchCriteria_1.addCriteria(fetchCriteria);
+               leasedAssetsDataGrid_1.filterData(leasedAssetsFetchCriteria_1);               
+                
+               Criteria leasedAssetsFetchCriteria_2 = new Criteria();
+               leasedAssetsFetchCriteria_2.addCriteria("methodType", "Average Data Method - Leased Assets");
+               leasedAssetsFetchCriteria_2.addCriteria(fetchCriteria);
+               leasedAssetsDataGrid_2.filterData(leasedAssetsFetchCriteria_2);               
+                              
+               middleMiddleHLayout.addChild(leasedAssetsLayout);
+            }else if (emissionSourceChoice.equals("Processing Of Sold Products")){
+                
+               Criteria processingOfSoldProductsFetchCriteria_1 = new Criteria();
+               processingOfSoldProductsFetchCriteria_1.addCriteria("methodType", "Site Specific Method - Processing Of Sold Products Emissions");
+               processingOfSoldProductsFetchCriteria_1.addCriteria(fetchCriteria);
+               processingOfSoldProductsDataGrid_1.filterData(processingOfSoldProductsFetchCriteria_1);               
+                
+               Criteria processingOfSoldProductsFetchCriteria_2 = new Criteria();
+               processingOfSoldProductsFetchCriteria_2.addCriteria("methodType", "Average Data Method - Processing Of Sold Products Emissions");
+               processingOfSoldProductsFetchCriteria_2.addCriteria(fetchCriteria);
+               processingOfSoldProductsDataGrid_2.filterData(processingOfSoldProductsFetchCriteria_2);               
+                              
+               middleMiddleHLayout.addChild(processingOfSoldProductsLayout);
+            }else if (emissionSourceChoice.equals("Direct Use Phase Emissions For Sold Products")){
+                
+               Criteria directUsePhaseEmissionsFetchCriteria_1 = new Criteria();
+               directUsePhaseEmissionsFetchCriteria_1.addCriteria("methodType", "Lifetime Uses Method");
+                                                                                
+               directUsePhaseEmissionsFetchCriteria_1.addCriteria(fetchCriteria);
+               directUsePhaseEmissionsDataGrid_1.filterData(directUsePhaseEmissionsFetchCriteria_1);               
+                
+               Criteria directUsePhaseEmissionsFetchCriteria_2 = new Criteria();
+               directUsePhaseEmissionsFetchCriteria_2.addCriteria("methodType", "Combustion Method");
+               directUsePhaseEmissionsFetchCriteria_2.addCriteria(fetchCriteria);
+               directUsePhaseEmissionsDataGrid_2.filterData(directUsePhaseEmissionsFetchCriteria_2);               
+
+               Criteria directUsePhaseEmissionsFetchCriteria_3 = new Criteria();
+               directUsePhaseEmissionsFetchCriteria_3.addCriteria("methodType", "GHG released Method");
+               directUsePhaseEmissionsFetchCriteria_3.addCriteria(fetchCriteria);
+               directUsePhaseEmissionsDataGrid_3.filterData(directUsePhaseEmissionsFetchCriteria_3);               
+               
+               middleMiddleHLayout.addChild(directUsePhaseEmissionsLayout);
+            }else if (emissionSourceChoice.equals("In-Direct Use Phase Emissions For Sold Products")){
+                
+               Criteria inDirectUsePhaseEmissionsFetchCriteria_1 = new Criteria();
+               inDirectUsePhaseEmissionsFetchCriteria_1.addCriteria("methodType", "Typical Use Phase Profile Method");
+               inDirectUsePhaseEmissionsFetchCriteria_1.addCriteria(fetchCriteria);
+               inDirectUsePhaseEmissionsDataGrid_1.filterData(inDirectUsePhaseEmissionsFetchCriteria_1);               
+                
+               Criteria inDirectUsePhaseEmissionsFetchCriteria_2 = new Criteria();
+               inDirectUsePhaseEmissionsFetchCriteria_2.addCriteria("methodType", "Functional Unit Method");
+               inDirectUsePhaseEmissionsFetchCriteria_2.addCriteria(fetchCriteria);
+               inDirectUsePhaseEmissionsDataGrid_2.filterData(inDirectUsePhaseEmissionsFetchCriteria_2);               
+                              
+               middleMiddleHLayout.addChild(inDirectUsePhaseEmissionsLayout);
+            }else if (emissionSourceChoice.equals("End Of Life Treatment Of Sold Products")){
+                
+               Criteria endOfLifeTreatmentOfSoldProductsFetchCriteria = new Criteria();
+               endOfLifeTreatmentOfSoldProductsFetchCriteria.addCriteria("methodType", "Calculation Method");
+               endOfLifeTreatmentOfSoldProductsFetchCriteria.addCriteria(fetchCriteria);
+               endOfLifeTreatmentOfSoldProductsDataGrid.filterData(endOfLifeTreatmentOfSoldProductsFetchCriteria);               
+                                              
+               middleMiddleHLayout.addChild(endOfLifeTreatmentOfSoldProductsLayout);
+            }else if (emissionSourceChoice.equals("Franchises")){
+                
+               Criteria franchisesFetchCriteria_1 = new Criteria();
+               franchisesFetchCriteria_1.addCriteria("methodType", "Franchise Specific Method");
+               franchisesFetchCriteria_1.addCriteria(fetchCriteria);
+               franchisesDataGrid_1.filterData(franchisesFetchCriteria_1);               
+                
+               Criteria franchisesFetchCriteria_2 = new Criteria();
+               franchisesFetchCriteria_2.addCriteria("methodType", "Average Data Method");
+               franchisesFetchCriteria_2.addCriteria(fetchCriteria);
+               franchisesDataGrid_2.filterData(franchisesFetchCriteria_2);               
+                              
+               middleMiddleHLayout.addChild(franchisesLayout);
+            } else if (emissionSourceChoice.equals("Investments")){
+                
+               Criteria investmentsFetchCriteria_1 = new Criteria();
+               investmentsFetchCriteria_1.addCriteria("methodType", "Investment Specific Method");
+               investmentsFetchCriteria_1.addCriteria(fetchCriteria);
+               investmentsDataGrid_1.filterData(investmentsFetchCriteria_1);               
+                
+               Criteria investmentsFetchCriteria_2 = new Criteria();
+               investmentsFetchCriteria_2.addCriteria("methodType", "Economic Data Method");
+               investmentsFetchCriteria_2.addCriteria(fetchCriteria);
+               investmentsDataGrid_2.filterData(investmentsFetchCriteria_2);               
+                              
+               middleMiddleHLayout.addChild(investmentsLayout);
+            }                        
   }
 
 public void displayData(String emissionSourceChoice, List<ListGridField> dataListGridFields,List<FormItem> dataFormItems, RestDataSource dataSource){
@@ -3973,7 +5731,6 @@ public static Label getSectionLink(String message, ClickHandler handler) {
    return link;
 
    }
-
 public static Label getReportLink(String message, ClickHandler handler) {
    Label link = new Label();
    link = new Label(message);
@@ -3999,7 +5756,6 @@ public static Label getReportLink(String message, ClickHandler handler) {
    return link;
 
    }
-
 
 private void initMobileCombustionEditForm_2() {
 
@@ -6824,7 +8580,6 @@ private void initPurchasedElectricityEditForm_OLD() {
     //purchasedElectricityFormWindow.setHeaderControls(HeaderControls.HEADER_LABEL, closeControl);
     purchasedElectricityFormWindow.addItem(dialog);
  }
-
 private void purchasedSteamTab_OLD() {
 
         purchasedSteamLayout.setWidth100();
@@ -7459,10 +9214,10 @@ public static ListGridField[] getPurchasedSteamListGridFields() {
         sourceDescriptionField.setType(ListGridFieldType.TEXT);
         sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
 
-        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");
+        ListGridField fuelTypeField = new ListGridField("fuelType", "Fuel Type");        
         fuelTypeField.setType(ListGridFieldType.TEXT);
         fuelTypeField.setWidth(FUEL_TYPE_FIELD_WIDTH);
-
+       
         FloatListGridField boilerEfficiencyPercentField = new FloatListGridField("boilerEfficiencyPercent", "boilerEfficiency Percent");
         //boilerEfficiencyPercentField.setType(ListGridFieldType.FLOAT);
         boilerEfficiencyPercentField.setDefaultValue(80);
@@ -7477,10 +9232,12 @@ public static ListGridField[] getPurchasedSteamListGridFields() {
         purchasedSteamUnitField.setWidth(FUEL_UNIT_FIELD_WIDTH);
 
         ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate", "Begin Date");
+        //ListGridField fuelUsedBeginDateField = new ListGridField("fuelUsedBeginDate");
         fuelUsedBeginDateField.setType(ListGridFieldType.DATE);
         fuelUsedBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
 
-        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        //ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate", "End Date");
+        ListGridField fuelUsedEndDateField = new ListGridField("fuelUsedEndDate");
         fuelUsedEndDateField.setType(ListGridFieldType.DATE);
         fuelUsedEndDateField.setWidth(END_DATE_FIELD_WIDTH);
 
@@ -7531,6 +9288,10 @@ public static ListGridField[] getOptionalSourceListGridFields(String typeOfData)
         airTravelTypeField.setType(ListGridFieldType.TEXT);
         airTravelTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
 
+        FloatListGridField annualNumberOfHotelNights = new FloatListGridField("annualNumberOfHotelNights");        
+        FloatListGridField EF_Hotel = new FloatListGridField("EF_Hotel");
+        ListGridField EF_Hotel_Unit = new ListGridField("EF_Hotel_Unit");
+        
         ListGridField transportTypeField = new ListGridField("transportType", "Transport Type");
         transportTypeField.setType(ListGridFieldType.TEXT);
         transportTypeField.setWidth(VEHICLE_TYPE_FIELD_WIDTH);
@@ -7562,6 +9323,10 @@ public static ListGridField[] getOptionalSourceListGridFields(String typeOfData)
         } else if (typeOfData.equalsIgnoreCase("employeeBusinessTravelByAir")){
             listGridFieldList.add(airTravelTypeField);
             listGridFieldList.add(passengerMilesField);
+        } else if (typeOfData.equalsIgnoreCase("employeeBusinessTravelHotelStay")){
+            listGridFieldList.add(annualNumberOfHotelNights);
+            listGridFieldList.add(EF_Hotel);
+            listGridFieldList.add(EF_Hotel_Unit);
         } else if (typeOfData.equalsIgnoreCase("employeeCommutingByVehicle")){
             listGridFieldList.add(vehicleTypeField);
             listGridFieldList.add(passengerMilesField);
@@ -7639,6 +9404,850 @@ public static ListGridField[] getWasteStreamCombustionListGridFields() {
 	return listGridFieldArray;
 }
 
+public static ListGridField[] getPurchasedProductListGridFields_1() {
+        ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");
+        ListGridField purchasedProductTypeField = new ListGridField("purchasedProductType");
+        ListGridField purchasedProductNameField = new ListGridField("purchasedProductName");				
+        FloatListGridField quantityOfPurchasedProductField = new FloatListGridField("quantityOfPurchasedProduct");
+        ListGridField quantityOfPurchasedProduct_UnitField = new ListGridField("quantityOfPurchasedProduct_Unit");
+        //quantityOfPurchasedProduct_UnitField.setWidth(UNIT_FIELD_WIDTH);
+
+        FloatListGridField supplierSpecific_EF_ForPurchasedProductField = new FloatListGridField("supplierSpecific_EF_ForPurchasedProduct");        
+        ListGridField supplierSpecific_EF_ForPurchasedProduct_UnitField = new ListGridField("supplierSpecific_EF_ForPurchasedProduct_Unit");
+        //supplierSpecific_EF_ForPurchasedProduct_UnitField.setWidth(EF_UNIT_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(purchasedProductTypeField);
+        listGridFieldList.add(purchasedProductNameField);
+        listGridFieldList.add(quantityOfPurchasedProductField);
+        listGridFieldList.add(quantityOfPurchasedProduct_UnitField);
+        listGridFieldList.add(supplierSpecific_EF_ForPurchasedProductField);
+	listGridFieldList.add(supplierSpecific_EF_ForPurchasedProduct_UnitField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getPurchasedProductListGridFields_2() {
+        ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");
+        ListGridField purchasedProductTypeField = new ListGridField("purchasedProductType");
+        ListGridField purchasedProductNameField = new ListGridField("purchasedProductName");				
+        FloatListGridField quantityOfPurchasedProductField = new FloatListGridField("quantityOfPurchasedProduct");
+        ListGridField quantityOfPurchasedProduct_UnitField = new ListGridField("quantityOfPurchasedProduct_Unit");
+        //quantityOfPurchasedProduct_UnitField.setWidth(UNIT_FIELD_WIDTH);
+
+        FloatListGridField supplierSpecific_EF_ForPurchasedProductField = new FloatListGridField("supplierSpecific_EF_ForPurchasedProduct");        
+        ListGridField supplierSpecific_EF_ForPurchasedProduct_UnitField = new ListGridField("supplierSpecific_EF_ForPurchasedProduct_Unit");
+        //supplierSpecific_EF_ForPurchasedProduct_UnitField.setWidth(EF_UNIT_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(purchasedProductTypeField);
+        listGridFieldList.add(purchasedProductNameField);
+        listGridFieldList.add(quantityOfPurchasedProductField);
+        listGridFieldList.add(quantityOfPurchasedProduct_UnitField);
+        listGridFieldList.add(supplierSpecific_EF_ForPurchasedProductField);
+	listGridFieldList.add(supplierSpecific_EF_ForPurchasedProduct_UnitField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getPurchasedProductListGridFields_2_0() {
+        ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");
+        ListGridField purchasedProductTypeField = new ListGridField("purchasedProductType");
+        ListGridField purchasedProductNameField = new ListGridField("purchasedProductName");				
+        FloatListGridField quantityOfPurchasedProductField = new FloatListGridField("quantityOfPurchasedProduct");
+        ListGridField quantityOfPurchasedProduct_UnitField = new ListGridField("quantityOfPurchasedProduct_Unit");
+        //quantityOfPurchasedProduct_UnitField.setWidth(UNIT_FIELD_WIDTH);
+
+        ListGridField materialUsedBy_T1SField = new ListGridField("materialUsedBy_T1S", "Material Used");
+        //materialUsedBy_T1SField.setAlign(Alignment.CENTER);
+        //materialUsedBy_T1SField.setWidth(EDIT_BUTTON_FIELD_WIDTH);
+
+        ListGridField materialTransportTo_T1SField = new ListGridField("materialTransportTo_T1S", "Transport of Material");
+        //transportOfMaterialInputs_T1SField.setWidth(REMOVE_BUTTON_FIELD_WIDTH);
+
+        ListGridField wasteOutputFrom_T1SField = new ListGridField("wasteOutputFrom_T1S", "Waste Output");
+        //wasteOutputFrom_T1SField.setWidth(REMOVE_BUTTON_FIELD_WIDTH);
+        
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(purchasedProductTypeField);
+        listGridFieldList.add(purchasedProductNameField);
+        listGridFieldList.add(quantityOfPurchasedProductField);
+        listGridFieldList.add(quantityOfPurchasedProduct_UnitField);
+	listGridFieldList.add(materialUsedBy_T1SField);
+	listGridFieldList.add(materialTransportTo_T1SField);
+        listGridFieldList.add(wasteOutputFrom_T1SField);                
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getPurchasedProductListGridFields_2_2() {
+    
+        ListGridField materialUsedBy_T1S_ForPurchasedProduct = new TextListGridField("materialUsedBy_T1S_ForPurchasedProduct");
+        //sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+			
+        FloatListGridField amountOfMaterialUsedBy_T1S_ForPurchasedProduct = new FloatListGridField("amountOfMaterialUsedBy_T1S_ForPurchasedProduct","Quantity");
+        //quantityOfPurchasedProductField.setWidth(QUANTITY_FIELD_WIDTH);
+
+        ListGridField amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit = new ListGridField("amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit", "Unit");
+        //quantityOfPurchasedProduct_UnitField.setDefaultValue("Kg");
+        //quantityOfPurchasedProduct_UnitField.setWidth(UNIT_FIELD_WIDTH);
+
+        FloatListGridField EF_Material = new FloatListGridField("EF_Material", "Emission Factor For Material");
+        //supplierSpecific_EF_ForPurchasedProductField.setWidth(EF_FIELD_WIDTH);
+
+        ListGridField EF_Material_Unit = new ListGridField("EF_Material_Unit", "Unit");
+        //supplierSpecific_EF_ForPurchasedProduct_UnitField.setDefaultValue("Kg CO2e/Kg");
+        //supplierSpecific_EF_ForPurchasedProduct_UnitField.setWidth(UNIT_FIELD_WIDTH);
+		
+        ListGridField dataBeginDateField = new ListGridField("dataBeginDate", "Purchase Begin Date");
+        dataBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField dataEndDateField = new ListGridField("dataEndDate", "Purchase End Date");
+        dataEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(materialUsedBy_T1S_ForPurchasedProduct);
+        listGridFieldList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct);
+        listGridFieldList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit);
+        listGridFieldList.add(EF_Material);
+        listGridFieldList.add(EF_Material_Unit);
+        //listGridFieldList.add(dataBeginDateField);
+        //listGridFieldList.add(dataEndDateField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getPurchasedProductListGridFields_3() {
+        ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");
+        sourceDescriptionField.setWidth(SOURCE_DESCRIPTION_WIDTH);
+
+        ListGridField supplierNameField = new ListGridField("supplierName");
+        supplierNameField.setWidth(NAME_FIELD_WIDTH);
+
+        ListGridField supplierContactField = new ListGridField("supplierContact");
+        supplierContactField.setWidth(NAME_FIELD_WIDTH);
+		
+        ListGridField purchasedProductTypeField = new ListGridField("purchasedProductType");
+        purchasedProductTypeField.setWidth(TYPE_FIELD_WIDTH);
+
+        ListGridField purchasedProductNameField = new ListGridField("purchasedProductName");
+        purchasedProductNameField.setWidth(NAME_FIELD_WIDTH);
+				
+        FloatListGridField quantityOfPurchasedProductField = new FloatListGridField("quantityOfPurchasedProduct","Quantity");
+        quantityOfPurchasedProductField.setWidth(QUANTITY_FIELD_WIDTH);
+
+        ListGridField quantityOfPurchasedProduct_UnitField = new ListGridField("quantityOfPurchasedProduct_Unit", "Purchased Product Unit");
+        quantityOfPurchasedProduct_UnitField.setDefaultValue("Kg");
+        quantityOfPurchasedProduct_UnitField.setWidth(UNIT_FIELD_WIDTH);
+
+        FloatListGridField secondary_EF_Field = new FloatListGridField("secondary_EF", "Secondary Emission Factor");
+        secondary_EF_Field.setWidth(EF_FIELD_WIDTH);
+
+        ListGridField secondary_EF_Unit_Field = new ListGridField("secondary_EF_Unit", "Unit");
+        secondary_EF_Unit_Field.setDefaultValue("Kg CO2e/Kg");
+        secondary_EF_Unit_Field.setWidth(UNIT_FIELD_WIDTH);
+		
+        ListGridField dataBeginDateField = new ListGridField("dataBeginDate", "Purchase Begin Date");
+        dataBeginDateField.setWidth(BEGIN_DATE_FIELD_WIDTH);
+
+        ListGridField dataEndDateField = new ListGridField("dataEndDate", "Purchase End Date");
+        dataEndDateField.setWidth(END_DATE_FIELD_WIDTH);
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(sourceDescriptionField);
+        //listGridFieldList.add(supplierNameField);
+        //listGridFieldList.add(supplierContactField);
+        listGridFieldList.add(purchasedProductTypeField);
+        listGridFieldList.add(purchasedProductNameField);
+        listGridFieldList.add(quantityOfPurchasedProductField);
+        listGridFieldList.add(quantityOfPurchasedProduct_UnitField);
+        listGridFieldList.add(secondary_EF_Field);
+	listGridFieldList.add(secondary_EF_Unit_Field);
+        //listGridFieldList.add(dataBeginDateField);
+        //listGridFieldList.add(dataEndDateField);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getPurchasedEnergyListGridFields() {
+    
+        ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+        ListGridField activityType = new TextListGridField("activityType");
+        ListGridField energyType = new TextListGridField("energyType");        
+        //ListGridField supplierName = new ListGridField("supplierName");
+        //ListGridField supplierContact = new ListGridField("supplierContact");				
+        //ListGridField supplierRegionCountry = new ListGridField("supplierRegionCountry");	        
+        
+        FloatListGridField energyPurchased = new FloatListGridField("energyPurchased");
+        ListGridField energyPurchased_Unit = new ListGridField("energyPurchased_Unit");
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(activityType);
+        listGridFieldList.add(energyType);        
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(energyPurchased);
+        listGridFieldList.add(energyPurchased_Unit);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getPurchasedEnergyListGridFields_1() {
+    
+        ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+		ListGridField fuelType = new TextListGridField("fuelType");       
+        FloatListGridField energyPurchased = new FloatListGridField("energyPurchased");
+		energyPurchased.setTitle("Fuel Purchased");
+        ListGridField energyPurchased_Unit = new ListGridField("energyPurchased_Unit");
+
+        
+		List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+		listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(fuelType);
+        listGridFieldList.add(energyPurchased);
+        listGridFieldList.add(energyPurchased_Unit);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getPurchasedEnergyListGridFields_2() {
+    
+        ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+        ListGridField energyType = new TextListGridField("energyType");                
+        FloatListGridField energyPurchased = new FloatListGridField("energyPurchased");
+        ListGridField energyPurchased_Unit = new ListGridField("energyPurchased_Unit");
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(energyType);        
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(energyPurchased);
+        listGridFieldList.add(energyPurchased_Unit);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getPurchasedEnergyListGridFields_3() {
+    
+        ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+        ListGridField energyType = new TextListGridField("energyType");                
+        FloatListGridField energyPurchased = new FloatListGridField("energyPurchased");
+        ListGridField energyPurchased_Unit = new ListGridField("energyPurchased_Unit");
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(energyType);        
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(energyPurchased);
+        listGridFieldList.add(energyPurchased_Unit);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getPurchasedEnergyListGridFields_4() {
+    
+        ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+        ListGridField energyType = new TextListGridField("energyType");                
+        FloatListGridField energyPurchased = new FloatListGridField("energyPurchased");
+        ListGridField energyPurchased_Unit = new ListGridField("energyPurchased_Unit");
+
+        List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+        listGridFieldList.add(energyType);        
+        listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(energyPurchased);
+        listGridFieldList.add(energyPurchased_Unit);
+
+        ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+        listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getTransportationListGridFields_1() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField streamType = new TextListGridField("streamType");
+	
+	ListGridField fuelType = new TextListGridField("fuelType");                
+	FloatListGridField fuelConsumed = new FloatListGridField("fuelConsumed");
+	ListGridField fuelConsumed_Unit = new ListGridField("fuelConsumed_Unit");
+	FloatListGridField EF_Fuel = new FloatListGridField("EF_Fuel");
+	ListGridField EF_Fuel_Unit = new ListGridField("EF_Fuel_Unit");
+
+	ListGridField refrigerantType = new TextListGridField("refrigerantType");                
+	FloatListGridField refrigerantLeakage = new FloatListGridField("refrigerantLeakage");
+	ListGridField refrigerantLeakage_Unit = new ListGridField("refrigerantLeakage_Unit");
+	FloatListGridField EF_Refrigerant = new FloatListGridField("EF_Refrigerant");
+	ListGridField EF_Refrigerant_Unit = new ListGridField("EF_Refrigerant_Unit");
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(streamType);     
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(fuelType);
+	listGridFieldList.add(fuelConsumed);
+	listGridFieldList.add(fuelConsumed_Unit);
+	listGridFieldList.add(EF_Fuel);
+	listGridFieldList.add(EF_Fuel_Unit);
+
+	listGridFieldList.add(refrigerantType);
+	listGridFieldList.add(refrigerantLeakage);
+	listGridFieldList.add(refrigerantLeakage_Unit);
+	listGridFieldList.add(EF_Refrigerant);
+	listGridFieldList.add(EF_Refrigerant_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getTransportationListGridFields_2() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField streamType = new TextListGridField("streamType");
+	
+	ListGridField transportModeOrVehicleType = new TextListGridField("transportModeOrVehicleType");                
+	FloatListGridField massOfGoodsPurchased = new FloatListGridField("massOfGoodsPurchased");
+	ListGridField massOfGoodsPurchased_Unit = new ListGridField("massOfGoodsPurchased_Unit");
+	FloatListGridField distanceTraveledInTransportLeg = new FloatListGridField("distanceTraveledInTransportLeg");
+	ListGridField distanceTraveledInTransportLeg_Unit = new ListGridField("distanceTraveledInTransportLeg_Unit");
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(streamType);     
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(transportModeOrVehicleType);
+	listGridFieldList.add(massOfGoodsPurchased);
+	listGridFieldList.add(massOfGoodsPurchased_Unit);
+	listGridFieldList.add(distanceTraveledInTransportLeg);
+	listGridFieldList.add(distanceTraveledInTransportLeg_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getDistributionListGridFields_1() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField streamType = new TextListGridField("streamType");
+	
+	FloatListGridField volumeOfReportingCompanysPurchasedGoods = new FloatListGridField("volumeOfReportingCompanysPurchasedGoods");                
+	ListGridField volumeOfReportingCompanysPurchasedGoods_Unit = new ListGridField("volumeOfReportingCompanysPurchasedGoods_Unit");
+	FloatListGridField totalVolumeOfGoodsInStorageFacility = new FloatListGridField("totalVolumeOfGoodsInStorageFacility");
+	ListGridField totalVolumeOfGoodsInStorageFacility_Unit = new ListGridField("totalVolumeOfGoodsInStorageFacility_Unit");
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(streamType);     
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(volumeOfReportingCompanysPurchasedGoods);
+	listGridFieldList.add(volumeOfReportingCompanysPurchasedGoods_Unit);
+	listGridFieldList.add(totalVolumeOfGoodsInStorageFacility);
+	listGridFieldList.add(totalVolumeOfGoodsInStorageFacility_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getDistributionListGridFields_2() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField streamType = new TextListGridField("streamType");
+	
+	FloatListGridField storedGoodsInReportingYear = new FloatListGridField("storedGoodsInReportingYear");                
+	ListGridField storedGoodsInReportingYear_Unit = new ListGridField("storedGoodsInReportingYear_Unit");
+	FloatListGridField EF_StorageFacility = new FloatListGridField("EF_StorageFacility");
+	ListGridField EF_StorageFacility_Unit = new ListGridField("EF_StorageFacility_Unit");
+
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(streamType);     
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(storedGoodsInReportingYear);
+	listGridFieldList.add(storedGoodsInReportingYear_Unit);
+	listGridFieldList.add(EF_StorageFacility);
+	listGridFieldList.add(EF_StorageFacility_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getWasteGeneratedInOperationsListGridFields_1() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField wasteType = new TextListGridField("wasteType");
+	
+	ListGridField wasteTreatmentType = new TextListGridField("wasteTreatmentType");                
+	FloatListGridField wasteProduced = new FloatListGridField("wasteProduced");
+	ListGridField wasteProduced_Unit = new ListGridField("wasteProduced_Unit");
+	FloatListGridField EF_WasteTypeAndWasteTreatment = new FloatListGridField("EF_WasteTypeAndWasteTreatment");
+        ListGridField EF_WasteTypeAndWasteTreatment_Unit = new ListGridField("EF_WasteTypeAndWasteTreatment_Unit");
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);        
+	listGridFieldList.add(wasteType);     
+	listGridFieldList.add(wasteTreatmentType);
+	listGridFieldList.add(wasteProduced);
+	listGridFieldList.add(wasteProduced_Unit);
+	listGridFieldList.add(EF_WasteTypeAndWasteTreatment);
+	listGridFieldList.add(EF_WasteTypeAndWasteTreatment_Unit);
+        
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getWasteGeneratedInOperationsListGridFields_2() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField wasteType = new TextListGridField("wasteType");
+	
+	ListGridField wasteTreatmentType = new TextListGridField("wasteTreatmentType");                
+	FloatListGridField wasteProduced = new FloatListGridField("wasteProduced");
+	ListGridField wasteProduced_Unit = new ListGridField("wasteProduced_Unit");
+	FloatListGridField percentOfWasteTreatedByWasteTreatmentMethod = new FloatListGridField("percentOfWasteTreatedByWasteTreatmentMethod");        
+	ListGridField EF_WasteTreatmentMethod = new ListGridField("EF_WasteTreatmentMethod");
+        ListGridField EF_WasteTreatmentMethod_Unit = new ListGridField("EF_WasteTreatmentMethod_Unit");
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);        
+	listGridFieldList.add(wasteType);     
+	listGridFieldList.add(wasteTreatmentType);
+	listGridFieldList.add(wasteProduced);
+	listGridFieldList.add(wasteProduced_Unit);
+        listGridFieldList.add(percentOfWasteTreatedByWasteTreatmentMethod);
+	listGridFieldList.add(EF_WasteTreatmentMethod);
+	listGridFieldList.add(EF_WasteTreatmentMethod_Unit);
+        
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getBusinessTravelListGridFields() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField activityType = new TextListGridField("activityType");
+	
+	ListGridField vehicleType = new TextListGridField("vehicleType");                
+	ListGridField distanceTravelledByVehicleType = new ListGridField("distanceTravelledByVehicleType");	
+	ListGridField distanceTravelledByVehicleType_Unit = new ListGridField("distanceTravelledByVehicleType_Unit");
+        FloatListGridField EF_VehicleType = new FloatListGridField("EF_VehicleType");
+        ListGridField EF_VehicleType_Unit = new ListGridField("EF_VehicleType_Unit");
+
+        FloatListGridField annualNumberOfHotelNights = new FloatListGridField("annualNumberOfHotelNights");        
+        FloatListGridField EF_Hotel = new FloatListGridField("EF_Hotel");
+        ListGridField EF_Hotel_Unit = new ListGridField("EF_Hotel_Unit");
+        
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(activityType);     
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(vehicleType);
+	listGridFieldList.add(distanceTravelledByVehicleType);
+	listGridFieldList.add(distanceTravelledByVehicleType_Unit);
+	listGridFieldList.add(EF_VehicleType);
+	listGridFieldList.add(EF_VehicleType_Unit);
+	listGridFieldList.add(annualNumberOfHotelNights);
+	listGridFieldList.add(EF_Hotel);
+	listGridFieldList.add(EF_Hotel_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getBusinessTravelHotelStayListGridFields() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+        
+        FloatListGridField annualNumberOfHotelNights = new FloatListGridField("annualNumberOfHotelNights");        
+        FloatListGridField EF_Hotel = new FloatListGridField("EF_Hotel");
+        ListGridField EF_Hotel_Unit = new ListGridField("EF_Hotel_Unit");
+        
+        
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(annualNumberOfHotelNights);
+	listGridFieldList.add(EF_Hotel);
+	listGridFieldList.add(EF_Hotel_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getLeasedAssetsListGridFields_1() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField streamType = new TextListGridField("streamType");
+	
+	ListGridField typeOfLeasingArrangement = new TextListGridField("typeOfLeasingArrangement");                
+	ListGridField lessorOrLessee = new ListGridField("lessorOrLessee");
+	ListGridField leasedAssetName = new ListGridField("leasedAssetName");
+	//FloatListGridField totalVolumeOfGoodsInStorageFacility_Unit = new FloatListGridField("totalVolumeOfGoodsInStorageFacility_Unit");
+
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(streamType);     
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(typeOfLeasingArrangement);
+	listGridFieldList.add(lessorOrLessee);
+	listGridFieldList.add(leasedAssetName);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getLeasedAssetsListGridFields_2() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField streamType = new TextListGridField("streamType");
+	
+	ListGridField typeOfLeasingArrangement = new TextListGridField("typeOfLeasingArrangement");                
+	ListGridField lessorOrLessee = new ListGridField("lessorOrLessee");
+	ListGridField leasedAssetName = new ListGridField("leasedAssetName");
+	//FloatListGridField totalVolumeOfGoodsInStorageFacility_Unit = new FloatListGridField("totalVolumeOfGoodsInStorageFacility_Unit");
+
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(streamType);     
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(typeOfLeasingArrangement);
+	listGridFieldList.add(lessorOrLessee);
+	listGridFieldList.add(leasedAssetName);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getProcessingOfSoldProductsListGridFields_1() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField soldProductName = new TextListGridField("soldProductName");
+	ListGridField productSoldTo = new TextListGridField("productSoldTo");	
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(soldProductName);
+	listGridFieldList.add(productSoldTo);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getProcessingOfSoldProductsListGridFields_2() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField soldProductName = new TextListGridField("soldProductName");
+	ListGridField productSoldTo = new TextListGridField("productSoldTo");	
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(soldProductName);
+	listGridFieldList.add(productSoldTo);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getDirectUsePhaseEmissionsListGridFields_1() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField productType = new TextListGridField("productType");
+	ListGridField productName = new TextListGridField("productName");
+	
+	FloatListGridField totalLifetimeExpectedUsesOfProduct = new FloatListGridField("totalLifetimeExpectedUsesOfProduct");                
+	FloatListGridField numberSoldInReportingPeriod = new FloatListGridField("numberSoldInReportingPeriod");                
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(productType);
+	listGridFieldList.add(productName);
+	listGridFieldList.add(totalLifetimeExpectedUsesOfProduct);
+	listGridFieldList.add(numberSoldInReportingPeriod);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getDirectUsePhaseEmissionsListGridFields_2() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField productType = new TextListGridField("productType");
+	ListGridField productName = new TextListGridField("productName");
+	
+	FloatListGridField totalQuantityOfFuelOrFeedstockSold = new FloatListGridField("totalQuantityOfFuelOrFeedstockSold"); 
+	ListGridField totalQuantityOfFuelOrfeedstockSold_Unit = new TextListGridField("totalQuantityOfFuelOrfeedstockSold_Unit");
+	
+	FloatListGridField combustion_EF_ForFuelOrFeedstock = new FloatListGridField("combustion_EF_ForFuelOrFeedstock");                
+	ListGridField combustion_EF_ForFuelOrFeedstock_Unit = new TextListGridField("combustion_EF_ForFuelOrFeedstock_Unit");
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(productType);
+	listGridFieldList.add(productName);
+	listGridFieldList.add(totalQuantityOfFuelOrFeedstockSold);
+	listGridFieldList.add(totalQuantityOfFuelOrfeedstockSold_Unit);
+	listGridFieldList.add(combustion_EF_ForFuelOrFeedstock);
+	listGridFieldList.add(combustion_EF_ForFuelOrFeedstock_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getDirectUsePhaseEmissionsListGridFields_3() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField productType = new TextListGridField("productType");
+	ListGridField productName = new TextListGridField("productName");
+	
+	ListGridField GHG_Name = new TextListGridField("GHG_Name");	
+	FloatListGridField numberSoldInReportingPeriod = new FloatListGridField("numberSoldInReportingPeriod"); 	
+	FloatListGridField GHG_PerProduct = new FloatListGridField("GHG_PerProduct"); 
+	
+	FloatListGridField percentOfGHGReleasedDuringLifetimeUseOfProduct = new FloatListGridField("percentOfGHGReleasedDuringLifetimeUseOfProduct");
+	FloatListGridField GWP_GHG = new FloatListGridField("GWP_GHG");
+		
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(productType);
+	listGridFieldList.add(productName);
+	listGridFieldList.add(GHG_Name);
+	listGridFieldList.add(numberSoldInReportingPeriod);
+	listGridFieldList.add(GHG_PerProduct);
+	listGridFieldList.add(percentOfGHGReleasedDuringLifetimeUseOfProduct);
+	listGridFieldList.add(GWP_GHG);
+        
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getInDirectUsePhaseEmissionsListGridFields_1() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField productType = new TextListGridField("productType");
+	ListGridField productName = new TextListGridField("productName");
+	
+	FloatListGridField totalLifetimeExpectedUsesOfProduct = new FloatListGridField("totalLifetimeExpectedUsesOfProduct"); 
+	FloatListGridField numberSoldInReportingPeriod = new FloatListGridField("numberSoldInReportingPeriod"); 	
+			
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(productType);
+	listGridFieldList.add(productName);
+	listGridFieldList.add(totalLifetimeExpectedUsesOfProduct);
+	listGridFieldList.add(numberSoldInReportingPeriod);
+        
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getInDirectUsePhaseEmissionsListGridFields_2() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField productType = new TextListGridField("productType");
+	ListGridField productName = new TextListGridField("productName");
+	
+	FloatListGridField functionalUnitsPerformedPerProduct = new FloatListGridField("functionalUnitsPerformedPerProduct"); 
+	FloatListGridField numberSoldInReportingPeriod = new FloatListGridField("numberSoldInReportingPeriod"); 	
+
+	FloatListGridField emissionsPerFunctionalUnitOfProduct = new FloatListGridField("emissionsPerFunctionalUnitOfProduct"); 	
+	ListGridField emissionsPerFunctionalUnitOfProduct_Unit = new TextListGridField("emissionsPerFunctionalUnitOfProduct_Unit");
+
+	FloatListGridField totalLifetimeEmissions = new FloatListGridField("totalLifetimeEmissions"); 	
+	ListGridField totalLifetimeEmissions_Unit = new TextListGridField("totalLifetimeEmissions_Unit");
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);
+	listGridFieldList.add(productType);
+	listGridFieldList.add(productName);
+	listGridFieldList.add(functionalUnitsPerformedPerProduct);
+	listGridFieldList.add(numberSoldInReportingPeriod);
+
+	listGridFieldList.add(emissionsPerFunctionalUnitOfProduct);
+	listGridFieldList.add(emissionsPerFunctionalUnitOfProduct_Unit);
+	listGridFieldList.add(totalLifetimeEmissions);
+	listGridFieldList.add(totalLifetimeEmissions_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getEndOfLifeTreatmentOfSoldProductsListGridFields() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+        ListGridField soldProductName = new TextListGridField("soldProductName");    
+	FloatListGridField massOfSoldProductsAfterConsumerUse = new FloatListGridField("massOfSoldProductsAfterConsumerUse");
+	ListGridField massOfSoldProductsAfterConsumerUse_Unit = new ListGridField("massOfSoldProductsAfterConsumerUse_Unit");
+	FloatListGridField percentOfWasteTreatedByWasteTreatmentMethod = new FloatListGridField("percentOfWasteTreatedByWasteTreatmentMethod");        
+                            
+	ListGridField wasteType = new TextListGridField("wasteType");
+	ListGridField wasteTreatmentType = new TextListGridField("wasteTreatmentType");                
+	ListGridField EF_WasteTreatmentMethod = new ListGridField("EF_WasteTreatmentMethod");
+        ListGridField EF_WasteTreatmentMethod_Unit = new ListGridField("EF_WasteTreatmentMethod_Unit");
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);        
+        listGridFieldList.add(soldProductName);   
+	listGridFieldList.add(massOfSoldProductsAfterConsumerUse);
+	listGridFieldList.add(massOfSoldProductsAfterConsumerUse_Unit);
+        listGridFieldList.add(percentOfWasteTreatedByWasteTreatmentMethod);        
+	listGridFieldList.add(wasteType);     
+	listGridFieldList.add(wasteTreatmentType);
+	listGridFieldList.add(EF_WasteTreatmentMethod);
+	listGridFieldList.add(EF_WasteTreatmentMethod_Unit);
+        
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getFranchisesListGridFields_1() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField franchiseName = new TextListGridField("franchiseName");
+	
+        FloatListGridField scope1EmissionsOfFranchise = new FloatListGridField("scope1EmissionsOfFranchise");
+	ListGridField scope1EmissionsOfFranchise_Unit = new TextListGridField("scope1EmissionsOfFranchise_Unit");                
+        FloatListGridField scope2EmissionsOfFranchise = new FloatListGridField("scope2EmissionsOfFranchise");
+	ListGridField scope2EmissionsOfFranchise_Unit = new TextListGridField("scope2EmissionsOfFranchise_Unit");                	
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);
+        listGridFieldList.add(franchiseName);     
+	listGridFieldList.add(scope1EmissionsOfFranchise);
+	listGridFieldList.add(scope1EmissionsOfFranchise_Unit);
+	listGridFieldList.add(scope2EmissionsOfFranchise);
+	listGridFieldList.add(scope2EmissionsOfFranchise_Unit);
+        
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+public static ListGridField[] getFranchisesListGridFields_2() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField franchiseName = new TextListGridField("franchiseName");
+	
+	FloatListGridField floorSpace = new FloatListGridField("floorSpace");                
+	ListGridField floorSpace_Unit = new ListGridField("floorSpace_Unit");
+	FloatListGridField average_EF = new FloatListGridField("average_EF");                
+	ListGridField average_EF_Unit = new ListGridField("average_EF_Unit");
+        
+	ListGridField buildingOrAssetName = new ListGridField("buildingOrAssetName");
+	FloatListGridField numberOfbuildingsOrAssetTypes = new FloatListGridField("numberOfbuildingsOrAssetTypes");                
+	FloatListGridField averageEmissionsPerBuildingOrAssetType = new FloatListGridField("averageEmissionsPerBuildingOrAssetType");                
+	ListGridField averageEmissionsPerBuildingOrAssetType_Unit = new ListGridField("averageEmissionsPerBuildingOrAssetType_Unit");
+	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);     
+	listGridFieldList.add(franchiseName);
+	listGridFieldList.add(floorSpace);
+	listGridFieldList.add(floorSpace_Unit);
+	listGridFieldList.add(average_EF);
+	listGridFieldList.add(average_EF_Unit);
+	listGridFieldList.add(buildingOrAssetName);
+	listGridFieldList.add(numberOfbuildingsOrAssetTypes);
+	listGridFieldList.add(averageEmissionsPerBuildingOrAssetType);
+	listGridFieldList.add(averageEmissionsPerBuildingOrAssetType_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getInvestmentsListGridFields_1() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+	ListGridField investmentType = new TextListGridField("investmentType");
+	
+	FloatListGridField scope1Emissions = new FloatListGridField("scope1Emissions");                
+	ListGridField scope1Emissions_Unit = new ListGridField("scope1Emissions_Unit");
+	FloatListGridField scope2Emissions = new FloatListGridField("scope2Emissions");                
+	ListGridField scope2Emissions_Unit = new ListGridField("scope2Emissions_Unit");
+        	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);     
+	listGridFieldList.add(investmentType);
+	listGridFieldList.add(scope1Emissions);
+	listGridFieldList.add(scope1Emissions_Unit);
+	listGridFieldList.add(scope2Emissions);
+	listGridFieldList.add(scope2Emissions_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
+public static ListGridField[] getInvestmentsListGridFields_2() {
+    
+	ListGridField sourceDescriptionField = new TextListGridField("sourceDescription");    
+        ListGridField investmentType = new TextListGridField("investmentType");
+	ListGridField investmentSector = new TextListGridField("investmentSector");
+	
+	FloatListGridField investmentAmount = new FloatListGridField("investmentAmount");                
+	ListGridField investmentAmount_Unit = new ListGridField("investmentAmount_Unit");
+	FloatListGridField EF_SectorSpecific = new FloatListGridField("EF_SectorSpecific");                
+	ListGridField EF_SectorSpecific_Unit = new ListGridField("EF_SectorSpecific_Unit");
+        	
+	List<ListGridField> listGridFieldList = new ArrayList<ListGridField>();
+	listGridFieldList.add(sourceDescriptionField);     
+	listGridFieldList.add(investmentType);
+        listGridFieldList.add(investmentSector);
+	listGridFieldList.add(investmentAmount);
+	listGridFieldList.add(investmentAmount_Unit);
+	listGridFieldList.add(EF_SectorSpecific);
+	listGridFieldList.add(EF_SectorSpecific_Unit);
+	
+	ListGridField[] listGridFieldArray = new ListGridField[listGridFieldList.size()];
+	listGridFieldList.toArray(listGridFieldArray);
+
+	return listGridFieldArray;
+}
+
 public void setIbLFormWindow(String windowTitleString, DynamicForm df, Window dfw, ListGrid dg) {
 
         final DynamicForm dataForm = df;
@@ -7647,7 +10256,9 @@ public void setIbLFormWindow(String windowTitleString, DynamicForm df, Window df
         
         dataForm.setCellPadding(5);
         dataForm.setWidth("100%");
-
+        //dataForm.setLayoutAlign(Alignment.CENTER);//lign(VerticalAlignment.CENTER);
+        
+        
         final IButton cancelButton = new IButton();
         final IButton saveButton = new IButton();
 
@@ -7658,14 +10269,46 @@ public void setIbLFormWindow(String windowTitleString, DynamicForm df, Window df
             if ((!dataForm.getErrors().isEmpty()) || !dataForm.validate()){
                 SC.say("Please clear errors before submitting this information!");
             }
-            else {
-                Record formRecord = dataForm.getValuesAsRecord();
+            else { 
+                
+                Record formRecord = dataForm.getValuesAsRecord();                
                 Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
-                formRecord.setAttribute("organizationId", organizationIdValue);
+                formRecord.setAttribute("organizationId", organizationIdValue);                
                 dataGrid.updateData(formRecord);
                 dataForm.markForRedraw();
-                dataFormWindow.hide();
-            }
+                dataFormWindow.hide();                  
+                
+                /*
+                Record formRecord = dataForm.getValuesAsRecord();                
+                Integer organizationIdValue = (Integer)UserOrganizationHeader.organizationSelectForm.getItem("id").getValue();
+                formRecord.setAttribute("organizationId", organizationIdValue);
+                //ListGrid testThisItem = (ListGrid)((IblGridEditorItem) dataForm.getItem("materialUsedBy_T1S_Info")).getCanvas();
+                //RecordList records = testThisItem.getDataAsRecordList();
+                //Map records = testThisItem.getValues();
+                //formRecord.setAttribute("materialUsedBy_T1S_InfoGrid", records.toArray());                                
+                //dataGrid.updateData(formRecord);               
+                
+                
+                dataGrid.updateData(formRecord, new DSCallback(){
+                    @Override
+                    public void execute(DSResponse response, Object rawData, DSRequest request) {  
+                        
+                        ListGrid testThisItem = (ListGrid)((IblGridEditorItem) dataForm.getItem("materialUsedBy_T1S_Info")).getCanvas();
+                        testThisItem.saveAllEdits();                        
+                    }
+                });     
+                
+                
+                
+                dataForm.setValues((Map)formRecord);
+                //dataForm.setValues((formRecord.getAtt);
+                dataForm.saveData();
+                //testThisItem.saveAllEdits();
+                
+                dataForm.markForRedraw();
+                dataFormWindow.hide();    
+                */
+            };
           }
         });
 
@@ -7682,16 +10325,18 @@ public void setIbLFormWindow(String windowTitleString, DynamicForm df, Window df
         buttons.setAlign(Alignment.CENTER);
         buttons.addMember(cancelButton);
         buttons.addMember(saveButton);
-
+        
         VLayout dialog = new VLayout(10);
-        dialog.setPadding(25);
+        dialog.setWidth("100%");
+        //dialog.setPadding(25);
         dialog.addMember(dataForm);
         dialog.addMember(buttons);
         //dialog.setAlign(Alignment.CENTER);
 
         dataFormWindow.setShowShadow(true);
         dataFormWindow.setIsModal(true);
-        dataFormWindow.setPadding(25);
+        //dataFormWindow.setPadding(25);
+        
         //dataFormWindow.setMinWidth(500);
         //dataFormWindow.setMinHeight(260);
         //dataFormWindow.setOverflow(Overflow.VISIBLE);
@@ -8248,6 +10893,15 @@ public FormItem[] getOptionalSourceFormFields(String typeOfData) {
     airTravelTypeItem.setTitle("airTravelType");
     airTravelTypeItem.setOptionDataSource(theEF_AirTravelType_EPADS);
 
+    IblFloatItem annualNumberOfHotelNights = new IblFloatItem("annualNumberOfHotelNights");
+    IblFloatItem EF_Hotel = new IblFloatItem("EF_Hotel");
+    EF_Hotel.setStartRow(Boolean.TRUE);
+    
+    SelectItem EF_Hotel_Unit = new SelectItem("EF_Hotel_Unit");
+    EF_Hotel_Unit.setValueMap("Kg CO2e");
+    EF_Hotel_Unit.setDefaultValue("Kg CO2e");
+    EF_Hotel_Unit.setWidth("*");    
+    
     IblFloatItem passengerMilesItem = new IblFloatItem("passengerMiles");
 
     final SelectItem transportTypeItem = new SelectItem();
@@ -8284,6 +10938,11 @@ public FormItem[] getOptionalSourceFormFields(String typeOfData) {
          formItemList.add(airTravelTypeItem);
          formItemList.add(passengerMilesItem);
          optionalSourceTypeItem.setDefaultValue("Employee Business Travel - By Air");
+    } else if (typeOfData.equalsIgnoreCase("employeeBusinessTravelHotelStay")){
+         formItemList.add(annualNumberOfHotelNights);
+         formItemList.add(EF_Hotel);
+         formItemList.add(EF_Hotel_Unit);
+         optionalSourceTypeItem.setDefaultValue("Employee Business Travel - Hotel Stay");
     } else if (typeOfData.equalsIgnoreCase("employeeCommutingByVehicle")){
          vehicleTypeItem.setOptionDataSource(theEF_VehicleType_EPADS);
          formItemList.add(vehicleTypeItem);
@@ -8392,6 +11051,4161 @@ public FormItem[] getWasteStreamCombustionFormFields() {
     formItemList.add(fuelUsedBeginDateItem);
     formItemList.add(fuelUsedEndDateItem);
 
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getPurchasedProductFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+    IblFloatItem supplierSpecific_EF_ForPurchasedProductItem = new IblFloatItem("supplierSpecific_EF_ForPurchasedProduct");    
+    SelectItem_EFUnit supplierSpecific_EF_ForPurchasedProduct_UnitItem = new SelectItem_EFUnit("supplierSpecific_EF_ForPurchasedProduct_Unit");    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Product Level Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+    formItemList.add(supplierSpecific_EF_ForPurchasedProductItem);
+    formItemList.add(supplierSpecific_EF_ForPurchasedProduct_UnitItem);
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getPurchasedProductFormFields_2() {
+//-- setValidators for the forms for common types.
+    initializeValidators();
+   
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+       
+    IblFloatItem scope1EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope1EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope1EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope1EmissionsOf_T1S_ForPurchasedProduct_Unit");
+    IblFloatItem scope2EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope2EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope2EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope2EmissionsOf_T1S_ForPurchasedProduct_Unit");
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+        
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+        
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+        
+    //formItemList.add(scope1EmissionsOf_T1S_sectionItem);
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct_Unit);
+    
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    
+    formItemList.add(methodTypeItem);    
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getPurchasedProductFormFields_2_OLD() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SectionItem purchasedProduct_sectionItem = new SectionItem();    
+    purchasedProduct_sectionItem.setName("purchasedProduct_sectionItem");
+    purchasedProduct_sectionItem.setDefaultValue("Purchased Product from Tier One Supplier");
+    
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+    
+    //-- Section for Scope 1 and 2 Emissions
+    /*
+    SectionItem scope1EmissionsOf_T1S_sectionItem = new SectionItem();    
+    scope1EmissionsOf_T1S_sectionItem.setName("scope1EmissionsOf_T1S_sectionItem");
+    scope1EmissionsOf_T1S_sectionItem.setDefaultValue("Scope 1 & 2 Emissions Of Tier One Supplier");
+    */
+    
+    IblFloatItem scope1EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope1EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope1EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope1EmissionsOf_T1S_ForPurchasedProduct_Unit");
+    IblFloatItem scope2EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope2EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope2EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope2EmissionsOf_T1S_ForPurchasedProduct_Unit");
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+
+    purchasedProduct_sectionItem.setItemIds("sourceDescription",
+                                            "supplierName",
+                                            "supplierContact",
+                                            "purchasedProductType",
+                                            "purchasedProductName",
+                                            "quantityOfPurchasedProduct",
+                                            "quantityOfPurchasedProduct_Unit",            
+                                                 "scope1EmissionsOf_T1S_ForPurchasedProduct",
+                                                 "scope1EmissionsOf_T1S_ForPurchasedProduct_Unit",
+                                                 "scope2EmissionsOf_T1S_ForPurchasedProduct",
+                                                 "scope2EmissionsOf_T1S_ForPurchasedProduct_Unit",
+                                                 "userNotesOnData",
+                                                 "dataBeginDate",
+                                                 "dataEndDate"
+                                                );
+    purchasedProduct_sectionItem.setSectionExpanded(true);   
+    
+    
+    //-- Section for Material Inputs for Purchased Product    
+    SectionItem materialUsedBy_T1S_sectionItem = new SectionItem();    
+    materialUsedBy_T1S_sectionItem.setName("scope1EmissionsOf_T1S_sectionItem");
+    materialUsedBy_T1S_sectionItem.setDefaultValue("Materials Used By Tier One Suppler for purchased product");
+
+
+    //IblGridEditorItem materialUsedBy_T1S_InfoItems = new IblGridEditorItem("materialUsedBy_T1S_Grid",purchasedProductForm_2 );    
+    IblGridEditorItem materialUsedBy_T1S_InfoItems = new IblGridEditorItem("materialUsedBy_T1S_Info");
+    materialUsedBy_T1S_InfoItems.setGridFields(getPurchasedProductListGridFields_2_2());    
+    materialUsedBy_T1S_InfoItems.setShowTitle(false);
+    materialUsedBy_T1S_InfoItems.setGridDataSource(materialUsedBy_T1S_InfoDS);
+    materialUsedBy_T1S_InfoItems.setStartRow(Boolean.TRUE);
+
+    
+    /*
+    Criteria productCriteria = new Criteria();    
+    //Integer purchasedProductInfoId = (Integer) purchasedProductForm_2.getValue("id");
+    //Record purchasedProductForm_2Record = (Record)purchasedProductForm_2.getValuesAsRecord();
+    //Integer purchasedProductInfoId = (Integer) purchasedProductForm_2Record.getAttributeAsInt("id");
+    Integer purchasedProductInfoId=25;
+    //materialUsedBy_T1S_InfoItems.setCriteriaField("id");
+    
+    productCriteria.addCriteria("purchasedProductInfoId", purchasedProductInfoId);
+    
+    //materialUsedBy_T1S_InfoDS.setCriteria(productCriteria);
+    materialUsedBy_T1S_InfoDS.fetchData(productCriteria, new DSCallback() {
+        @Override
+        public void execute(DSResponse response, Object rawData, DSRequest request) {
+            DynamicForm exampleForm = (DynamicForm) Canvas.getById("purchasedProductForm_2");
+            exampleForm.editRecord(response.getData()[0]);
+            SC.say("I am in execute" + response.getData()[0]);
+        }
+    });
+   */
+    
+    
+/*    
+    IblTextItem materialUsedBy_T1S_ForPurchasedProduct = new IblTextItem("materialUsedBy_T1S_ForPurchasedProduct","");    
+    IblFloatItem amountOfMaterialUsedBy_T1S_ForPurchasedProduct = new IblFloatItem("amountOfMaterialUsedBy_T1S_ForPurchasedProduct");    
+    SelectItem_Unit amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit");    
+    TextItem EF_Material = new TextItem("EF_Material");        
+    SelectItem_EFUnit EF_Material_Unit = new SelectItem_EFUnit("EF_Material_Unit");    
+    materialUsedBy_T1S_sectionItem.setItemIds("materialUsedBy_T1S_ForPurchasedProduct",
+                                                 "amountOfMaterialUsedBy_T1S_ForPurchasedProduct",
+                                                 "amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit",
+                                                 "EF_Material",
+                                                 "EF_Material_Unit"
+                                                );
+ * 
+ */
+    materialUsedBy_T1S_sectionItem.setItemIds("materialUsedBy_T1S_Info");
+    materialUsedBy_T1S_sectionItem.setSectionExpanded(false);   
+        
+    //-- Section for Transport of material inputs to tier 1 supplier
+    SectionItem transportOfMaterialTo_T1S_sectionItem = new SectionItem();    
+    transportOfMaterialTo_T1S_sectionItem.setName("transportOfMaterialTo_T1S_sectionItem");
+    transportOfMaterialTo_T1S_sectionItem.setDefaultValue("Transport of Materials Used By Tier One Suppler for purchased product");
+    
+    IblFloatItem distanceOfTransportOfMaterialInputsTo_T1S = new IblFloatItem("distanceOfTransportOfMaterialInputsTo_T1S");    
+    SelectItem_Unit distanceOfTransportOfMaterialInputsTo_T1S_Unit = new SelectItem_Unit("distanceOfTransportOfMaterialInputsTo_T1S_Unit");    
+    IblFloatItem massOfMateriaInput = new IblFloatItem("massOfMateriaInput");    
+    SelectItem_Unit massOfMateriaInput_Unit = new SelectItem_Unit("massOfMateriaInput_Unit");    
+    TextItem vehicleType = new TextItem("vehicleType");        
+    TextItem EF_VehicleType = new TextItem("EF_VehicleType");        
+    SelectItem_EFUnit EF_VehicleType_Unit = new SelectItem_EFUnit("EF_VehicleType_Unit");                
+    transportOfMaterialTo_T1S_sectionItem.setItemIds("distanceOfTransportOfMaterialInputsTo_T1S",
+                                                 "distanceOfTransportOfMaterialInputsTo_T1S_Unit",
+                                                 "massOfMateriaInput",
+                                                 "massOfMateriaInput_Unit",
+                                                 "vehicleType",
+                                                 "EF_VehicleType",
+                                                 "EF_VehicleType_Unit"
+                                                );
+    
+    transportOfMaterialTo_T1S_sectionItem.setSectionExpanded(false);   
+    
+    //-- Section for Mass Of Waste From T1S for purchased product
+    SectionItem massOfWasteFrom_T1S_sectionItem = new SectionItem();    
+    massOfWasteFrom_T1S_sectionItem.setName("massOfWasteFrom_T1S_sectionItem");
+    massOfWasteFrom_T1S_sectionItem.setDefaultValue("Mass of Waste  By Tier One Suppler for purchased product");
+    //massOfWasteFrom_T1S_sectionItem.setColSpan(4);
+    //massOfWasteFrom_T1S_sectionItem.setWidth("100%");
+    
+    IblFloatItem massOfWasteFrom_T1S_ForPurchasedProduct = new IblFloatItem("massOfWasteFrom_T1S_ForPurchasedProduct");    
+    SelectItem_Unit massOfWasteFrom_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("massOfWasteFrom_T1S_ForPurchasedProduct_Unit");    
+    TextItem EF_WasteActivity = new TextItem("EF_WasteActivity");        
+    SelectItem_EFUnit EF_WasteActivity_Unit = new SelectItem_EFUnit("EF_WasteActivity_Unit");    
+    
+    massOfWasteFrom_T1S_sectionItem.setItemIds("massOfWasteFrom_T1S_ForPurchasedProduct",
+                                                 "massOfWasteFrom_T1S_ForPurchasedProduct_Unit",
+                                                 "EF_WasteActivity",
+                                                 "EF_WasteActivity_Unit"
+                                                );       
+    
+    massOfWasteFrom_T1S_sectionItem.setSectionExpanded(false);   
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(purchasedProduct_sectionItem);
+    
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+        
+    //formItemList.add(scope1EmissionsOf_T1S_sectionItem);
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct_Unit);
+
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    
+    formItemList.add(materialUsedBy_T1S_sectionItem);    
+    formItemList.add(materialUsedBy_T1S_InfoItems);    
+    
+    /*
+    formItemList.add(materialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(EF_Material);
+    formItemList.add(EF_Material_Unit);
+     * 
+     */
+
+    formItemList.add(transportOfMaterialTo_T1S_sectionItem);    
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S);
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S_Unit);
+    formItemList.add(massOfMateriaInput);
+    formItemList.add(massOfMateriaInput_Unit);
+    formItemList.add(vehicleType);
+    formItemList.add(EF_VehicleType);
+    formItemList.add(EF_VehicleType_Unit);
+
+    formItemList.add(massOfWasteFrom_T1S_sectionItem);    
+    formItemList.add(massOfWasteFrom_T1S_ForPurchasedProduct);
+    formItemList.add(massOfWasteFrom_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(EF_WasteActivity);
+    formItemList.add(EF_WasteActivity_Unit);	
+        
+    formItemList.add(methodTypeItem);    
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getPurchasedProductFormFields_2_TAB() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    Tab purchasedProduct_sectionItem = new Tab();    
+    purchasedProduct_sectionItem.setID("purchasedProduct_sectionItem");
+    purchasedProduct_sectionItem.setTitle("Purchased Product from Tier One Supplier");
+    
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+    
+    //-- Section for Scope 1 and 2 Emissions
+    /*
+    SectionItem scope1EmissionsOf_T1S_sectionItem = new SectionItem();    
+    scope1EmissionsOf_T1S_sectionItem.setName("scope1EmissionsOf_T1S_sectionItem");
+    scope1EmissionsOf_T1S_sectionItem.setDefaultValue("Scope 1 & 2 Emissions Of Tier One Supplier");
+    */
+    
+    IblFloatItem scope1EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope1EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope1EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope1EmissionsOf_T1S_ForPurchasedProduct_Unit");
+    IblFloatItem scope2EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope2EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope2EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope2EmissionsOf_T1S_ForPurchasedProduct_Unit");
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+
+    DynamicForm purchaseProductForm_2_2 = new DynamicForm();
+    
+    purchaseProductForm_2_2.setFields(sourceDescriptionItem,
+                                            supplierNameItem,
+                                            supplierContactItem,
+                                            purchasedProductTypeItem,
+                                            purchasedProductNameItem,
+                                            quantityOfPurchasedProductItem,
+                                            quantityOfPurchasedProduct_UnitItem,            
+                                                 scope1EmissionsOf_T1S_ForPurchasedProduct,
+                                                 scope1EmissionsOf_T1S_ForPurchasedProduct_Unit,
+                                                 scope2EmissionsOf_T1S_ForPurchasedProduct,
+                                                 scope2EmissionsOf_T1S_ForPurchasedProduct_Unit,
+                                                 userNotesOnDataItem,
+                                                 dataBeginDateItem,
+                                                 dataEndDateItem
+                                                );
+    
+    purchasedProduct_sectionItem.setPane(purchaseProductForm_2_2);
+    
+    //-- Section for Material Inputs for Purchased Product    
+    Tab materialUsedBy_T1S_sectionItem = new Tab();    
+    materialUsedBy_T1S_sectionItem.setID("materialUsedBy_T1S_InfoTab");
+    materialUsedBy_T1S_sectionItem.setTitle("Materials Used By Tier One Suppler for purchased product");
+
+    //IblGridEditorItem materialUsedBy_T1S_InfoItems = new IblGridEditorItem("materialUsedBy_T1S_Grid",purchasedProductForm_2 );    
+    ListGrid materialUsedBy_T1S_InfoGrid = new ListGrid();    
+    materialUsedBy_T1S_InfoGrid.setFields(getPurchasedProductListGridFields_2_2());
+    materialUsedBy_T1S_InfoGrid.setDataSource(materialUsedBy_T1S_InfoDS);
+    materialUsedBy_T1S_InfoGrid.setCanEdit(Boolean.TRUE); 
+    materialUsedBy_T1S_InfoGrid.setModalEditing(Boolean.TRUE);
+    materialUsedBy_T1S_InfoGrid.setEditEvent(ListGridEditEvent.CLICK);
+    materialUsedBy_T1S_InfoGrid.setListEndEditAction(RowEndEditAction.NEXT);
+    materialUsedBy_T1S_InfoGrid.setCanRemoveRecords(true);  
+    
+    materialUsedBy_T1S_sectionItem.setPane(materialUsedBy_T1S_InfoGrid);
+
+/*    
+    //-- Section for Transport of material inputs to tier 1 supplier
+    SectionItem transportOfMaterialTo_T1S_sectionItem = new SectionItem();    
+    transportOfMaterialTo_T1S_sectionItem.setName("transportOfMaterialTo_T1S_sectionItem");
+    transportOfMaterialTo_T1S_sectionItem.setDefaultValue("Transport of Materials Used By Tier One Suppler for purchased product");
+    
+    IblFloatItem distanceOfTransportOfMaterialInputsTo_T1S = new IblFloatItem("distanceOfTransportOfMaterialInputsTo_T1S");    
+    SelectItem_Unit distanceOfTransportOfMaterialInputsTo_T1S_Unit = new SelectItem_Unit("distanceOfTransportOfMaterialInputsTo_T1S_Unit");    
+    IblFloatItem massOfMateriaInput = new IblFloatItem("massOfMateriaInput");    
+    SelectItem_Unit massOfMateriaInput_Unit = new SelectItem_Unit("massOfMateriaInput_Unit");    
+    TextItem vehicleType = new TextItem("vehicleType");        
+    TextItem EF_VehicleType = new TextItem("EF_VehicleType");        
+    SelectItem_EFUnit EF_VehicleType_Unit = new SelectItem_EFUnit("EF_VehicleType_Unit");                
+    transportOfMaterialTo_T1S_sectionItem.setItemIds("distanceOfTransportOfMaterialInputsTo_T1S",
+                                                 "distanceOfTransportOfMaterialInputsTo_T1S_Unit",
+                                                 "massOfMateriaInput",
+                                                 "massOfMateriaInput_Unit",
+                                                 "vehicleType",
+                                                 "EF_VehicleType",
+                                                 "EF_VehicleType_Unit"
+                                                );
+    
+    transportOfMaterialTo_T1S_sectionItem.setSectionExpanded(false);   
+    
+    //-- Section for Mass Of Waste From T1S for purchased product
+    SectionItem massOfWasteFrom_T1S_sectionItem = new SectionItem();    
+    massOfWasteFrom_T1S_sectionItem.setName("massOfWasteFrom_T1S_sectionItem");
+    massOfWasteFrom_T1S_sectionItem.setDefaultValue("Mass of Waste  By Tier One Suppler for purchased product");
+    //massOfWasteFrom_T1S_sectionItem.setColSpan(4);
+    //massOfWasteFrom_T1S_sectionItem.setWidth("100%");
+    
+    IblFloatItem massOfWasteFrom_T1S_ForPurchasedProduct = new IblFloatItem("massOfWasteFrom_T1S_ForPurchasedProduct");    
+    SelectItem_Unit massOfWasteFrom_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("massOfWasteFrom_T1S_ForPurchasedProduct_Unit");    
+    TextItem EF_WasteActivity = new TextItem("EF_WasteActivity");        
+    SelectItem_EFUnit EF_WasteActivity_Unit = new SelectItem_EFUnit("EF_WasteActivity_Unit");    
+    
+    massOfWasteFrom_T1S_sectionItem.setItemIds("massOfWasteFrom_T1S_ForPurchasedProduct",
+                                                 "massOfWasteFrom_T1S_ForPurchasedProduct_Unit",
+                                                 "EF_WasteActivity",
+                                                 "EF_WasteActivity_Unit"
+                                                );       
+    
+    massOfWasteFrom_T1S_sectionItem.setSectionExpanded(false);   
+*/    
+    TabSet newTabSet = new TabSet();
+    newTabSet.addTab(purchasedProduct_sectionItem);
+    newTabSet.addTab(materialUsedBy_T1S_sectionItem);
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+/*    
+    formItemList.add(purchasedProduct_sectionItem);
+    
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+        
+    //formItemList.add(scope1EmissionsOf_T1S_sectionItem);
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct_Unit);
+
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    
+    formItemList.add(materialUsedBy_T1S_sectionItem);    
+    formItemList.add(materialUsedBy_T1S_InfoItems);    
+*/    
+    /*
+    formItemList.add(materialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(EF_Material);
+    formItemList.add(EF_Material_Unit);
+     * 
+     */
+/*
+    formItemList.add(transportOfMaterialTo_T1S_sectionItem);    
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S);
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S_Unit);
+    formItemList.add(massOfMateriaInput);
+    formItemList.add(massOfMateriaInput_Unit);
+    formItemList.add(vehicleType);
+    formItemList.add(EF_VehicleType);
+    formItemList.add(EF_VehicleType_Unit);
+
+    formItemList.add(massOfWasteFrom_T1S_sectionItem);    
+    formItemList.add(massOfWasteFrom_T1S_ForPurchasedProduct);
+    formItemList.add(massOfWasteFrom_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(EF_WasteActivity);
+    formItemList.add(EF_WasteActivity_Unit);	
+*/
+    
+    formItemList.add(methodTypeItem);    
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getPurchasedProductFormFields_2_Sections() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SectionItem purchasedProduct_sectionItem = new SectionItem();    
+    purchasedProduct_sectionItem.setName("purchasedProduct_sectionItem");
+    purchasedProduct_sectionItem.setDefaultValue("Purchased Product from Tier One Supplier");
+    
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+    
+    //-- Section for Scope 1 and 2 Emissions
+    /*
+    SectionItem scope1EmissionsOf_T1S_sectionItem = new SectionItem();    
+    scope1EmissionsOf_T1S_sectionItem.setName("scope1EmissionsOf_T1S_sectionItem");
+    scope1EmissionsOf_T1S_sectionItem.setDefaultValue("Scope 1 & 2 Emissions Of Tier One Supplier");
+    */
+    
+    IblFloatItem scope1EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope1EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope1EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope1EmissionsOf_T1S_ForPurchasedProduct_Unit");
+    IblFloatItem scope2EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope2EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope2EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope2EmissionsOf_T1S_ForPurchasedProduct_Unit");
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+
+    purchasedProduct_sectionItem.setItemIds("sourceDescription",
+                                            "supplierName",
+                                            "supplierContact",
+                                            "purchasedProductType",
+                                            "purchasedProductName",
+                                            "quantityOfPurchasedProduct",
+                                            "quantityOfPurchasedProduct_Unit",            
+                                                 "scope1EmissionsOf_T1S_ForPurchasedProduct",
+                                                 "scope1EmissionsOf_T1S_ForPurchasedProduct_Unit",
+                                                 "scope2EmissionsOf_T1S_ForPurchasedProduct",
+                                                 "scope2EmissionsOf_T1S_ForPurchasedProduct_Unit",
+                                                 "userNotesOnData",
+                                                 "dataBeginDate",
+                                                 "dataEndDate"
+                                                );
+    purchasedProduct_sectionItem.setSectionExpanded(true);   
+    
+    
+    //-- Section for Material Inputs for Purchased Product    
+    SectionItem materialUsedBy_T1S_sectionItem = new SectionItem();    
+    materialUsedBy_T1S_sectionItem.setName("scope1EmissionsOf_T1S_sectionItem");
+    materialUsedBy_T1S_sectionItem.setDefaultValue("Materials Used By Tier One Suppler for purchased product");
+
+
+    //IblGridEditorItem materialUsedBy_T1S_InfoItems = new IblGridEditorItem("materialUsedBy_T1S_Grid",purchasedProductForm_2 );    
+    IblGridEditorItem materialUsedBy_T1S_InfoItems = new IblGridEditorItem("materialUsedBy_T1S_Info");    
+    materialUsedBy_T1S_InfoItems.setShowTitle(false);
+    materialUsedBy_T1S_InfoItems.setGridDataSource(materialUsedBy_T1S_InfoDS);
+    materialUsedBy_T1S_InfoItems.setStartRow(Boolean.TRUE);
+    materialUsedBy_T1S_InfoItems.setDataPath("materialUsedBy_T1S_Info");
+    
+    /*
+    Criteria productCriteria = new Criteria();    
+    //Integer purchasedProductInfoId = (Integer) purchasedProductForm_2.getValue("id");
+    //Record purchasedProductForm_2Record = (Record)purchasedProductForm_2.getValuesAsRecord();
+    //Integer purchasedProductInfoId = (Integer) purchasedProductForm_2Record.getAttributeAsInt("id");
+    Integer purchasedProductInfoId=25;
+    //materialUsedBy_T1S_InfoItems.setCriteriaField("id");
+    
+    productCriteria.addCriteria("purchasedProductInfoId", purchasedProductInfoId);
+    
+    //materialUsedBy_T1S_InfoDS.setCriteria(productCriteria);
+    materialUsedBy_T1S_InfoDS.fetchData(productCriteria, new DSCallback() {
+        @Override
+        public void execute(DSResponse response, Object rawData, DSRequest request) {
+            DynamicForm exampleForm = (DynamicForm) Canvas.getById("purchasedProductForm_2");
+            exampleForm.editRecord(response.getData()[0]);
+            SC.say("I am in execute" + response.getData()[0]);
+        }
+    });
+   */
+    
+    
+/*    
+    IblTextItem materialUsedBy_T1S_ForPurchasedProduct = new IblTextItem("materialUsedBy_T1S_ForPurchasedProduct","");    
+    IblFloatItem amountOfMaterialUsedBy_T1S_ForPurchasedProduct = new IblFloatItem("amountOfMaterialUsedBy_T1S_ForPurchasedProduct");    
+    SelectItem_Unit amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit");    
+    TextItem EF_Material = new TextItem("EF_Material");        
+    SelectItem_EFUnit EF_Material_Unit = new SelectItem_EFUnit("EF_Material_Unit");    
+    materialUsedBy_T1S_sectionItem.setItemIds("materialUsedBy_T1S_ForPurchasedProduct",
+                                                 "amountOfMaterialUsedBy_T1S_ForPurchasedProduct",
+                                                 "amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit",
+                                                 "EF_Material",
+                                                 "EF_Material_Unit"
+                                                );
+ * 
+ */
+    materialUsedBy_T1S_sectionItem.setItemIds("materialUsedBy_T1S_Info");
+    materialUsedBy_T1S_sectionItem.setSectionExpanded(false);   
+        
+    //-- Section for Transport of material inputs to tier 1 supplier
+    SectionItem transportOfMaterialTo_T1S_sectionItem = new SectionItem();    
+    transportOfMaterialTo_T1S_sectionItem.setName("transportOfMaterialTo_T1S_sectionItem");
+    transportOfMaterialTo_T1S_sectionItem.setDefaultValue("Transport of Materials Used By Tier One Suppler for purchased product");
+    
+    IblFloatItem distanceOfTransportOfMaterialInputsTo_T1S = new IblFloatItem("distanceOfTransportOfMaterialInputsTo_T1S");    
+    SelectItem_Unit distanceOfTransportOfMaterialInputsTo_T1S_Unit = new SelectItem_Unit("distanceOfTransportOfMaterialInputsTo_T1S_Unit");    
+    IblFloatItem massOfMateriaInput = new IblFloatItem("massOfMateriaInput");    
+    SelectItem_Unit massOfMateriaInput_Unit = new SelectItem_Unit("massOfMateriaInput_Unit");    
+    TextItem vehicleType = new TextItem("vehicleType");        
+    TextItem EF_VehicleType = new TextItem("EF_VehicleType");        
+    SelectItem_EFUnit EF_VehicleType_Unit = new SelectItem_EFUnit("EF_VehicleType_Unit");                
+    transportOfMaterialTo_T1S_sectionItem.setItemIds("distanceOfTransportOfMaterialInputsTo_T1S",
+                                                 "distanceOfTransportOfMaterialInputsTo_T1S_Unit",
+                                                 "massOfMateriaInput",
+                                                 "massOfMateriaInput_Unit",
+                                                 "vehicleType",
+                                                 "EF_VehicleType",
+                                                 "EF_VehicleType_Unit"
+                                                );
+    
+    transportOfMaterialTo_T1S_sectionItem.setSectionExpanded(false);   
+    
+    //-- Section for Mass Of Waste From T1S for purchased product
+    SectionItem massOfWasteFrom_T1S_sectionItem = new SectionItem();    
+    massOfWasteFrom_T1S_sectionItem.setName("massOfWasteFrom_T1S_sectionItem");
+    massOfWasteFrom_T1S_sectionItem.setDefaultValue("Mass of Waste  By Tier One Suppler for purchased product");
+    //massOfWasteFrom_T1S_sectionItem.setColSpan(4);
+    //massOfWasteFrom_T1S_sectionItem.setWidth("100%");
+    
+    IblFloatItem massOfWasteFrom_T1S_ForPurchasedProduct = new IblFloatItem("massOfWasteFrom_T1S_ForPurchasedProduct");    
+    SelectItem_Unit massOfWasteFrom_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("massOfWasteFrom_T1S_ForPurchasedProduct_Unit");    
+    TextItem EF_WasteActivity = new TextItem("EF_WasteActivity");        
+    SelectItem_EFUnit EF_WasteActivity_Unit = new SelectItem_EFUnit("EF_WasteActivity_Unit");    
+    
+    massOfWasteFrom_T1S_sectionItem.setItemIds("massOfWasteFrom_T1S_ForPurchasedProduct",
+                                                 "massOfWasteFrom_T1S_ForPurchasedProduct_Unit",
+                                                 "EF_WasteActivity",
+                                                 "EF_WasteActivity_Unit"
+                                                );       
+    
+    massOfWasteFrom_T1S_sectionItem.setSectionExpanded(false);   
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(purchasedProduct_sectionItem);
+    
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+        
+    //formItemList.add(scope1EmissionsOf_T1S_sectionItem);
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct_Unit);
+
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    
+    formItemList.add(materialUsedBy_T1S_sectionItem);    
+    formItemList.add(materialUsedBy_T1S_InfoItems);    
+    
+    /*
+    formItemList.add(materialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(EF_Material);
+    formItemList.add(EF_Material_Unit);
+     * 
+     */
+
+    formItemList.add(transportOfMaterialTo_T1S_sectionItem);    
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S);
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S_Unit);
+    formItemList.add(massOfMateriaInput);
+    formItemList.add(massOfMateriaInput_Unit);
+    formItemList.add(vehicleType);
+    formItemList.add(EF_VehicleType);
+    formItemList.add(EF_VehicleType_Unit);
+
+    formItemList.add(massOfWasteFrom_T1S_sectionItem);    
+    formItemList.add(massOfWasteFrom_T1S_ForPurchasedProduct);
+    formItemList.add(massOfWasteFrom_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(EF_WasteActivity);
+    formItemList.add(EF_WasteActivity_Unit);	
+        
+    formItemList.add(methodTypeItem);    
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getPurchasedProductFormFields_2_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+    
+    IblFloatItem scope1EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope1EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope1EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope1EmissionsOf_T1S_ForPurchasedProduct_Unit");
+    IblFloatItem scope2EmissionsOf_T1S_ForPurchasedProduct = new IblFloatItem("scope2EmissionsOf_T1S_ForPurchasedProduct");    
+    SelectItem_Unit scope2EmissionsOf_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("scope2EmissionsOf_T1S_ForPurchasedProduct_Unit");
+          
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope1EmissionsOf_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct);
+    formItemList.add(scope2EmissionsOf_T1S_ForPurchasedProduct_Unit);
+	            
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getPurchasedProductFormFields_2_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+        
+    IblTextItem materialUsedBy_T1S_ForPurchasedProduct = new IblTextItem("materialUsedBy_T1S_ForPurchasedProduct","");    
+    IblFloatItem amountOfMaterialUsedBy_T1S_ForPurchasedProduct = new IblFloatItem("amountOfMaterialUsedBy_T1S_ForPurchasedProduct");    
+    SelectItem_Unit amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit");    
+    TextItem EF_Material = new TextItem("EF_Material");        
+    SelectItem_EFUnit EF_Material_Unit = new SelectItem_EFUnit("EF_Material_Unit");    
+        
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+	
+    formItemList.add(materialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(EF_Material);
+    formItemList.add(EF_Material_Unit);
+	            
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getMaterialUsedBy_T1S_FormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+       
+    IblTextItem materialUsedBy_T1S_ForPurchasedProduct = new IblTextItem("materialUsedBy_T1S_ForPurchasedProduct","");    
+    IblFloatItem amountOfMaterialUsedBy_T1S_ForPurchasedProduct = new IblFloatItem("amountOfMaterialUsedBy_T1S_ForPurchasedProduct");    
+    SelectItem_Unit amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit");    
+    TextItem EF_Material = new TextItem("EF_Material");        
+    SelectItem_EFUnit EF_Material_Unit = new SelectItem_EFUnit("EF_Material_Unit");    
+        
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    //TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+	
+    formItemList.add(materialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct);
+    formItemList.add(amountOfMaterialUsedBy_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(EF_Material);
+    formItemList.add(EF_Material_Unit);
+	            
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    //formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getPurchasedProductFormFields_2_3() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+    
+    IblFloatItem distanceOfTransportOfMaterialInputsTo_T1S = new IblFloatItem("distanceOfTransportOfMaterialInputsTo_T1S");    
+    SelectItem_Unit distanceOfTransportOfMaterialInputsTo_T1S_Unit = new SelectItem_Unit("distanceOfTransportOfMaterialInputsTo_T1S_Unit");    
+    IblFloatItem massOfMateriaInput = new IblFloatItem("massOfMateriaInput");    
+    SelectItem_Unit massOfMateriaInput_Unit = new SelectItem_Unit("massOfMateriaInput_Unit");    
+    TextItem vehicleType = new TextItem("vehicleType");        
+    TextItem EF_VehicleType = new TextItem("EF_VehicleType");        
+    SelectItem_EFUnit EF_VehicleType_Unit = new SelectItem_EFUnit("EF_VehicleType_Unit");                
+            
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+	
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S);
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S_Unit);
+    formItemList.add(massOfMateriaInput);
+    formItemList.add(massOfMateriaInput_Unit);
+    formItemList.add(vehicleType);
+    formItemList.add(EF_VehicleType);
+    formItemList.add(EF_VehicleType_Unit);
+	            
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getMaterialTransportTo_T1S_FormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+    
+    //IblTextItem materialUsedBy_T1S_ForPurchasedProduct = new IblTextItem("materialUsedBy_T1S_ForPurchasedProduct",""); 
+    
+    //final IntegerItem purchasedProductInfoId = new IntegerItem("purchasedProductInfoId");
+    final SelectItem materialUsedBy_T1S_ForPurchasedProduct = new SelectItem("materialUsedBy_T1S_ForPurchasedProduct") {
+        @Override
+        protected Criteria getPickListFilterCriteria() {
+            /*
+            Criteria criteria = new Criteria();
+            criteria = getCurrentInventoryYear();
+            Integer id = (Integer) purchasedProductInfoId.getValue();
+            criteria.addCriteria("purchasedProductInfoId", id);   
+            SC.say("purchasedProductInfoId is: "+ purchasedProductInfoId);
+            */
+            Criteria criteria = IblCompoundEditor.getCriteria();
+            return criteria ;
+        }
+    };
+
+    materialUsedBy_T1S_ForPurchasedProduct.setName("materialUsedBy_T1S_ForPurchasedProduct");
+    //fuelTypeItem.setPickListWidth(310);
+    //fuelTypeItem.setTitle("Fuel Type");
+    materialUsedBy_T1S_ForPurchasedProduct.setOptionDataSource(materialUsedBy_T1S_InfoDS);
+    materialUsedBy_T1S_ForPurchasedProduct.setAddUnknownValues(Boolean.TRUE);
+    //materialUsedBy_T1S_ForPurchasedProduct.setOtherValue("Add New material..");
+    
+    IblFloatItem distanceOfTransportOfMaterialInputsTo_T1S = new IblFloatItem("distanceOfTransportOfMaterialInputsTo_T1S");    
+    
+    //SelectItem_Unit distanceOfTransportOfMaterialInputsTo_T1S_Unit = new SelectItem_Unit("distanceOfTransportOfMaterialInputsTo_T1S_Unit");
+    SelectItem_DistanceUnit distanceOfTransportOfMaterialInputsTo_T1S_Unit = new SelectItem_DistanceUnit("distanceOfTransportOfMaterialInputsTo_T1S_Unit");
+    
+    IblFloatItem massOfMateriaInput = new IblFloatItem("massOfMateriaInput");    
+    //SelectItem_Unit massOfMateriaInput_Unit = new SelectItem_Unit("massOfMateriaInput_Unit"); 
+    StaticTextItem massOfMateriaInput_Unit = new StaticTextItem("massOfMateriaInput_Unit"); 
+    massOfMateriaInput_Unit.setTitle("Unit");
+    massOfMateriaInput_Unit.setDefaultValue("Tonnes");    
+    
+    TextItem vehicleType = new TextItem("vehicleType");        
+    TextItem EF_VehicleType = new TextItem("EF_VehicleType");        
+    
+    //SelectItem_EFUnit EF_VehicleType_Unit = new SelectItem_EFUnit("EF_VehicleType_Unit");
+    final StaticTextItem EF_VehicleType_Unit = new StaticTextItem("EF_VehicleType_Unit");                
+    EF_VehicleType_Unit.setTitle("Unit");
+    EF_VehicleType_Unit.setDefaultValue("(Kg CO2e/Tonne)/Km");    
+    
+    final Map<String, String> EF_Units = new HashMap<String, String>();  
+    EF_Units.put("Km", "(Kg CO2e/Tonne)/Km");  
+    EF_Units.put("Mile","(Kg CO2e/Tonne)/Mile");  
+
+    distanceOfTransportOfMaterialInputsTo_T1S_Unit.addChangeHandler(new ChangeHandler() {  
+        public void onChange(ChangeEvent event) {  
+            String selectedItem = (String) event.getValue();  
+            EF_VehicleType_Unit.setValue(EF_Units.get(selectedItem));  
+        }  
+    });      
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    //TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+
+    formItemList.add(materialUsedBy_T1S_ForPurchasedProduct);
+    //formItemList.add(purchasedProductInfoId);
+    
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S);
+    formItemList.add(distanceOfTransportOfMaterialInputsTo_T1S_Unit);
+    formItemList.add(massOfMateriaInput);
+    formItemList.add(massOfMateriaInput_Unit);
+    formItemList.add(vehicleType);
+    formItemList.add(EF_VehicleType);
+    formItemList.add(EF_VehicleType_Unit);
+	            
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    //formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getWasteOutputFrom_T1S_FormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+    
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    
+    IblFloatItem massOfWasteFrom_T1S_ForPurchasedProduct = new IblFloatItem("massOfWasteFrom_T1S_ForPurchasedProduct");    
+    SelectItem_Unit massOfWasteFrom_T1S_ForPurchasedProduct_Unit = new SelectItem_Unit("massOfWasteFrom_T1S_ForPurchasedProduct_Unit");    
+    TextItem EF_WasteActivity = new TextItem("EF_WasteActivity");        
+    SelectItem_EFUnit EF_WasteActivity_Unit = new SelectItem_EFUnit("EF_WasteActivity_Unit");    
+        
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    //TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Supplier Specific Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+	    
+    formItemList.add(sourceDescriptionItem);            
+    formItemList.add(massOfWasteFrom_T1S_ForPurchasedProduct);
+    formItemList.add(massOfWasteFrom_T1S_ForPurchasedProduct_Unit);
+    formItemList.add(EF_WasteActivity);
+    formItemList.add(EF_WasteActivity_Unit);	
+            
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    //formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+}
+public FormItem[] getPurchasedProductFormFields_3() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+
+    IblFloatItem secondary_EF_Item = new IblFloatItem("secondary_EF");     
+    
+    
+    //SelectItem_EFUnit secondary_EF_UnitItem = new SelectItem_EFUnit("secondary_EF_Unit");    
+    /*
+    final SelectItem secondary_EF_UnitItem = new SelectItem("secondary_EF_Unit");    
+    final Map<String, String[]> EF_Units = new HashMap<String, String[]>();  
+    EF_Units.put("Kg", new String[]{"Kg CO2e/Kg"});  
+    EF_Units.put("Piece", new String[]{"Kg CO2e/Piece"});  
+    EF_Units.put("$", new String[]{"Kg CO2e/$"});  
+
+    quantityOfPurchasedProduct_UnitItem.addChangeHandler(new ChangeHandler() {  
+        public void onChange(ChangeEvent event) {  
+            String selectedItem = (String) event.getValue();  
+            secondary_EF_UnitItem.setValueMap(EF_Units.get(selectedItem));  
+        }  
+    });  
+    */
+
+    final StaticTextItem secondary_EF_UnitItem = new StaticTextItem("secondary_EF_Unit");    
+    secondary_EF_UnitItem.setDefaultValue("Kg CO2e/Kg");
+    
+    final Map<String, String> EF_Units = new HashMap<String, String>();  
+    EF_Units.put("Kg", "Kg CO2e/Kg");  
+    EF_Units.put("Piece","Kg CO2e/Piece");  
+    EF_Units.put("$","Kg CO2e/$");  
+
+    quantityOfPurchasedProduct_UnitItem.addChangeHandler(new ChangeHandler() {  
+        public void onChange(ChangeEvent event) {  
+            String selectedItem = (String) event.getValue();  
+            secondary_EF_UnitItem.setValue(EF_Units.get(selectedItem));  
+        }  
+    });  
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Material Or Spend Based Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+    formItemList.add(secondary_EF_Item);
+    formItemList.add(secondary_EF_UnitItem);
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getPurchasedProductFormFields_3_ORIG() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    SelectItem_ProductType purchasedProductTypeItem = new SelectItem_ProductType("purchasedProductType");    
+    TextItem purchasedProductNameItem = new TextItem("purchasedProductName");	
+    IblFloatItem quantityOfPurchasedProductItem = new IblFloatItem("quantityOfPurchasedProduct");
+    SelectItem_Unit quantityOfPurchasedProduct_UnitItem = new SelectItem_Unit("quantityOfPurchasedProduct_Unit");
+
+    //CanvasItem testCanvasItem = new CanvasItem("testCanvasItem");
+    //testCanvasItem.
+            
+    IblFloatItem massOfPurchasedProduct = new IblFloatItem("massOfPurchasedProduct");    
+    SelectItem_Unit massOfPurchasedProduct_Unit = new SelectItem_Unit("massOfPurchasedProduct_Unit");    
+    TextItem EF_PurchasedProductPerUnitOfMass = new TextItem("EF_PurchasedProductPerUnitOfMass");        
+    SelectItem_EFUnit EF_PurchasedProductPerUnitOfMass_Unit = new SelectItem_EFUnit("EF_PurchasedProductPerUnitOfMass_Unit");    
+
+    IblFloatItem unitOfPurchasedProduct = new IblFloatItem("unitOfPurchasedProduct");    
+    SelectItem_Unit unitOfPurchasedProduct_Unit = new SelectItem_Unit("unitOfPurchasedProduct_Unit");    
+    TextItem EF_PurchasedProductPerReferenceUnit = new TextItem("EF_PurchasedProductPerReferenceUnit");        
+    SelectItem_EFUnit EF_PurchasedProductPerReferenceUnit_Unit = new SelectItem_EFUnit("EF_PurchasedProductPerReferenceUnit_Unit");    
+
+    IblFloatItem valueOfPurchasedProduct = new IblFloatItem("valueOfPurchasedProduct");    
+    SelectItem_Unit valueOfPurchasedProduct_Unit = new SelectItem_Unit("valueOfPurchasedProduct_Unit");    
+    TextItem EF_PurchasedProductPerUnitOfReferenceValue = new TextItem("EF_PurchasedProductPerUnitOfReferenceValue");        
+    SelectItem_EFUnit EF_PurchasedProductPerUnitOfReferenceValue_Unit = new SelectItem_EFUnit("EF_PurchasedProductPerUnitOfReferenceValue_Unit");    
+	
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Purchased Goods and Services - Material Or Spend Based Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    formItemList.add(sourceDescriptionItem);    
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(purchasedProductTypeItem);
+    formItemList.add(purchasedProductNameItem);
+    formItemList.add(quantityOfPurchasedProductItem);
+    formItemList.add(quantityOfPurchasedProduct_UnitItem);
+
+    formItemList.add(massOfPurchasedProduct);
+    formItemList.add(massOfPurchasedProduct_Unit);
+    formItemList.add(EF_PurchasedProductPerUnitOfMass);
+    formItemList.add(EF_PurchasedProductPerUnitOfMass_Unit);
+	
+    formItemList.add(unitOfPurchasedProduct);
+    formItemList.add(unitOfPurchasedProduct_Unit);
+    formItemList.add(EF_PurchasedProductPerReferenceUnit);
+    formItemList.add(EF_PurchasedProductPerReferenceUnit_Unit);
+	
+    formItemList.add(valueOfPurchasedProduct);
+    formItemList.add(valueOfPurchasedProduct_Unit);
+    formItemList.add(EF_PurchasedProductPerUnitOfReferenceValue);
+    formItemList.add(EF_PurchasedProductPerUnitOfReferenceValue_Unit);
+
+    formItemList.add(userNotesOnDataItem);
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+    
+}
+
+public FormItem[] getPurchasedEnergyFormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SelectItem activityType = new SelectItem("activityType");       
+    activityType.setValueMap("Upstream emissions of purchased fuels",
+                             "Upstream emissions of purchased electricity",
+                             "Transmission & Distribution Losses",
+                             "Generation of purchased electricity that is sold to end users");
+    activityType.setDefaultValue("Upstream emissions of purchased fuels");
+    activityType.setWidth("*");
+    
+    SelectOtherItem fuelType = new SelectOtherItem("fuelType");       
+    fuelType.setValueMap("Anthracite Coal",
+                            "Bituminous Coal",
+                            "Distillate Fuel Oil (#1, 2 & 4)",
+                            "Kerosene",
+                            "Landfill Gas (50%CH4, 50%CO2)",
+                            "Lignite Coal",
+                            "LPG",
+                            "Natural Gas",
+                            "Propane",
+                            "Residual Fuel Oil  (#5 & 6)",
+                            "Sub-bituminous Coal",
+                            "Wood and Wood Waste");
+
+    fuelType.setDefaultValue("Anthracite Coal");
+    fuelType.setWidth("*");
+    //fuelType.setVisible(Boolean.FALSE);
+    
+    SelectItem energyType = new SelectItem("energyType");           
+    energyType.setValueMap("Electricity","Steam","Heating","Cooling");
+    energyType.setDefaultValue("Electricity");
+    energyType.setVisible(Boolean.FALSE);
+    
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    TextItem supplierRegionCountry = new TextItem("supplierRegionCountry");    
+    
+    final RadioGroupItem flag_transAndDistDataType = new RadioGroupItem();  
+    flag_transAndDistDataType.setName("flag_transAndDistDataType");  
+    flag_transAndDistDataType.setColSpan("*");  
+    flag_transAndDistDataType.setRequired(false);  
+    flag_transAndDistDataType.setVertical(false);  
+    flag_transAndDistDataType.setValueMap("Energy data", "Scope2 data");  
+    flag_transAndDistDataType.setRedrawOnChange(true);  
+    flag_transAndDistDataType.setTitle("What type of transmission and distribution data you have?");  
+    flag_transAndDistDataType.setDefaultValue("Energy data");
+    flag_transAndDistDataType.setVisible(Boolean.FALSE);
+    
+    IblFloatItem energyPurchased = new IblFloatItem("energyPurchased");
+    energyPurchased.setTitle("Fuel Purchased");
+    SelectItem_Energy_Unit energyPurchased_Unit = new SelectItem_Energy_Unit("energyPurchased_Unit");
+    
+    CheckboxItem flag_upstreamEF = new CheckboxItem();  
+    flag_upstreamEF.setName("flag_upstreamEF");  
+    flag_upstreamEF.setTitle("Upstream Emission Factor?");  
+    flag_upstreamEF.setRedrawOnChange(true);  
+    flag_upstreamEF.setWidth(50);  
+    flag_upstreamEF.setDefaultValue(false);    
+    flag_upstreamEF.setColSpan(4);//EndRow(Boolean.TRUE);
+    
+    IblFloatItem EF_UpstreamEnergy = new IblFloatItem("EF_UpstreamEnergy");    
+    EF_UpstreamEnergy.setVisible(Boolean.FALSE);
+    EF_UpstreamEnergy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit EF_UpstreamEnergy_Unit = new SelectItem_Energy_EFUnit("EF_UpstreamEnergy_Unit");    
+    EF_UpstreamEnergy_Unit.setVisible(Boolean.FALSE);   
+    EF_UpstreamEnergy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+                    
+    IblFloatItem cradleToGate_EF_Energy = new IblFloatItem("cradleToGate_EF_Energy");    
+    cradleToGate_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit cradleToGate_EF_Energy_Unit = new SelectItem_Energy_EFUnit("cradleToGate_EF_Energy_Unit");    
+    cradleToGate_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+
+    IblFloatItem combustion_EF_Energy = new IblFloatItem("combustion_EF_Energy");    
+    combustion_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit combustion_EF_Energy_Unit = new SelectItem_Energy_EFUnit("combustion_EF_Energy_Unit");    
+    combustion_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+
+    IblFloatItem transAndDistLossRate = new IblFloatItem("transAndDistLossRate");
+    transAndDistLossRate.setVisible(Boolean.FALSE);
+
+    IblFloatItem scope2EmissionsOfEnergyUse = new IblFloatItem("scope2EmissionsOfEnergyUse");    
+    SelectItem_EFUnit scope2EmissionsOfEnergyUse_Unit = new SelectItem_EFUnit("scope2EmissionsOfEnergyUse_Unit");    
+    scope2EmissionsOfEnergyUse.setVisible(Boolean.FALSE);
+    scope2EmissionsOfEnergyUse_Unit.setVisible(Boolean.FALSE);
+    
+    activityType.addChangedHandler(new ChangedHandler() {
+        public void onChanged(ChangedEvent event) {
+            if ((Boolean)event.getValue().equals("Upstream emissions of purchased fuels")){
+                    event.getForm().getItem("fuelType").show();
+                    event.getForm().getItem("energyType").hide();
+                    event.getForm().getItem("energyPurchased").setTitle("Fuel Purchased");
+                    //SC.say("It changed");
+            } else {
+                event.getForm().getItem("fuelType").hide();
+                event.getForm().getItem("energyType").show();
+                event.getForm().getItem("energyPurchased").setTitle("Energy Purchased");
+            }
+
+            if ((Boolean)event.getValue().equals("Transmission & Distribution Losses")){
+                    event.getForm().getItem("transAndDistLossRate").show();
+                    event.getForm().getItem("flag_transAndDistDataType").show();
+                    event.getForm().getItem("flag_transAndDistDataType").show();
+                    
+            } else {
+                event.getForm().getItem("transAndDistLossRate").hide();
+                event.getForm().getItem("flag_transAndDistDataType").hide();
+                event.getForm().getItem("flag_transAndDistDataType").hide();
+            }             
+        }
+    });
+    
+    flag_transAndDistDataType.addChangedHandler(new ChangedHandler() {  
+            public void onChanged(ChangedEvent event) {  
+                if((Boolean) flag_transAndDistDataType.getValue().equals("Energy data")){
+                    event.getForm().getItem("energyPurchased").show();
+                    event.getForm().getItem("energyPurchased_Unit").show();
+                    event.getForm().getItem("scope2EmissionsOfEnergyUse").hide();
+                    event.getForm().getItem("scope2EmissionsOfEnergyUse_Unit").hide();
+                } else {
+                    event.getForm().getItem("energyPurchased").hide();
+                    event.getForm().getItem("energyPurchased_Unit").hide();
+                    event.getForm().getItem("scope2EmissionsOfEnergyUse").show();
+                    event.getForm().getItem("scope2EmissionsOfEnergyUse_Unit").show();
+                }
+            }  
+        });  
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Fuel and Energy Related Activities");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(activityType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(fuelType);            
+    formItemList.add(energyType);        
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(supplierRegionCountry);    	
+    formItemList.add(flag_transAndDistDataType);    			    
+    formItemList.add(energyPurchased);    		    
+    formItemList.add(energyPurchased_Unit);    	
+    formItemList.add(scope2EmissionsOfEnergyUse);    			
+    formItemList.add(scope2EmissionsOfEnergyUse_Unit);
+    formItemList.add(transAndDistLossRate);    			    
+    formItemList.add(flag_upstreamEF);    		    
+    formItemList.add(EF_UpstreamEnergy);    		
+    formItemList.add(EF_UpstreamEnergy_Unit);    	
+    formItemList.add(cradleToGate_EF_Energy);    		
+    formItemList.add(cradleToGate_EF_Energy_Unit);    	
+    formItemList.add(combustion_EF_Energy);    			
+    formItemList.add(combustion_EF_Energy_Unit);    			
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getPurchasedEnergyFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    TextItem activityType = new TextItem("activityType");       
+    activityType.setDefaultValue("Upstream Emissions Of Purchased Fuels");
+//  activityType.setWidth("*");
+    
+    SelectOtherItem fuelType = new SelectOtherItem("fuelType");       
+    fuelType.setValueMap("Anthracite Coal",
+                            "Bituminous Coal",
+                            "Distillate Fuel Oil (#1, 2 & 4)",
+                            "Kerosene",
+                            "Landfill Gas (50%CH4, 50%CO2)",
+                            "Lignite Coal",
+                            "LPG",
+                            "Natural Gas",
+                            "Propane",
+                            "Residual Fuel Oil  (#5 & 6)",
+                            "Sub-bituminous Coal",
+                            "Wood and Wood Waste");
+
+    fuelType.setDefaultValue("Anthracite Coal");
+    fuelType.setWidth("*");
+    //fuelType.setVisible(Boolean.FALSE);
+       
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    TextItem supplierRegionCountry = new TextItem("supplierRegionCountry");    
+    
+    IblFloatItem energyPurchased = new IblFloatItem("energyPurchased");
+    energyPurchased.setTitle("Fuel Purchased");
+    SelectItem_Energy_Unit energyPurchased_Unit = new SelectItem_Energy_Unit("energyPurchased_Unit");
+    
+    CheckboxItem flag_upstreamEF = new CheckboxItem();  
+    flag_upstreamEF.setName("flag_upstreamEF");  
+    flag_upstreamEF.setTitle("Upstream Emission Factor?");  
+    flag_upstreamEF.setRedrawOnChange(true);  
+    flag_upstreamEF.setWidth(50);  
+    flag_upstreamEF.setDefaultValue(true);    
+    flag_upstreamEF.setColSpan(4);//EndRow(Boolean.TRUE);
+    
+    IblFloatItem EF_UpstreamEnergy = new IblFloatItem("EF_UpstreamEnergy");    
+    EF_UpstreamEnergy.setVisible(Boolean.FALSE);
+    EF_UpstreamEnergy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit EF_UpstreamEnergy_Unit = new SelectItem_Energy_EFUnit("EF_UpstreamEnergy_Unit");    
+    EF_UpstreamEnergy_Unit.setVisible(Boolean.FALSE);   
+    EF_UpstreamEnergy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+                    
+    IblFloatItem cradleToGate_EF_Energy = new IblFloatItem("cradleToGate_EF_Energy");    
+    cradleToGate_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit cradleToGate_EF_Energy_Unit = new SelectItem_Energy_EFUnit("cradleToGate_EF_Energy_Unit");    
+    cradleToGate_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+
+    IblFloatItem combustion_EF_Energy = new IblFloatItem("combustion_EF_Energy");    
+    combustion_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit combustion_EF_Energy_Unit = new SelectItem_Energy_EFUnit("combustion_EF_Energy_Unit");    
+    combustion_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+        
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Fuel and Energy Related Activities");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(activityType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(fuelType);            
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(supplierRegionCountry);    	
+    formItemList.add(energyPurchased);    		    
+    formItemList.add(energyPurchased_Unit);    	
+    formItemList.add(flag_upstreamEF);    		    
+    formItemList.add(EF_UpstreamEnergy);    		
+    formItemList.add(EF_UpstreamEnergy_Unit);    	
+    formItemList.add(cradleToGate_EF_Energy);    		
+    formItemList.add(cradleToGate_EF_Energy_Unit);    	
+    formItemList.add(combustion_EF_Energy);    			
+    formItemList.add(combustion_EF_Energy_Unit);    			
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getPurchasedEnergyFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    TextItem activityType = new TextItem("activityType");       
+    activityType.setDefaultValue("Upstream Emissions Of Purchased Energy");
+        
+    SelectItem energyType = new SelectItem("energyType");           
+    energyType.setValueMap("Electricity","Steam","Heating","Cooling");
+    energyType.setDefaultValue("Electricity");
+    
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    TextItem supplierRegionCountry = new TextItem("supplierRegionCountry");    
+        
+    IblFloatItem energyPurchased = new IblFloatItem("energyPurchased");
+    energyPurchased.setTitle("Energy Purchased");
+    SelectItem_Energy_Unit energyPurchased_Unit = new SelectItem_Energy_Unit("energyPurchased_Unit");
+    
+    CheckboxItem flag_upstreamEF = new CheckboxItem();  
+    flag_upstreamEF.setName("flag_upstreamEF");  
+    flag_upstreamEF.setTitle("Upstream Emission Factor?");  
+    flag_upstreamEF.setRedrawOnChange(true);  
+    flag_upstreamEF.setWidth(50);  
+    flag_upstreamEF.setDefaultValue(true);    
+    flag_upstreamEF.setColSpan(4);//EndRow(Boolean.TRUE);
+    
+    IblFloatItem EF_UpstreamEnergy = new IblFloatItem("EF_UpstreamEnergy");    
+    EF_UpstreamEnergy.setVisible(Boolean.FALSE);
+    EF_UpstreamEnergy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit EF_UpstreamEnergy_Unit = new SelectItem_Energy_EFUnit("EF_UpstreamEnergy_Unit");    
+    EF_UpstreamEnergy_Unit.setVisible(Boolean.FALSE);   
+    EF_UpstreamEnergy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+                    
+    IblFloatItem cradleToGate_EF_Energy = new IblFloatItem("cradleToGate_EF_Energy");    
+    cradleToGate_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit cradleToGate_EF_Energy_Unit = new SelectItem_Energy_EFUnit("cradleToGate_EF_Energy_Unit");    
+    cradleToGate_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+
+    IblFloatItem combustion_EF_Energy = new IblFloatItem("combustion_EF_Energy");    
+    combustion_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit combustion_EF_Energy_Unit = new SelectItem_Energy_EFUnit("combustion_EF_Energy_Unit");    
+    combustion_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Fuel and Energy Related Activities");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(activityType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(energyType);        
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(supplierRegionCountry);    	
+    formItemList.add(energyPurchased);    		    
+    formItemList.add(energyPurchased_Unit);    	
+    formItemList.add(flag_upstreamEF);    		    
+    formItemList.add(EF_UpstreamEnergy);    		
+    formItemList.add(EF_UpstreamEnergy_Unit);    	
+    formItemList.add(cradleToGate_EF_Energy);    		
+    formItemList.add(cradleToGate_EF_Energy_Unit);    	
+    formItemList.add(combustion_EF_Energy);    			
+    formItemList.add(combustion_EF_Energy_Unit);    			
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getPurchasedEnergyFormFields_3() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    TextItem activityType = new TextItem("activityType");       
+    activityType.setDefaultValue("Transmission & Distribution Losses");
+        
+    SelectItem energyType = new SelectItem("energyType");           
+    energyType.setValueMap("Electricity","Steam","Heating","Cooling");
+    energyType.setDefaultValue("Electricity");
+    
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    TextItem supplierRegionCountry = new TextItem("supplierRegionCountry");    
+    
+    final RadioGroupItem transAndDistDataType = new RadioGroupItem();  
+    transAndDistDataType.setName("transAndDistDataType");  
+    transAndDistDataType.setColSpan("*");  
+    transAndDistDataType.setRequired(false);  
+    transAndDistDataType.setVertical(false);  
+    transAndDistDataType.setValueMap("Energy data", "Scope2 data");  
+    transAndDistDataType.setRedrawOnChange(true);  
+    transAndDistDataType.setTitle("What type of transmission and distribution data you have?");  
+    transAndDistDataType.setDefaultValue("Energy data");
+    
+    IblFloatItem energyPurchased = new IblFloatItem("energyPurchased");
+    energyPurchased.setTitle("Energy Purchased");
+    SelectItem_Energy_Unit energyPurchased_Unit = new SelectItem_Energy_Unit("energyPurchased_Unit");
+    
+    CheckboxItem flag_upstreamEF = new CheckboxItem();  
+    flag_upstreamEF.setName("flag_upstreamEF");  
+    flag_upstreamEF.setTitle("Upstream Emission Factor?");  
+    flag_upstreamEF.setRedrawOnChange(true);  
+    flag_upstreamEF.setWidth(50);  
+    flag_upstreamEF.setDefaultValue(true);    
+    flag_upstreamEF.setColSpan(4);//EndRow(Boolean.TRUE);
+    
+    IblFloatItem EF_UpstreamEnergy = new IblFloatItem("EF_UpstreamEnergy");    
+    EF_UpstreamEnergy.setVisible(Boolean.FALSE);
+    EF_UpstreamEnergy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit EF_UpstreamEnergy_Unit = new SelectItem_Energy_EFUnit("EF_UpstreamEnergy_Unit");    
+    EF_UpstreamEnergy_Unit.setVisible(Boolean.FALSE);   
+    EF_UpstreamEnergy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+                    
+    IblFloatItem cradleToGate_EF_Energy = new IblFloatItem("cradleToGate_EF_Energy");    
+    cradleToGate_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit cradleToGate_EF_Energy_Unit = new SelectItem_Energy_EFUnit("cradleToGate_EF_Energy_Unit");    
+    cradleToGate_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+
+    IblFloatItem combustion_EF_Energy = new IblFloatItem("combustion_EF_Energy");    
+    combustion_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit combustion_EF_Energy_Unit = new SelectItem_Energy_EFUnit("combustion_EF_Energy_Unit");    
+    combustion_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+
+    IblFloatItem transAndDistLossRate = new IblFloatItem("transAndDistLossRate");
+    //transAndDistLossRate.setVisible(Boolean.FALSE);
+
+    IblFloatItem scope2EmissionsOfEnergyUse = new IblFloatItem("scope2EmissionsOfEnergyUse");    
+    SelectItem_EFUnit scope2EmissionsOfEnergyUse_Unit = new SelectItem_EFUnit("scope2EmissionsOfEnergyUse_Unit");    
+    scope2EmissionsOfEnergyUse.setVisible(Boolean.FALSE);
+    scope2EmissionsOfEnergyUse_Unit.setVisible(Boolean.FALSE);
+        
+    transAndDistDataType.addChangedHandler(new ChangedHandler() {  
+            public void onChanged(ChangedEvent event) {  
+                if((Boolean) transAndDistDataType.getValue().equals("Energy data")){
+                    event.getForm().getItem("energyPurchased").show();
+                    event.getForm().getItem("energyPurchased_Unit").show();
+                    event.getForm().getItem("scope2EmissionsOfEnergyUse").hide();
+                    event.getForm().getItem("scope2EmissionsOfEnergyUse_Unit").hide();
+                } else {
+                    event.getForm().getItem("energyPurchased").hide();
+                    event.getForm().getItem("energyPurchased_Unit").hide();
+                    event.getForm().getItem("scope2EmissionsOfEnergyUse").show();
+                    event.getForm().getItem("scope2EmissionsOfEnergyUse_Unit").show();
+                }
+            }  
+        });  
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Fuel and Energy Related Activities");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(activityType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(energyType);        
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(supplierRegionCountry);    	
+    formItemList.add(transAndDistDataType);    			    
+    formItemList.add(energyPurchased);    		    
+    formItemList.add(energyPurchased_Unit);    	
+    formItemList.add(scope2EmissionsOfEnergyUse);    			
+    formItemList.add(scope2EmissionsOfEnergyUse_Unit);
+    formItemList.add(transAndDistLossRate);    			    
+    formItemList.add(flag_upstreamEF);    		    
+    formItemList.add(EF_UpstreamEnergy);    		
+    formItemList.add(EF_UpstreamEnergy_Unit);    	
+    formItemList.add(cradleToGate_EF_Energy);    		
+    formItemList.add(cradleToGate_EF_Energy_Unit);    	
+    formItemList.add(combustion_EF_Energy);    			
+    formItemList.add(combustion_EF_Energy_Unit);    			
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getPurchasedEnergyFormFields_4() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    TextItem activityType = new TextItem("activityType");       
+    activityType.setDefaultValue("Generation Of Purchased Energy That Is Sold To End Users");
+    activityType.setWidth("*");
+    
+    SelectItem energyType = new SelectItem("energyType");           
+    energyType.setValueMap("Electricity","Steam","Heating","Cooling");
+    energyType.setDefaultValue("Electricity");
+    energyType.setVisible(Boolean.FALSE);
+    
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem supplierNameItem = new TextItem("supplierName");
+    TextItem supplierContactItem = new TextItem("supplierContact");    
+    TextItem supplierRegionCountry = new TextItem("supplierRegionCountry");    
+        
+    IblFloatItem energyPurchased = new IblFloatItem("energyPurchased");
+    energyPurchased.setTitle("Energy Purchased");
+    SelectItem_Energy_Unit energyPurchased_Unit = new SelectItem_Energy_Unit("energyPurchased_Unit");
+    
+    CheckboxItem flag_upstreamEF = new CheckboxItem();  
+    flag_upstreamEF.setName("flag_upstreamEF");  
+    flag_upstreamEF.setTitle("Upstream Emission Factor?");  
+    flag_upstreamEF.setRedrawOnChange(true);  
+    flag_upstreamEF.setWidth(50);  
+    flag_upstreamEF.setDefaultValue(true);    
+    flag_upstreamEF.setColSpan(4);//EndRow(Boolean.TRUE);
+    
+    IblFloatItem EF_UpstreamEnergy = new IblFloatItem("EF_UpstreamEnergy");    
+    EF_UpstreamEnergy.setVisible(Boolean.FALSE);
+    EF_UpstreamEnergy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit EF_UpstreamEnergy_Unit = new SelectItem_Energy_EFUnit("EF_UpstreamEnergy_Unit");    
+    EF_UpstreamEnergy_Unit.setVisible(Boolean.FALSE);   
+    EF_UpstreamEnergy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+                    
+    IblFloatItem cradleToGate_EF_Energy = new IblFloatItem("cradleToGate_EF_Energy");    
+    cradleToGate_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit cradleToGate_EF_Energy_Unit = new SelectItem_Energy_EFUnit("cradleToGate_EF_Energy_Unit");    
+    cradleToGate_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+
+    IblFloatItem combustion_EF_Energy = new IblFloatItem("combustion_EF_Energy");    
+    combustion_EF_Energy.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+    
+    SelectItem_Energy_EFUnit combustion_EF_Energy_Unit = new SelectItem_Energy_EFUnit("combustion_EF_Energy_Unit");    
+    combustion_EF_Energy_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_upstreamEF");  
+        }  
+    });  
+
+        
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Fuel and Energy Related Activities");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(activityType);        
+    formItemList.add(sourceDescriptionItem);                   
+    formItemList.add(energyType);        
+    formItemList.add(supplierNameItem);
+    formItemList.add(supplierContactItem);
+    formItemList.add(supplierRegionCountry);    				    
+    formItemList.add(energyPurchased);    		    
+    formItemList.add(energyPurchased_Unit);    	
+    formItemList.add(flag_upstreamEF);    		    
+    formItemList.add(EF_UpstreamEnergy);    		
+    formItemList.add(EF_UpstreamEnergy_Unit);    	
+    formItemList.add(cradleToGate_EF_Energy);    		
+    formItemList.add(cradleToGate_EF_Energy_Unit);    	
+    formItemList.add(combustion_EF_Energy);    			
+    formItemList.add(combustion_EF_Energy_Unit);    			
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getTransportationFormFields_1_ORIG() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SelectItem streamType = new SelectItem("streamType");       
+    streamType.setValueMap("Upstream","Downstream");
+    streamType.setDefaultValue("Upstream");
+    streamType.setWidth("*");
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem serviceProviderName = new TextItem("serviceProviderName");
+    TextItem serviceProviderContact = new TextItem("serviceProviderContact");    
+	    
+    SelectOtherItem fuelType = new SelectOtherItem("fuelType");       
+    fuelType.setValueMap("Anthracite Coal",
+                            "Bituminous Coal",
+                            "Distillate Fuel Oil (#1, 2 & 4)",
+                            "Kerosene",
+                            "Landfill Gas (50%CH4, 50%CO2)",
+                            "Lignite Coal",
+                            "LPG",
+                            "Natural Gas",
+                            "Propane",
+                            "Residual Fuel Oil  (#5 & 6)",
+                            "Sub-bituminous Coal",
+                            "Wood and Wood Waste");
+
+    fuelType.setDefaultValue("Anthracite Coal");
+    fuelType.setWidth("*");    
+    fuelType.setStartRow(Boolean.TRUE);
+    
+    IblFloatItem fuelConsumed = new IblFloatItem("fuelConsumed");
+    SelectItem_Energy_Unit fuelConsumed_Unit = new SelectItem_Energy_Unit("fuelConsumed_Unit");
+    IblFloatItem EF_Fuel = new IblFloatItem("EF_Fuel");    	
+	SelectItem_Energy_EFUnit EF_Fuel_Unit = new SelectItem_Energy_EFUnit("EF_Fuel_Unit");    
+
+    SelectOtherItem refrigerantType = new SelectOtherItem("refrigerantType");       
+    refrigerantType.setValueMap("Test 1", "Test 2");
+    refrigerantType.setDefaultValue("Test 1");
+    refrigerantType.setWidth("*");    
+	
+    IblFloatItem refrigerantLeakage = new IblFloatItem("refrigerantLeakage");
+    SelectItem_Energy_Unit refrigerantLeakage_Unit = new SelectItem_Energy_Unit("refrigerantLeakage_Unit");
+    IblFloatItem EF_Refrigerant = new IblFloatItem("EF_Refrigerant");    	
+    SelectItem_Energy_EFUnit EF_Refrigerant_Unit = new SelectItem_Energy_EFUnit("EF_Refrigerant_Unit");    
+	
+    CheckboxItem flag_calculateFuelConsumed = new CheckboxItem();  
+    flag_calculateFuelConsumed.setName("flag_calculateFuelConsumed");  
+    flag_calculateFuelConsumed.setTitle("Calculate Fuel consumed from distance travelled and vehicle used?");  
+    flag_calculateFuelConsumed.setRedrawOnChange(true);  
+    flag_calculateFuelConsumed.setWidth(50);  
+    flag_calculateFuelConsumed.setDefaultValue(false);    
+    flag_calculateFuelConsumed.setColSpan(4);//EndRow(Boolean.TRUE);
+	
+    IblFloatItem totalDistanceTravelled = new IblFloatItem("totalDistanceTravelled");
+    SelectItem_Energy_Unit totalDistanceTravelled_Unit = new SelectItem_Energy_Unit("totalDistanceTravelled_Unit");
+
+    TextItem vehicleType = new TextItem("vehicleType");    
+    IblFloatItem fuelEfficiencyOfVehicle = new IblFloatItem("fuelEfficiencyOfVehicle");
+    SelectItem fuelEfficiencyOfVehicle_Unit = new SelectItem("fuelEfficiencyOfVehicle_Unit");
+    fuelEfficiencyOfVehicle_Unit.setValueMap("1/Km","1/Mile");
+    fuelEfficiencyOfVehicle_Unit.setDefaultValue("1/Mile");
+	
+    CheckboxItem flag_calculateAllocatedFuelUse = new CheckboxItem();  
+    flag_calculateAllocatedFuelUse.setName("flag_calculateAllocatedFuelUse");  
+    flag_calculateAllocatedFuelUse.setTitle("Calculate Allocated Fuel Use?");  
+    flag_calculateAllocatedFuelUse.setRedrawOnChange(true);  
+    flag_calculateAllocatedFuelUse.setWidth(50);  
+    flag_calculateAllocatedFuelUse.setDefaultValue(false);    
+    flag_calculateAllocatedFuelUse.setColSpan(4);//EndRow(Boolean.TRUE);
+		
+    IblFloatItem totalFuelConsumed = new IblFloatItem("totalFuelConsumed");
+    SelectItem totalFuelConsumed_Unit = new SelectItem("totalFuelConsumed_Unit");
+    totalFuelConsumed_Unit.setValueMap("Gallons","Litre");
+    totalFuelConsumed_Unit.setDefaultValue("Gallons");
+    totalFuelConsumed_Unit.setEndRow(Boolean.TRUE);
+    
+    IblFloatItem companyGoodsTransported = new IblFloatItem("companyGoodsTransported");
+    final SelectItem companyGoodsTransported_Unit = new SelectItem("companyGoodsTransported_Unit");
+    companyGoodsTransported_Unit.setValueMap("m3","Kg","lb");
+    companyGoodsTransported_Unit.setDefaultValue("Kg");
+    
+    SelectItem companyGoodsTransported_MassType = new SelectItem("companyGoodsTransported_MassType");
+    companyGoodsTransported_MassType.setValueMap("Actual","Chargeable","Dimensional");
+    companyGoodsTransported_MassType.setDefaultValue("Actual");
+	
+    IblFloatItem totalGoodsTransportedByCarrier = new IblFloatItem("totalGoodsTransportedByCarrier");
+    totalGoodsTransportedByCarrier.setStartRow(Boolean.TRUE);
+    
+    StaticTextItem totalGoodsTransportedByCarrier_Unit = new StaticTextItem("totalGoodsTransportedByCarrier_Unit");
+    //totalGoodsTransportedByCarrier_Unit.setValueMap("m3","Kg","lb");
+    totalGoodsTransportedByCarrier_Unit.setDefaultValue("Kg");
+		
+    SelectItem totalGoodsTransportedByCarrier_MassType = new SelectItem("totalGoodsTransportedByCarrier_MassType");
+    totalGoodsTransportedByCarrier_MassType.setValueMap("Actual","Chargeable","Dimensional");
+    totalGoodsTransportedByCarrier_MassType.setDefaultValue("Actual");
+    
+    CheckboxItem flag_unladenBackhaul = new CheckboxItem();  
+    flag_unladenBackhaul.setName("flag_unladenBackhaul");  
+    flag_unladenBackhaul.setTitle("Unladen Backhaul?");  
+    flag_unladenBackhaul.setRedrawOnChange(true);  
+    flag_unladenBackhaul.setWidth(50);  
+    flag_unladenBackhaul.setDefaultValue(false);    
+    flag_unladenBackhaul.setColSpan(4);//EndRow(Boolean.TRUE);
+	       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Fuel Based Method - Transportation Emissions");
+
+// Change Handlers
+    
+    companyGoodsTransported_Unit.addChangedHandler(new ChangedHandler() {  
+            public void onChanged(ChangedEvent event) {  
+                event.getForm().setValue("totalGoodsTransportedByCarrier_Unit",(String)companyGoodsTransported_Unit.getValue());
+                if((Boolean) companyGoodsTransported_Unit.getValue().equals("m3")){  
+                    //event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").setVisible(Boolean.TRUE);
+                    //event.getForm().getItem("companyGoodsTransported_MassType").setVisible(Boolean.TRUE);                    
+                    event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").show();
+                    event.getForm().getItem("companyGoodsTransported_MassType").show();
+                } else {                    
+                    //event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").setVisible(Boolean.FALSE);
+                    //event.getForm().getItem("companyGoodsTransported_MassType").setVisible(Boolean.FALSE);
+                    event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").hide();
+                    event.getForm().getItem("companyGoodsTransported_MassType").hide();                    
+                }
+            }  
+    });  
+    
+//-setShowIfCondition
+    
+    fuelConsumed.setVisible(Boolean.TRUE);
+    fuelConsumed.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_calculateFuelConsumed");  
+        }  
+    });  
+    fuelConsumed_Unit.setVisible(Boolean.TRUE);
+    fuelConsumed_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_calculateFuelConsumed");  
+        }  
+    });      
+    totalDistanceTravelled.setVisible(Boolean.FALSE);
+    totalDistanceTravelled.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateFuelConsumed");  
+        }  
+    });  
+    totalDistanceTravelled_Unit.setVisible(Boolean.FALSE);
+    totalDistanceTravelled_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateFuelConsumed");  
+        }  
+    });
+    vehicleType.setVisible(Boolean.FALSE);
+    vehicleType.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateFuelConsumed");  
+        }  
+    });
+    fuelEfficiencyOfVehicle.setVisible(Boolean.FALSE);
+    fuelEfficiencyOfVehicle.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateFuelConsumed");  
+        }  
+    });
+    fuelEfficiencyOfVehicle_Unit.setVisible(Boolean.FALSE);
+    fuelEfficiencyOfVehicle_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateFuelConsumed");  
+        }  
+    });  
+    
+    
+//--
+    totalFuelConsumed.setVisible(Boolean.FALSE);
+    totalFuelConsumed.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateAllocatedFuelUse");  
+        }  
+    });
+    totalFuelConsumed_Unit.setVisible(Boolean.FALSE);
+    totalFuelConsumed_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateAllocatedFuelUse");  
+        }  
+    });
+    companyGoodsTransported.setVisible(Boolean.FALSE);
+    companyGoodsTransported.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateAllocatedFuelUse");  
+        }  
+    });
+    companyGoodsTransported_Unit.setVisible(Boolean.FALSE);
+    companyGoodsTransported_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateAllocatedFuelUse");  
+        }  
+    });
+    companyGoodsTransported_MassType.setVisible(Boolean.FALSE);
+    companyGoodsTransported_MassType.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateAllocatedFuelUse");  
+        }  
+    });
+    totalGoodsTransportedByCarrier.setVisible(Boolean.FALSE);
+    totalGoodsTransportedByCarrier.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateAllocatedFuelUse");  
+        }  
+    });
+    totalGoodsTransportedByCarrier_Unit.setVisible(Boolean.FALSE);
+    totalGoodsTransportedByCarrier_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateAllocatedFuelUse");  
+        }  
+    });
+    totalGoodsTransportedByCarrier_MassType.setVisible(Boolean.FALSE);
+    totalGoodsTransportedByCarrier_MassType.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_calculateAllocatedFuelUse");  
+        }  
+    });  
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(streamType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(serviceProviderName);
+    formItemList.add(serviceProviderContact);    
+    
+    formItemList.add(flag_calculateFuelConsumed);    		    
+    formItemList.add(fuelType);            
+    formItemList.add(fuelConsumed);        
+    formItemList.add(fuelConsumed_Unit);    	
+    formItemList.add(totalDistanceTravelled);    	
+    formItemList.add(totalDistanceTravelled_Unit);    		
+    formItemList.add(vehicleType);    	
+    formItemList.add(fuelEfficiencyOfVehicle);    			
+    formItemList.add(fuelEfficiencyOfVehicle_Unit);    			
+    
+    formItemList.add(EF_Fuel);    			    
+    formItemList.add(EF_Fuel_Unit);    		        
+
+    formItemList.add(flag_calculateAllocatedFuelUse);    			    
+    formItemList.add(totalFuelConsumed);    		    
+    formItemList.add(totalFuelConsumed_Unit);    		
+    formItemList.add(companyGoodsTransported);    	
+    formItemList.add(companyGoodsTransported_Unit);
+    formItemList.add(companyGoodsTransported_MassType);    
+    formItemList.add(totalGoodsTransportedByCarrier);    			
+    formItemList.add(totalGoodsTransportedByCarrier_Unit);    			
+    formItemList.add(totalGoodsTransportedByCarrier_MassType);    
+   
+    formItemList.add(flag_unladenBackhaul);    
+
+    formItemList.add(refrigerantType);    	
+    formItemList.add(refrigerantLeakage);    			
+    formItemList.add(refrigerantLeakage_Unit);
+    formItemList.add(EF_Refrigerant);    			    
+    formItemList.add(EF_Refrigerant_Unit);    		    
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getTransportationFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    //final Map<String, String[][]> transportModeVehicle_EF_Unit = new HashMap<String, String[][]>();  
+    
+    SelectItem streamType = new SelectItem("streamType");       
+    streamType.setValueMap("Upstream","Downstream");
+    streamType.setDefaultValue("Upstream");
+    streamType.setWidth("*");
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem serviceProviderName = new TextItem("serviceProviderName");
+    TextItem serviceProviderContact = new TextItem("serviceProviderContact");    
+	    
+    SelectOtherItem fuelType = new SelectOtherItem("fuelType");       
+    fuelType.setValueMap("Anthracite Coal",
+                            "Bituminous Coal",
+                            "Distillate Fuel Oil (#1, 2 & 4)",
+                            "Kerosene",
+                            "Landfill Gas (50%CH4, 50%CO2)",
+                            "Lignite Coal",
+                            "LPG",
+                            "Natural Gas",
+                            "Propane",
+                            "Residual Fuel Oil  (#5 & 6)",
+                            "Sub-bituminous Coal",
+                            "Wood and Wood Waste");
+
+    fuelType.setDefaultValue("Anthracite Coal");
+    fuelType.setWidth("*");    
+    fuelType.setStartRow(Boolean.TRUE);
+    
+    IblFloatItem fuelConsumed = new IblFloatItem("fuelConsumed");
+    SelectItem fuelConsumed_Unit = new SelectItem("fuelConsumed_Unit");
+    fuelConsumed_Unit.setValueMap("Gallons","Litre");
+    fuelConsumed_Unit.setDefaultValue("Gallons");
+    fuelConsumed_Unit.setWidth("*");
+    
+    IblFloatItem EF_Fuel = new IblFloatItem("EF_Fuel");    	
+    SelectItem EF_Fuel_Unit = new SelectItem("EF_Fuel_Unit");    
+    EF_Fuel_Unit.setValueMap("Kg CO2e/Gallon","Kg CO2e/Litre");
+    EF_Fuel_Unit.setDefaultValue("Kg CO2e/Gallon");
+    EF_Fuel_Unit.setWidth("*");   
+    
+    SelectOtherItem refrigerantType = new SelectOtherItem("refrigerantType");       
+    refrigerantType.setValueMap("C2F6", 
+                                "C4F10",
+                                "CF4", 
+                                "CO2", 
+                                "HFC-125",
+                                "HFC-134a",
+                                "HFC-143a",
+                                "HFC-152a",
+                                "HFC-227ea",
+                                "HFC-23",
+                                "HFC-236fa",
+                                "HFC-32",
+                                "SF6");
+    refrigerantType.setDefaultValue("C2F6");
+    refrigerantType.setWidth("*");    
+    refrigerantType.setStartRow(Boolean.TRUE);
+    refrigerantType.setEndRow(Boolean.TRUE);
+    
+    IblFloatItem refrigerantLeakage = new IblFloatItem("refrigerantLeakage");
+    SelectItem refrigerantLeakage_Unit = new SelectItem("refrigerantLeakage_Unit");
+    refrigerantLeakage_Unit.setValueMap("Kg");
+    refrigerantLeakage_Unit.setDefaultValue("Kg");
+    refrigerantLeakage_Unit.setWidth("*");
+    
+    IblFloatItem EF_Refrigerant = new IblFloatItem("EF_Refrigerant");    	
+    SelectItem_Energy_EFUnit EF_Refrigerant_Unit = new SelectItem_Energy_EFUnit("EF_Refrigerant_Unit");    
+
+/*    
+    CheckboxItem flag_calculateFuelConsumed = new CheckboxItem();  
+    flag_calculateFuelConsumed.setName("flag_calculateFuelConsumed");  
+    flag_calculateFuelConsumed.setTitle("Calculate Fuel consumed from distance travelled and vehicle used?");  
+    flag_calculateFuelConsumed.setRedrawOnChange(true);  
+    flag_calculateFuelConsumed.setWidth(50);  
+    flag_calculateFuelConsumed.setDefaultValue(false);    
+    flag_calculateFuelConsumed.setColSpan(4);//EndRow(Boolean.TRUE);
+*/	
+    IblFloatItem totalDistanceTravelled = new IblFloatItem("totalDistanceTravelled");
+    SelectItem totalDistanceTravelled_Unit = new SelectItem("totalDistanceTravelled_Unit");
+    totalDistanceTravelled_Unit.setValueMap("Mile","Km");
+    totalDistanceTravelled_Unit.setDefaultValue("Mile");
+    totalDistanceTravelled_Unit.setWidth("*");    
+    totalDistanceTravelled_Unit.setEndRow(Boolean.TRUE);
+    
+    TextItem vehicleType = new TextItem("vehicleType");    
+    IblFloatItem fuelEfficiencyOfVehicle = new IblFloatItem("fuelEfficiencyOfVehicle");
+    SelectItem fuelEfficiencyOfVehicle_Unit = new SelectItem("fuelEfficiencyOfVehicle_Unit");
+    fuelEfficiencyOfVehicle_Unit.setValueMap("1/Km","1/Mile");
+    fuelEfficiencyOfVehicle_Unit.setDefaultValue("1/Mile");
+/*	
+    CheckboxItem flag_calculateAllocatedFuelUse = new CheckboxItem();  
+    flag_calculateAllocatedFuelUse.setName("flag_calculateAllocatedFuelUse");  
+    flag_calculateAllocatedFuelUse.setTitle("Calculate Allocated Fuel Use?");  
+    flag_calculateAllocatedFuelUse.setRedrawOnChange(true);  
+    flag_calculateAllocatedFuelUse.setWidth(50);  
+    flag_calculateAllocatedFuelUse.setDefaultValue(false);    
+    flag_calculateAllocatedFuelUse.setColSpan(4);//EndRow(Boolean.TRUE);
+*/		
+    IblFloatItem totalFuelConsumed = new IblFloatItem("totalFuelConsumed");
+    SelectItem totalFuelConsumed_Unit = new SelectItem("totalFuelConsumed_Unit");
+    totalFuelConsumed_Unit.setValueMap("Gallons","Litre");
+    totalFuelConsumed_Unit.setDefaultValue("Gallons");
+    totalFuelConsumed_Unit.setEndRow(Boolean.TRUE);
+    
+    IblFloatItem companyGoodsTransported = new IblFloatItem("companyGoodsTransported");
+    final SelectItem companyGoodsTransported_Unit = new SelectItem("companyGoodsTransported_Unit");
+    companyGoodsTransported_Unit.setValueMap("m3","Kg","lb");
+    companyGoodsTransported_Unit.setDefaultValue("Kg");
+    
+    SelectItem companyGoodsTransported_MassType = new SelectItem("companyGoodsTransported_MassType");
+    companyGoodsTransported_MassType.setValueMap("Actual","Chargeable","Dimensional");
+    companyGoodsTransported_MassType.setDefaultValue("Actual");
+	
+    IblFloatItem totalGoodsTransportedByCarrier = new IblFloatItem("totalGoodsTransportedByCarrier");
+    totalGoodsTransportedByCarrier.setStartRow(Boolean.TRUE);
+    
+    StaticTextItem totalGoodsTransportedByCarrier_Unit = new StaticTextItem("totalGoodsTransportedByCarrier_Unit");
+    //totalGoodsTransportedByCarrier_Unit.setValueMap("m3","Kg","lb");
+    totalGoodsTransportedByCarrier_Unit.setDefaultValue("Kg");
+		
+    StaticTextItem totalGoodsTransportedByCarrier_MassType = new StaticTextItem("totalGoodsTransportedByCarrier_MassType");
+    //totalGoodsTransportedByCarrier_MassType.setValueMap("Actual","Chargeable","Dimensional");
+    //totalGoodsTransportedByCarrier_MassType.setDefaultValue("Actual");
+    
+    CheckboxItem flag_unladenBackhaul = new CheckboxItem();  
+    flag_unladenBackhaul.setName("flag_unladenBackhaul");  
+    flag_unladenBackhaul.setTitle("Unladen Backhaul?");  
+    flag_unladenBackhaul.setRedrawOnChange(true);  
+    flag_unladenBackhaul.setWidth(50);  
+    flag_unladenBackhaul.setDefaultValue(false);    
+    flag_unladenBackhaul.setColSpan(4);//EndRow(Boolean.TRUE);
+
+    final RadioGroupItem fuelDataType = new RadioGroupItem();  
+    fuelDataType.setName("fuelDataType");  
+    fuelDataType.setColSpan("*");  
+    fuelDataType.setRequired(false);  
+    fuelDataType.setVertical(false);  
+    fuelDataType.setValueMap("Fuel Consumed", "Distance/Vehicle Used", "Calculate Allocated Fuel Used");  
+    fuelDataType.setRedrawOnChange(true);  
+    fuelDataType.setTitle("What type of fuel related data you have?");  
+    fuelDataType.setDefaultValue("Fuel Consumed");
+    fuelDataType.setVisible(Boolean.TRUE);
+    fuelDataType.setStartRow(Boolean.TRUE);
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Fuel Based Method - Transportation Emissions");
+
+// Change Handlers    
+    companyGoodsTransported_Unit.addChangedHandler(new ChangedHandler() {  
+            public void onChanged(ChangedEvent event) {  
+                event.getForm().setValue("totalGoodsTransportedByCarrier_Unit",(String)companyGoodsTransported_Unit.getValue());
+                
+                if((Boolean) companyGoodsTransported_Unit.getValue().equals("m3")){  
+                    event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").show();
+                    event.getForm().getItem("companyGoodsTransported_MassType").show();
+                } else {                    
+                    event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").hide();
+                    event.getForm().getItem("companyGoodsTransported_MassType").hide();                    
+                }
+            }  
+    });  
+    
+    companyGoodsTransported_MassType.addChangedHandler(new ChangedHandler() {  
+            public void onChanged(ChangedEvent event) {  
+                event.getForm().setValue("totalGoodsTransportedByCarrier_MassType",(String)companyGoodsTransported_Unit.getValue());                
+                event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").show();                    
+            }  
+    });  
+
+/*
+    flag_unladenBackhaul.addChangedHandler(new ChangedHandler() {  
+            public void onChanged(ChangedEvent event) {  
+                event.getForm().setValue("totalGoodsTransportedByCarrier_MassType",(String)companyGoodsTransported_Unit.getValue());                
+                event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").show();                    
+            }  
+    });      
+*/
+    
+    fuelConsumed.setVisible(Boolean.TRUE);
+    fuelConsumed_Unit.setVisible(Boolean.TRUE);
+    totalDistanceTravelled.setVisible(Boolean.FALSE);
+    totalDistanceTravelled_Unit.setVisible(Boolean.FALSE);
+    vehicleType.setVisible(Boolean.FALSE);
+    fuelEfficiencyOfVehicle.setVisible(Boolean.FALSE);
+    fuelEfficiencyOfVehicle_Unit.setVisible(Boolean.FALSE);
+    totalFuelConsumed.setVisible(Boolean.FALSE);
+    totalFuelConsumed_Unit.setVisible(Boolean.FALSE);
+    companyGoodsTransported.setVisible(Boolean.FALSE);
+    companyGoodsTransported_Unit.setVisible(Boolean.FALSE);
+    companyGoodsTransported_MassType.setVisible(Boolean.FALSE);
+    totalGoodsTransportedByCarrier.setVisible(Boolean.FALSE);
+    totalGoodsTransportedByCarrier_Unit.setVisible(Boolean.FALSE);
+    totalGoodsTransportedByCarrier_MassType.setVisible(Boolean.FALSE);
+    
+    fuelDataType.addChangedHandler(new ChangedHandler() {  
+        public void onChanged(ChangedEvent event) {  
+            if((Boolean) fuelDataType.getValue().equals("Fuel Consumed")){
+                event.getForm().getItem("fuelConsumed").show();
+                event.getForm().getItem("fuelConsumed_Unit").show();
+
+                event.getForm().getItem("totalDistanceTravelled").hide();
+                event.getForm().getItem("totalDistanceTravelled_Unit").hide();
+                event.getForm().getItem("vehicleType").hide();
+                event.getForm().getItem("fuelEfficiencyOfVehicle").hide();
+                event.getForm().getItem("fuelEfficiencyOfVehicle_Unit").hide();
+
+                event.getForm().getItem("totalDistanceTravelled").clearValue();
+                event.getForm().getItem("fuelEfficiencyOfVehicle").clearValue();                
+                
+                event.getForm().getItem("totalFuelConsumed").hide();
+                event.getForm().getItem("totalFuelConsumed_Unit").hide();
+                event.getForm().getItem("companyGoodsTransported").hide();
+                event.getForm().getItem("companyGoodsTransported_Unit").hide();
+                event.getForm().getItem("companyGoodsTransported_MassType").hide();
+                event.getForm().getItem("totalGoodsTransportedByCarrier").hide();
+                event.getForm().getItem("totalGoodsTransportedByCarrier_Unit").hide();
+                event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").hide();
+
+                event.getForm().getItem("totalFuelConsumed").clearValue();
+                event.getForm().getItem("companyGoodsTransported").clearValue();
+                event.getForm().getItem("totalGoodsTransportedByCarrier").clearValue();
+                
+            }if((Boolean) fuelDataType.getValue().equals("Distance/Vehicle Used")){
+                event.getForm().getItem("fuelConsumed").hide();
+                event.getForm().getItem("fuelConsumed_Unit").hide();
+                event.getForm().getItem("fuelConsumed").clearValue();
+
+                event.getForm().getItem("totalDistanceTravelled").show();
+                event.getForm().getItem("totalDistanceTravelled_Unit").show();
+                event.getForm().getItem("vehicleType").show();
+                event.getForm().getItem("fuelEfficiencyOfVehicle").show();
+                event.getForm().getItem("fuelEfficiencyOfVehicle_Unit").show();
+
+                event.getForm().getItem("totalFuelConsumed").hide();
+                event.getForm().getItem("totalFuelConsumed_Unit").hide();
+                event.getForm().getItem("companyGoodsTransported").hide();
+                event.getForm().getItem("companyGoodsTransported_Unit").hide();
+                event.getForm().getItem("companyGoodsTransported_MassType").hide();
+                event.getForm().getItem("totalGoodsTransportedByCarrier").hide();
+                event.getForm().getItem("totalGoodsTransportedByCarrier_Unit").hide();
+                event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").hide();
+
+                event.getForm().getItem("totalFuelConsumed").clearValue();
+                event.getForm().getItem("companyGoodsTransported").clearValue();
+                event.getForm().getItem("totalGoodsTransportedByCarrier").clearValue();
+                
+            } else if((Boolean) fuelDataType.getValue().equals("Calculate Allocated Fuel Used")){
+                event.getForm().getItem("fuelConsumed").hide();
+                event.getForm().getItem("fuelConsumed_Unit").hide();
+                event.getForm().getItem("fuelConsumed").clearValue();
+
+                event.getForm().getItem("totalDistanceTravelled").hide();
+                event.getForm().getItem("totalDistanceTravelled_Unit").hide();
+                event.getForm().getItem("vehicleType").hide();
+                event.getForm().getItem("fuelEfficiencyOfVehicle").hide();
+                event.getForm().getItem("fuelEfficiencyOfVehicle_Unit").hide();
+                
+                event.getForm().getItem("totalDistanceTravelled").clearValue();
+                event.getForm().getItem("fuelEfficiencyOfVehicle").clearValue();                
+
+                event.getForm().getItem("totalFuelConsumed").show();
+                event.getForm().getItem("totalFuelConsumed_Unit").show();
+                event.getForm().getItem("companyGoodsTransported").show();
+                event.getForm().getItem("companyGoodsTransported_Unit").show();
+                event.getForm().getItem("companyGoodsTransported_MassType").hide();
+                event.getForm().getItem("totalGoodsTransportedByCarrier").show();
+                event.getForm().getItem("totalGoodsTransportedByCarrier_Unit").show();
+                event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").hide();				
+            }
+        }  
+    });  
+
+    flag_unladenBackhaul.addChangedHandler(new ChangedHandler() {  
+        public void onChanged(ChangedEvent event) {  
+            if ((Boolean)event.getForm().getValue("flag_unladenBackhaul") ){
+                //fuelDataType.setValueDisabled("Distance/Vehicle Used", true);
+                fuelDataType.setValueDisabled("Calculate Allocated Fuel Used", true);                
+                                
+                if (fuelDataType.getValue().equals("Calculate Allocated Fuel Used")) {
+                    
+                    fuelDataType.setValue("Fuel Consumed");
+                    
+                    event.getForm().getItem("fuelConsumed").show();
+                    event.getForm().getItem("fuelConsumed_Unit").show();
+                    
+                    event.getForm().getItem("totalDistanceTravelled").hide();
+                    event.getForm().getItem("totalDistanceTravelled_Unit").hide();
+                    event.getForm().getItem("vehicleType").hide();
+                    event.getForm().getItem("fuelEfficiencyOfVehicle").hide();
+                    event.getForm().getItem("fuelEfficiencyOfVehicle_Unit").hide();
+                    
+                    event.getForm().getItem("totalFuelConsumed").hide();
+                    event.getForm().getItem("totalFuelConsumed_Unit").hide();
+                    event.getForm().getItem("companyGoodsTransported").hide();
+                    event.getForm().getItem("companyGoodsTransported_Unit").hide();
+                    event.getForm().getItem("companyGoodsTransported_MassType").hide();
+                    event.getForm().getItem("totalGoodsTransportedByCarrier").hide();
+                    event.getForm().getItem("totalGoodsTransportedByCarrier_Unit").hide();
+                    event.getForm().getItem("totalGoodsTransportedByCarrier_MassType").hide();                                        
+                };
+                
+                event.getForm().getItem("refrigerantType").hide();
+                event.getForm().getItem("refrigerantLeakage").hide();
+                event.getForm().getItem("refrigerantLeakage_Unit").hide();
+                event.getForm().getItem("EF_Refrigerant").hide();
+                event.getForm().getItem("EF_Refrigerant_Unit").hide();
+                                
+            } else {
+                //fuelDataType.setValueDisabled("Distance/Vehicle Used", false);
+                fuelDataType.setValueDisabled("Calculate Allocated Fuel Used", false);                                
+
+                event.getForm().getItem("refrigerantType").show();
+                event.getForm().getItem("refrigerantLeakage").show();
+                event.getForm().getItem("refrigerantLeakage_Unit").show();
+                event.getForm().getItem("EF_Refrigerant").show();
+                event.getForm().getItem("EF_Refrigerant_Unit").show();                
+            }
+        }  
+    });  
+
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(streamType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(serviceProviderName);
+    formItemList.add(serviceProviderContact);    
+    
+    //formItemList.add(flag_calculateFuelConsumed);    		    
+    formItemList.add(flag_unladenBackhaul);    
+    formItemList.add(fuelDataType);      
+    
+    formItemList.add(fuelConsumed);        
+    formItemList.add(fuelConsumed_Unit);    	
+    
+    formItemList.add(totalDistanceTravelled);    	
+    formItemList.add(totalDistanceTravelled_Unit);    		
+    formItemList.add(vehicleType);    	
+    formItemList.add(fuelEfficiencyOfVehicle);    			
+    formItemList.add(fuelEfficiencyOfVehicle_Unit);    			
+    
+    //formItemList.add(flag_calculateAllocatedFuelUse);    			    
+    formItemList.add(totalFuelConsumed);    		    
+    formItemList.add(totalFuelConsumed_Unit);    		
+    formItemList.add(companyGoodsTransported);    	
+    formItemList.add(companyGoodsTransported_Unit);
+    formItemList.add(companyGoodsTransported_MassType);    
+    formItemList.add(totalGoodsTransportedByCarrier);    			
+    formItemList.add(totalGoodsTransportedByCarrier_Unit);    			
+    formItemList.add(totalGoodsTransportedByCarrier_MassType);    
+    
+    formItemList.add(fuelType);                
+    formItemList.add(EF_Fuel);    			    
+    formItemList.add(EF_Fuel_Unit);    		        
+
+ 
+    formItemList.add(refrigerantType);    	
+    formItemList.add(refrigerantLeakage);    			
+    formItemList.add(refrigerantLeakage_Unit);
+    formItemList.add(EF_Refrigerant);    			    
+    formItemList.add(EF_Refrigerant_Unit);    		    
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getTransportationFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SelectItem streamType = new SelectItem("streamType");       
+    streamType.setValueMap("Upstream","Downstream");
+    streamType.setDefaultValue("Upstream");
+    streamType.setWidth("*");
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem serviceProviderName = new TextItem("serviceProviderName");
+    TextItem serviceProviderContact = new TextItem("serviceProviderContact");    
+	    
+    SelectOtherItem transportModeOrVehicleType = new SelectOtherItem("transportModeOrVehicleType");       
+    transportModeOrVehicleType.setValueMap("Air","Ship","Rail","Truck","Warehouse","Terminal");
+    transportModeOrVehicleType.setDefaultValue("Air");
+    transportModeOrVehicleType.setWidth("*");    
+    transportModeOrVehicleType.setEndRow(Boolean.TRUE);
+	
+    IblFloatItem massOfGoodsPurchased = new IblFloatItem("massOfGoodsPurchased");
+    SelectItem massOfGoodsPurchased_Unit = new SelectItem("massOfGoodsPurchased_Unit");
+    massOfGoodsPurchased_Unit.setValueMap("Tonne");
+    massOfGoodsPurchased_Unit.setDefaultValue("Tonne");
+    
+    IblFloatItem distanceTraveledInTransportLeg = new IblFloatItem("distanceTraveledInTransportLeg");    	
+    SelectItem distanceTraveledInTransportLeg_Unit = new SelectItem("distanceTraveledInTransportLeg_Unit");
+    distanceTraveledInTransportLeg_Unit.setValueMap("Mile");
+    distanceTraveledInTransportLeg_Unit.setDefaultValue("Mile");
+			
+    IblFloatItem EF_TransportModeOrVehicleType = new IblFloatItem("EF_TransportModeOrVehicleType");
+    SelectItem EF_TransportModeOrVehicleType_Unit = new SelectItem("EF_TransportModeOrVehicleType_Unit");
+    EF_TransportModeOrVehicleType_Unit.setValueMap("Kg CO2e/Tonne-Mile");
+    EF_TransportModeOrVehicleType_Unit.setDefaultValue("Kg CO2e/Tonne-Mile");
+		       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Distance Based Method - Transportation Emissions");
+
+    
+    
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(streamType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(serviceProviderName);
+    formItemList.add(serviceProviderContact);    
+    formItemList.add(transportModeOrVehicleType);            
+    formItemList.add(massOfGoodsPurchased);        
+    formItemList.add(massOfGoodsPurchased_Unit);    	
+    formItemList.add(distanceTraveledInTransportLeg);    			    
+    formItemList.add(distanceTraveledInTransportLeg_Unit);    		    
+    formItemList.add(EF_TransportModeOrVehicleType);    	
+    formItemList.add(EF_TransportModeOrVehicleType_Unit);    			
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getDistributionFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SelectItem streamType = new SelectItem("streamType");       
+    streamType.setValueMap("Upstream","Downstream");
+    streamType.setDefaultValue("Upstream");
+    streamType.setWidth("*");
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem serviceProviderName = new TextItem("serviceProviderName");
+    TextItem serviceProviderContact = new TextItem("serviceProviderContact");    
+    TextItem storageFacility = new TextItem("storageFacility");    
+	
+
+    SelectOtherItem fuelType = new SelectOtherItem("fuelType");       
+    fuelType.setValueMap("Anthracite Coal",
+                            "Bituminous Coal",
+                            "Distillate Fuel Oil (#1, 2 & 4)",
+                            "Kerosene",
+                            "Landfill Gas (50%CH4, 50%CO2)",
+                            "Lignite Coal",
+                            "LPG",
+                            "Natural Gas",
+                            "Propane",
+                            "Residual Fuel Oil  (#5 & 6)",
+                            "Sub-bituminous Coal",
+                            "Wood and Wood Waste");
+
+    fuelType.setDefaultValue("Anthracite Coal");
+    fuelType.setWidth("*");    
+    fuelType.setStartRow(Boolean.TRUE);
+    fuelType.setEndRow(Boolean.TRUE);
+    
+    IblFloatItem fuelConsumed = new IblFloatItem("fuelConsumed");
+    SelectItem_Energy_Unit fuelConsumed_Unit = new SelectItem_Energy_Unit("fuelConsumed_Unit");
+    IblFloatItem EF_Fuel = new IblFloatItem("EF_Fuel");    	
+    SelectItem_Energy_EFUnit EF_Fuel_Unit = new SelectItem_Energy_EFUnit("EF_Fuel_Unit");    
+
+    SelectOtherItem refrigerantType = new SelectOtherItem("refrigerantType");       
+    refrigerantType.setValueMap("C2F6", 
+                                "C4F10",
+                                "CF4", 
+                                "CO2", 
+                                "HFC-125",
+                                "HFC-134a",
+                                "HFC-143a",
+                                "HFC-152a",
+                                "HFC-227ea",
+                                "HFC-23",
+                                "HFC-236fa",
+                                "HFC-32",
+                                "SF6");
+    refrigerantType.setDefaultValue("C2F6");
+    refrigerantType.setWidth("*");    
+    refrigerantType.setStartRow(Boolean.TRUE);
+    refrigerantType.setEndRow(Boolean.TRUE);
+	
+    IblFloatItem refrigerantLeakage = new IblFloatItem("refrigerantLeakage");
+    SelectItem refrigerantLeakage_Unit = new SelectItem("refrigerantLeakage_Unit");
+    refrigerantLeakage_Unit.setValueMap("Kg");
+    refrigerantLeakage_Unit.setDefaultValue("Kg");
+    
+    IblFloatItem EF_Refrigerant = new IblFloatItem("EF_Refrigerant");    	
+    SelectItem EF_Refrigerant_Unit = new SelectItem("EF_Refrigerant_Unit");    
+    EF_Refrigerant_Unit.setValueMap("Kg CO2e/Kg");
+    EF_Refrigerant_Unit.setDefaultValue("Kg CO2e/Kg");
+
+    IblFloatItem electricityConsumed = new IblFloatItem("electricityConsumed");
+    SelectItem_Energy_Unit electricityConsumed_Unit = new SelectItem_Energy_Unit("electricityConsumed_Unit");
+    IblFloatItem EF_Electricity = new IblFloatItem("EF_Electricity");    	
+    SelectItem_Energy_EFUnit EF_Electricity_Unit = new SelectItem_Energy_EFUnit("EF_Electricity_Unit");    
+		
+    IblFloatItem volumeOfReportingCompanysPurchasedGoods = new IblFloatItem("volumeOfReportingCompanysPurchasedGoods");
+    SelectItem volumeOfReportingCompanysPurchasedGoods_Unit = new SelectItem("volumeOfReportingCompanysPurchasedGoods_Unit");
+    volumeOfReportingCompanysPurchasedGoods_Unit.setValueMap("m3");
+    volumeOfReportingCompanysPurchasedGoods_Unit.setDefaultValue("m3");
+    
+    IblFloatItem totalVolumeOfGoodsInStorageFacility = new IblFloatItem("totalVolumeOfGoodsInStorageFacility");    	
+    SelectItem totalVolumeOfGoodsInStorageFacility_Unit = new SelectItem("totalVolumeOfGoodsInStorageFacility_Unit");    
+    totalVolumeOfGoodsInStorageFacility_Unit.setValueMap("m3");
+    totalVolumeOfGoodsInStorageFacility_Unit.setDefaultValue("m3");
+					       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Site Specific Method - Distribution Emissions");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(streamType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(serviceProviderName);
+    formItemList.add(serviceProviderContact);    
+    formItemList.add(storageFacility);        
+
+    formItemList.add(fuelType);            
+    formItemList.add(fuelConsumed);        
+    formItemList.add(fuelConsumed_Unit);    	
+    formItemList.add(EF_Fuel);    			    
+    formItemList.add(EF_Fuel_Unit);    		    
+    formItemList.add(electricityConsumed);    			
+    formItemList.add(electricityConsumed_Unit);
+    formItemList.add(EF_Electricity);    			    
+    formItemList.add(EF_Electricity_Unit);    		    
+    
+    formItemList.add(refrigerantType);    	
+    formItemList.add(refrigerantLeakage);    			
+    formItemList.add(refrigerantLeakage_Unit);
+    formItemList.add(EF_Refrigerant);    			    
+    formItemList.add(EF_Refrigerant_Unit);    		    
+    
+    formItemList.add(volumeOfReportingCompanysPurchasedGoods);            
+    formItemList.add(volumeOfReportingCompanysPurchasedGoods_Unit);        
+    formItemList.add(totalVolumeOfGoodsInStorageFacility);    	
+    formItemList.add(totalVolumeOfGoodsInStorageFacility_Unit);    			    
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getDistributionFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SelectItem streamType = new SelectItem("streamType");       
+    streamType.setValueMap("Upstream","Downstream");
+    streamType.setDefaultValue("Upstream");
+    streamType.setWidth("*");
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem serviceProviderName = new TextItem("serviceProviderName");
+    TextItem serviceProviderContact = new TextItem("serviceProviderContact");    
+    TextItem storageFacility = new TextItem("storageFacility");    
+    storageFacility.setEndRow(Boolean.TRUE);
+
+    IblFloatItem storedGoodsInReportingYear = new IblFloatItem("storedGoodsInReportingYear");
+    final SelectItem storedGoodsInReportingYear_Unit = new SelectItem("storedGoodsInReportingYear_Unit");
+    storedGoodsInReportingYear_Unit.setValueMap("m3", "Pallets");
+    storedGoodsInReportingYear_Unit.setDefaultValue("m3");
+    storedGoodsInReportingYear_Unit.setWidth("*");    
+
+    IblFloatItem EF_StorageFacility = new IblFloatItem("EF_StorageFacility");  
+    final StaticTextItem EF_StorageFacility_Unit = new StaticTextItem("EF_StorageFacility_Unit");
+    EF_StorageFacility_Unit.setDefaultValue("m3");
+/*    
+    SelectItem EF_StorageFacility_Unit = new SelectItem("EF_StorageFacility_Unit");
+    EF_StorageFacility_Unit.setValueMap("Kg CO2e/m3", "Kg CO2e/Pallet");
+    EF_StorageFacility_Unit.setDefaultValue("Kg CO2e/m3");
+    EF_StorageFacility_Unit.setWidth("*");    
+*/					       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Average Data Method - Distribution Emissions");
+
+    storedGoodsInReportingYear_Unit.addChangedHandler(new ChangedHandler() {  
+        public void onChanged(ChangedEvent event) {  
+            if (storedGoodsInReportingYear_Unit.getValue().equals("m3")) {                    
+                EF_StorageFacility_Unit.setValue("Kg CO2e/m3");                    
+            } else if (storedGoodsInReportingYear_Unit.getValue().equals("Pallets")){
+                EF_StorageFacility_Unit.setValue("Kg CO2e/Pallet");                    
+            }    
+        }
+    });  
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(streamType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(serviceProviderName);
+    formItemList.add(serviceProviderContact);    
+    formItemList.add(storageFacility);    
+    formItemList.add(storedGoodsInReportingYear);            
+    formItemList.add(storedGoodsInReportingYear_Unit);        
+    formItemList.add(EF_StorageFacility);    	
+    formItemList.add(EF_StorageFacility_Unit);    			    
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getWasteGeneratedInOperationsFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    sourceDescriptionItem.setEndRow(Boolean.TRUE);
+
+    TextItem serviceProviderName = new TextItem("serviceProviderName");
+    TextItem serviceProviderContact = new TextItem("serviceProviderContact");    
+
+    SelectOtherItem wasteType = new SelectOtherItem("wasteType");       
+    wasteType.setValueMap("Plastic","Water Disposal");
+    wasteType.setDefaultValue("Plastic");
+    wasteType.setWidth("*");
+
+    SelectOtherItem wasteTreatmentType = new SelectOtherItem("wasteTreatmentType");       
+    wasteTreatmentType.setValueMap("Incinerated","Landfill","Wastewater");
+    wasteTreatmentType.setDefaultValue("Incinerated");
+    wasteTreatmentType.setWidth("*");
+    
+    IblFloatItem wasteProduced = new IblFloatItem("wasteProduced");
+    final SelectItem wasteProduced_Unit = new SelectItem("wasteProduced_Unit");
+    wasteProduced_Unit.setValueMap("Tonne","lb");
+    wasteProduced_Unit.setDefaultValue("Tonne");
+    wasteProduced_Unit.setWidth("*");    
+
+    IblFloatItem EF_WasteTypeAndWasteTreatment = new IblFloatItem("EF_WasteTypeAndWasteTreatment");  
+    final StaticTextItem EF_WasteTypeAndWasteTreatment_Unit = new StaticTextItem("EF_WasteTypeAndWasteTreatment_Unit");
+    EF_WasteTypeAndWasteTreatment_Unit.setDefaultValue("Kg CO2e/Tonne");
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Waste Type Specific Method - Waste Generated In Operations");
+
+    wasteProduced_Unit.addChangedHandler(new ChangedHandler() {  
+        public void onChanged(ChangedEvent event) {  
+            if (wasteProduced_Unit.getValue().equals("Tonne")) {                    
+                EF_WasteTypeAndWasteTreatment_Unit.setValue("Kg CO2e/Tonne");                    
+            } else if (wasteProduced_Unit.getValue().equals("lb")){
+                EF_WasteTypeAndWasteTreatment_Unit.setValue("Kg CO2e/lb");                    
+            }    
+        }
+    });  
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(serviceProviderName);
+    formItemList.add(serviceProviderContact);    
+    formItemList.add(wasteType);            
+    formItemList.add(wasteTreatmentType);    
+    formItemList.add(wasteProduced);            
+    formItemList.add(wasteProduced_Unit);            
+    formItemList.add(EF_WasteTypeAndWasteTreatment);        
+    formItemList.add(EF_WasteTypeAndWasteTreatment_Unit);    	
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getWasteGeneratedInOperationsFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    sourceDescriptionItem.setEndRow(Boolean.TRUE);
+    
+    TextItem serviceProviderName = new TextItem("serviceProviderName");
+    TextItem serviceProviderContact = new TextItem("serviceProviderContact");    
+
+    SelectOtherItem wasteType = new SelectOtherItem("wasteType");       
+    wasteType.setValueMap("Plastic","Water Disposal");
+    wasteType.setDefaultValue("Plastic");
+    wasteType.setWidth("*");
+
+    SelectOtherItem wasteTreatmentType = new SelectOtherItem("wasteTreatmentType");       
+    wasteTreatmentType.setValueMap("Incinerated","Landfill","Wastewater");
+    wasteTreatmentType.setDefaultValue("Incinerated");
+    wasteTreatmentType.setWidth("*");
+    
+    IblFloatItem wasteProduced = new IblFloatItem("wasteProduced");
+    final SelectItem wasteProduced_Unit = new SelectItem("wasteProduced_Unit");
+    wasteProduced_Unit.setValueMap("Tonne","lb");
+    wasteProduced_Unit.setDefaultValue("Tonne");
+    wasteProduced_Unit.setWidth("*");    
+
+    IblFloatItem percentOfWasteTreatedByWasteTreatmentMethod = new IblFloatItem("percentOfWasteTreatedByWasteTreatmentMethod");  
+    
+    IblFloatItem EF_WasteTreatmentMethod = new IblFloatItem("EF_WasteTreatmentMethod");  
+    final StaticTextItem EF_WasteTreatmentMethod_Unit = new StaticTextItem("EF_WasteTreatmentMethod_Unit");
+    EF_WasteTreatmentMethod_Unit.setDefaultValue("Kg CO2e/Tonne");
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Average Data Method - Waste Generated In Operations");
+
+    wasteProduced_Unit.addChangedHandler(new ChangedHandler() {  
+        public void onChanged(ChangedEvent event) {  
+            if (wasteProduced_Unit.getValue().equals("Tonne")) {                    
+                EF_WasteTreatmentMethod_Unit.setValue("Kg CO2e/Tonne");                    
+            } else if (wasteProduced_Unit.getValue().equals("lb")){
+                EF_WasteTreatmentMethod_Unit.setValue("Kg CO2e/lb");                    
+            }    
+        }
+    });  
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(serviceProviderName);
+    formItemList.add(serviceProviderContact);    
+    formItemList.add(wasteType);        
+    formItemList.add(wasteTreatmentType);    
+    formItemList.add(wasteProduced);            
+    formItemList.add(wasteProduced_Unit);            
+    formItemList.add(percentOfWasteTreatedByWasteTreatmentMethod);            
+    formItemList.add(EF_WasteTreatmentMethod);        
+    formItemList.add(EF_WasteTreatmentMethod_Unit);    	
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+ 
+public FormItem[] getBusinessTravelFormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+/*
+    final SelectItem activityType = new SelectItem("activityType");       
+    activityType.setValueMap("Travel","Hotel");
+    activityType.setRedrawOnChange(true);
+    activityType.setDefaultValue("Travel");
+    activityType.setWidth("*");
+ */   
+
+    final RadioGroupItem activityType = new RadioGroupItem();  
+    activityType.setName("activityType");  
+    activityType.setColSpan("*");  
+    activityType.setRequired(false);  
+    activityType.setVertical(false);  
+    activityType.setValueMap("Travel","Hotel");  
+    activityType.setRedrawOnChange(true);  
+    activityType.setTitle("Business Travel activity?"); 
+    activityType.setDefaultValue("Travel");
+    activityType.setVisible(Boolean.TRUE);
+    activityType.setStartRow(Boolean.TRUE);
+    
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+/*
+    SelectOtherItem travelMode = new SelectOtherItem("travelMode");       
+    travelMode.setValueMap("Air","Train","Bus","Car");
+    travelMode.setDefaultValue("Car");
+    travelMode.setWidth("*");
+*/
+    TextItem vehicleType = new TextItem("vehicleType");  
+/*    
+    SelectOtherItem vehicleType = new SelectOtherItem("vehicleType");       
+    vehicleType.setValueMap("Air","Train","Bus","Car");
+    vehicleType.setDefaultValue("Car");
+    vehicleType.setWidth("*");
+*/
+    
+    IblFloatItem distanceTravelledByVehicleType = new IblFloatItem("distanceTravelledByVehicleType");
+    distanceTravelledByVehicleType.setStartRow(Boolean.TRUE);
+    
+    final SelectItem distanceTravelledByVehicleType_Unit = new SelectItem("distanceTravelledByVehicleType_Unit");
+    distanceTravelledByVehicleType_Unit.setValueMap("Mile", "Km");
+    distanceTravelledByVehicleType_Unit.setDefaultValue("Mile");
+    distanceTravelledByVehicleType_Unit.setWidth("*");    
+
+    IblFloatItem EF_VehicleType = new IblFloatItem("EF_VehicleType");  
+    final StaticTextItem EF_VehicleType_Unit = new StaticTextItem("EF_VehicleType_Unit");
+    EF_VehicleType_Unit.setDefaultValue("Kg CO2e/Mile");    	
+
+    IblFloatItem annualNumberOfHotelNights = new IblFloatItem("annualNumberOfHotelNights");
+    IblFloatItem EF_Hotel = new IblFloatItem("EF_Hotel");
+    EF_Hotel.setStartRow(Boolean.TRUE);
+    
+    final SelectItem EF_Hotel_Unit = new SelectItem("EF_Hotel_Unit");
+    EF_Hotel_Unit.setValueMap("Kg CO2e");
+    EF_Hotel_Unit.setDefaultValue("Kg CO2e");
+    EF_Hotel_Unit.setWidth("*");    
+    
+    annualNumberOfHotelNights.setVisible(Boolean.FALSE);
+    EF_Hotel.setVisible(Boolean.FALSE);
+    EF_Hotel_Unit.setVisible(Boolean.FALSE);
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Distance Based Method - Business Travel Emissions");
+
+    distanceTravelledByVehicleType_Unit.addChangedHandler(new ChangedHandler() {  
+        public void onChanged(ChangedEvent event) {  
+            if (distanceTravelledByVehicleType_Unit.getValue().equals("Mile")) {                    
+                EF_VehicleType_Unit.setValue("Kg CO2e/Mile");                    
+            } else if (distanceTravelledByVehicleType_Unit.getValue().equals("Km")){
+                EF_VehicleType_Unit.setValue("Kg CO2e/Km");                    
+            }    
+        }
+    });  
+
+    activityType.addChangedHandler(new ChangedHandler() {  
+        public void onChanged(ChangedEvent event) {  
+            if (activityType.getValue().equals("Travel")) {
+                event.getForm().getItem("vehicleType").show();
+                event.getForm().getItem("distanceTravelledByVehicleType").show();
+                event.getForm().getItem("distanceTravelledByVehicleType_Unit").show();
+                event.getForm().getItem("EF_VehicleType").show();
+                event.getForm().getItem("EF_VehicleType_Unit").show();
+                
+                event.getForm().getItem("annualNumberOfHotelNights").hide();
+                event.getForm().getItem("EF_Hotel").hide();
+                event.getForm().getItem("EF_Hotel_Unit").hide();
+                
+            } else if (activityType.getValue().equals("Hotel")){
+                event.getForm().getItem("vehicleType").hide();
+                event.getForm().getItem("distanceTravelledByVehicleType").hide();
+                event.getForm().getItem("distanceTravelledByVehicleType_Unit").hide();
+                event.getForm().getItem("EF_VehicleType").hide();
+                event.getForm().getItem("EF_VehicleType_Unit").hide();
+                
+                event.getForm().getItem("annualNumberOfHotelNights").show();
+                event.getForm().getItem("EF_Hotel").show();
+                event.getForm().getItem("EF_Hotel_Unit").show();                
+            }    
+        }
+    });  
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(activityType);        
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(vehicleType);
+    formItemList.add(distanceTravelledByVehicleType);    
+    formItemList.add(distanceTravelledByVehicleType_Unit);    
+    formItemList.add(EF_VehicleType);            
+    formItemList.add(EF_VehicleType_Unit);
+    formItemList.add(annualNumberOfHotelNights);           
+    formItemList.add(EF_Hotel);           
+    formItemList.add(EF_Hotel_Unit);               
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getBusinessTravelHotelStayFormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    StaticTextItem activityType = new StaticTextItem("activityType");
+    activityType.setDefaultValue("Hotel");
+    
+    IblFloatItem annualNumberOfHotelNights = new IblFloatItem("annualNumberOfHotelNights");
+    IblFloatItem EF_Hotel = new IblFloatItem("EF_Hotel");
+    EF_Hotel.setStartRow(Boolean.TRUE);
+    
+    SelectItem EF_Hotel_Unit = new SelectItem("EF_Hotel_Unit");
+    EF_Hotel_Unit.setValueMap("Kg CO2e");
+    EF_Hotel_Unit.setDefaultValue("Kg CO2e");
+    EF_Hotel_Unit.setWidth("*");    
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Hotel Stay Method - Business Travel Emissions");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(annualNumberOfHotelNights);           
+    formItemList.add(EF_Hotel);           
+    formItemList.add(EF_Hotel_Unit);               
+
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    formItemList.add(activityType);
+    
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getLeasedAssetsFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    SelectItem typeOfLeasingArrangement = new SelectItem("typeOfLeasingArrangement");       
+    typeOfLeasingArrangement.setValueMap("Finance/Capital Lease",
+					 "Operating Lease");
+    typeOfLeasingArrangement.setWidth("*");
+
+    SelectItem lessorOrLessee = new SelectItem("lessorOrLessee");       
+    lessorOrLessee.setValueMap("Lessee","Lessor");
+    lessorOrLessee.setWidth("*");
+	
+    TextItem leasedAssetName =  new TextItem("leasedAssetName");	
+    
+    IblFloatItem scope1EmissionsOfLeasedAsset = new IblFloatItem("scope1EmissionsOfLeasedAsset");
+    scope1EmissionsOfLeasedAsset.setStartRow(Boolean.TRUE);
+    
+    StaticTextItem scope1EmissionsOfLeasedAsset_Unit = new StaticTextItem("scope1EmissionsOfLeasedAsset_Unit");
+    scope1EmissionsOfLeasedAsset_Unit.setDefaultValue("Kg CO2e");
+    
+    IblFloatItem scope2EmissionsOfLeasedAsset = new IblFloatItem("scope2EmissionsOfLeasedAsset");
+    StaticTextItem scope2EmissionsOfLeasedAsset_Unit = new StaticTextItem("scope2EmissionsOfLeasedAsset_Unit");
+    scope2EmissionsOfLeasedAsset_Unit.setDefaultValue("Kg CO2e");            
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Site Specific Method - Leased Assets");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(typeOfLeasingArrangement);            
+    formItemList.add(lessorOrLessee);        
+    formItemList.add(leasedAssetName);
+    formItemList.add(scope1EmissionsOfLeasedAsset);
+    formItemList.add(scope1EmissionsOfLeasedAsset_Unit);    	
+    formItemList.add(scope2EmissionsOfLeasedAsset);    			    
+    formItemList.add(scope2EmissionsOfLeasedAsset_Unit);    		    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getLeasedAssetsFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    SelectItem typeOfLeasingArrangement = new SelectItem("typeOfLeasingArrangement");       
+    typeOfLeasingArrangement.setValueMap("Finance/Capital Lease",
+					 "Operating Lease");
+    typeOfLeasingArrangement.setWidth("*");
+
+    SelectItem lessorOrLessee = new SelectItem("lessorOrLessee");       
+    lessorOrLessee.setValueMap("Lessee","Lessor");
+    lessorOrLessee.setWidth("*");
+	
+    TextItem leasedAssetName =  new TextItem("leasedAssetName");	
+    
+    CheckboxItem flag_floorSpaceData = new CheckboxItem();  
+    flag_floorSpaceData.setName("flag_floorSpaceData");  
+    flag_floorSpaceData.setTitle("Floor space data us available?");  
+    flag_floorSpaceData.setRedrawOnChange(true);  
+    flag_floorSpaceData.setWidth(50);  
+    flag_floorSpaceData.setDefaultValue(false);    
+    flag_floorSpaceData.setColSpan(4);//EndRow(Boolean.TRUE);
+    
+    IblFloatItem floorSpace = new IblFloatItem("floorSpace");
+    StaticTextItem floorSpace_Unit = new StaticTextItem("floorSpace_Unit");
+    floorSpace_Unit.setDefaultValue("m2");
+
+    IblFloatItem average_EF = new IblFloatItem("average_EF");
+    StaticTextItem average_EF_Unit = new StaticTextItem("average_EF_Unit");
+    average_EF_Unit.setDefaultValue("Kg CO2e/m2/year");
+/*
+    IblFloatItem emissionsFromOtherAsset = new IblFloatItem("emissionsFromOtherAsset");
+    emissionsFromOtherAsset.setVisible(Boolean.FALSE);
+    TextItem emissionsFromOtherAsset_Unit = new TextItem("emissionsFromOtherAsset_Unit");
+    emissionsFromOtherAsset_Unit.setVisible(Boolean.FALSE);
+    //floorSpace_Unit.setDefaultValue("m2");
+*/
+    IblFloatItem numberOfbuildingsOrAssetTypes = new IblFloatItem("numberOfbuildingsOrAssetTypes");  
+    numberOfbuildingsOrAssetTypes.setVisible(Boolean.FALSE);
+    
+    IblFloatItem averageEmissionsPerBuildingOrAssetType = new IblFloatItem("averageEmissionsPerBuildingOrAssetType");
+    averageEmissionsPerBuildingOrAssetType.setVisible(Boolean.FALSE);
+    averageEmissionsPerBuildingOrAssetType.setStartRow(Boolean.TRUE);
+    
+    TextItem averageEmissionsPerBuildingOrAssetType_Unit = new TextItem("averageEmissionsPerBuildingOrAssetType_Unit");
+    averageEmissionsPerBuildingOrAssetType_Unit.setVisible(Boolean.FALSE);
+    //floorSpace_Unit.setDefaultValue("Kg CO2e/m2/year");
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Average Data Method - Leased Assets");
+
+    floorSpace.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    floorSpace_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    average_EF.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    average_EF_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    numberOfbuildingsOrAssetTypes.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    averageEmissionsPerBuildingOrAssetType.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    averageEmissionsPerBuildingOrAssetType_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });      
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(lessorOrLessee);       
+    formItemList.add(typeOfLeasingArrangement);                
+    formItemList.add(leasedAssetName);
+    formItemList.add(flag_floorSpaceData);
+    formItemList.add(floorSpace);    	
+    formItemList.add(floorSpace_Unit);    			     		    
+    formItemList.add(average_EF);    			     		    
+    formItemList.add(average_EF_Unit);    	
+    //formItemList.add(emissionsFromOtherAsset);
+    //formItemList.add(emissionsFromOtherAsset_Unit);
+    formItemList.add(numberOfbuildingsOrAssetTypes);
+    formItemList.add(averageEmissionsPerBuildingOrAssetType);
+    formItemList.add(averageEmissionsPerBuildingOrAssetType_Unit);    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getProcessingOfSoldProductsFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+/*
+    SelectItem streamType = new SelectItem("streamType");       
+    streamType.setValueMap("Upstream","Downstream");
+    streamType.setDefaultValue("Upstream");
+    streamType.setWidth("*");
+*/	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem soldProductName = new TextItem("soldProductName");
+    TextItem productSoldTo = new TextItem("productSoldTo");    
+    TextItem productSoldToContact = new TextItem("productSoldToContact");    
+	
+    SelectOtherItem fuelType = new SelectOtherItem("fuelType");       
+    fuelType.setValueMap("Anthracite Coal",
+                            "Bituminous Coal",
+                            "Distillate Fuel Oil (#1, 2 & 4)",
+                            "Kerosene",
+                            "Landfill Gas (50%CH4, 50%CO2)",
+                            "Lignite Coal",
+                            "LPG",
+                            "Natural Gas",
+                            "Propane",
+                            "Residual Fuel Oil  (#5 & 6)",
+                            "Sub-bituminous Coal",
+                            "Wood and Wood Waste");
+
+    fuelType.setDefaultValue("Anthracite Coal");
+    fuelType.setWidth("*");    
+    fuelType.setStartRow(Boolean.TRUE);
+    fuelType.setEndRow(Boolean.TRUE);
+    
+    IblFloatItem fuelConsumed = new IblFloatItem("fuelConsumed");
+    SelectItem_Energy_Unit fuelConsumed_Unit = new SelectItem_Energy_Unit("fuelConsumed_Unit");
+    IblFloatItem EF_Fuel = new IblFloatItem("EF_Fuel");    	
+    SelectItem_Energy_EFUnit EF_Fuel_Unit = new SelectItem_Energy_EFUnit("EF_Fuel_Unit");    
+
+    SelectOtherItem refrigerantType = new SelectOtherItem("refrigerantType");       
+    refrigerantType.setValueMap("C2F6", 
+                                "C4F10",
+                                "CF4", 
+                                "CO2", 
+                                "HFC-125",
+                                "HFC-134a",
+                                "HFC-143a",
+                                "HFC-152a",
+                                "HFC-227ea",
+                                "HFC-23",
+                                "HFC-236fa",
+                                "HFC-32",
+                                "SF6");
+    refrigerantType.setDefaultValue("C2F6");
+    refrigerantType.setWidth("*");    
+    refrigerantType.setStartRow(Boolean.TRUE);
+    refrigerantType.setEndRow(Boolean.TRUE);
+	
+    IblFloatItem refrigerantLeakage = new IblFloatItem("refrigerantLeakage");
+    SelectItem refrigerantLeakage_Unit = new SelectItem("refrigerantLeakage_Unit");
+    refrigerantLeakage_Unit.setValueMap("Kg");
+    refrigerantLeakage_Unit.setDefaultValue("Kg");
+    
+    IblFloatItem EF_Refrigerant = new IblFloatItem("EF_Refrigerant");    	
+    SelectItem EF_Refrigerant_Unit = new SelectItem("EF_Refrigerant_Unit");    
+    EF_Refrigerant_Unit.setValueMap("Kg CO2e/Kg");
+    EF_Refrigerant_Unit.setDefaultValue("Kg CO2e/Kg");
+
+    IblFloatItem electricityConsumed = new IblFloatItem("electricityConsumed");
+    SelectItem_Energy_Unit electricityConsumed_Unit = new SelectItem_Energy_Unit("electricityConsumed_Unit");
+    IblFloatItem EF_Electricity = new IblFloatItem("EF_Electricity");    	
+    SelectItem_Energy_EFUnit EF_Electricity_Unit = new SelectItem_Energy_EFUnit("EF_Electricity_Unit");    
+		
+    IblFloatItem massOfWasteOutput = new IblFloatItem("massOfWasteOutput");
+    SelectItem massOfWasteOutput_Unit = new SelectItem("massOfWasteOutput_Unit");
+    massOfWasteOutput_Unit.setValueMap("Kg");
+    massOfWasteOutput_Unit.setDefaultValue("Kg");
+    
+    IblFloatItem EF_WasteActivity = new IblFloatItem("EF_WasteActivity");    	
+    SelectItem EF_WasteActivity_Unit = new SelectItem("EF_WasteActivity_Unit");    
+    EF_WasteActivity_Unit.setValueMap("Kg CO2e/Kg");
+    EF_WasteActivity_Unit.setDefaultValue("Kg CO2e/Kg");
+					       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Site Specific Method - Processing Of Sold Products Emissions");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(soldProductName);
+    formItemList.add(productSoldTo);    
+    formItemList.add(productSoldToContact);        
+
+    formItemList.add(fuelType);            
+    formItemList.add(fuelConsumed);        
+    formItemList.add(fuelConsumed_Unit);    	
+    formItemList.add(EF_Fuel);    			    
+    formItemList.add(EF_Fuel_Unit);    		    
+    formItemList.add(electricityConsumed);    			
+    formItemList.add(electricityConsumed_Unit);
+    formItemList.add(EF_Electricity);    			    
+    formItemList.add(EF_Electricity_Unit);    		    
+    
+    formItemList.add(refrigerantType);    	
+    formItemList.add(refrigerantLeakage);    			
+    formItemList.add(refrigerantLeakage_Unit);
+    formItemList.add(EF_Refrigerant);    			    
+    formItemList.add(EF_Refrigerant_Unit);    		    
+    
+    formItemList.add(massOfWasteOutput);            
+    formItemList.add(massOfWasteOutput_Unit);        
+    formItemList.add(EF_WasteActivity);    	
+    formItemList.add(EF_WasteActivity_Unit);    			    
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getProcessingOfSoldProductsFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem soldProductName = new TextItem("soldProductName");
+    TextItem productSoldTo = new TextItem("productSoldTo");    
+    TextItem productSoldToContact = new TextItem("productSoldToContact");    
+			
+    IblFloatItem massOfSoldIntermediateProduct = new IblFloatItem("massOfSoldIntermediateProduct");
+    massOfSoldIntermediateProduct.setStartRow(Boolean.TRUE);
+    
+    SelectItem massOfSoldIntermediateProduct_Unit = new SelectItem("massOfSoldIntermediateProduct_Unit");
+    massOfSoldIntermediateProduct_Unit.setValueMap("Kg");
+    massOfSoldIntermediateProduct_Unit.setDefaultValue("Kg");
+    
+    IblFloatItem EF_ProcessingOfSoldProducts = new IblFloatItem("EF_ProcessingOfSoldProducts");    	
+    SelectItem EF_ProcessingOfSoldProducts_Unit = new SelectItem("EF_ProcessingOfSoldProducts_Unit");    
+    EF_ProcessingOfSoldProducts_Unit.setValueMap("Kg CO2e/Kg");
+    EF_ProcessingOfSoldProducts_Unit.setDefaultValue("Kg CO2e/Kg");
+					       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Average Data Method - Processing Of Sold Products Emissions");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(soldProductName);
+    formItemList.add(productSoldTo);    
+    formItemList.add(productSoldToContact);        
+   
+    formItemList.add(massOfSoldIntermediateProduct);            
+    formItemList.add(massOfSoldIntermediateProduct_Unit);        
+    formItemList.add(EF_ProcessingOfSoldProducts);    	
+    formItemList.add(EF_ProcessingOfSoldProducts_Unit);    			    
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getDirectUsePhaseEmissionsFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    
+    StaticTextItem productType = new StaticTextItem("productType");
+    productType.setDefaultValue("Energy Using Products");
+    
+    TextItem productName = new TextItem("productName");    
+    IblFloatItem totalLifetimeExpectedUsesOfProduct = new IblFloatItem("totalLifetimeExpectedUsesOfProduct");    	
+    IblFloatItem numberSoldInReportingPeriod = new IblFloatItem("numberSoldInReportingPeriod");    	
+    
+    SelectOtherItem fuelType = new SelectOtherItem("fuelType");       
+    fuelType.setValueMap("Anthracite Coal",
+                            "Bituminous Coal",
+                            "Distillate Fuel Oil (#1, 2 & 4)",
+                            "Kerosene",
+                            "Landfill Gas (50%CH4, 50%CO2)",
+                            "Lignite Coal",
+                            "LPG",
+                            "Natural Gas",
+                            "Propane",
+                            "Residual Fuel Oil  (#5 & 6)",
+                            "Sub-bituminous Coal",
+                            "Wood and Wood Waste");
+
+    fuelType.setDefaultValue("Anthracite Coal");
+    fuelType.setWidth("*");    
+    fuelType.setStartRow(Boolean.TRUE);
+    fuelType.setEndRow(Boolean.TRUE);
+    
+    IblFloatItem fuelConsumedPerUse = new IblFloatItem("fuelConsumedPerUse");
+    SelectItem_Energy_Unit fuelConsumedPerUse_Unit = new SelectItem_Energy_Unit("fuelConsumedPerUse_Unit");
+    IblFloatItem EF_Fuel = new IblFloatItem("EF_Fuel");    	
+    SelectItem_Energy_EFUnit EF_Fuel_Unit = new SelectItem_Energy_EFUnit("EF_Fuel_Unit");    
+
+    SelectOtherItem refrigerantType = new SelectOtherItem("refrigerantType");       
+    refrigerantType.setValueMap("C2F6", 
+                                "C4F10",
+                                "CF4", 
+                                "CO2", 
+                                "HFC-125",
+                                "HFC-134a",
+                                "HFC-143a",
+                                "HFC-152a",
+                                "HFC-227ea",
+                                "HFC-23",
+                                "HFC-236fa",
+                                "HFC-32",
+                                "SF6");
+    refrigerantType.setDefaultValue("C2F6");
+    refrigerantType.setWidth("*");    
+    refrigerantType.setStartRow(Boolean.TRUE);
+    refrigerantType.setEndRow(Boolean.TRUE);
+	
+    IblFloatItem refrigerantLeakagePerUse = new IblFloatItem("refrigerantLeakagePerUse");
+    SelectItem refrigerantLeakagePerUse_Unit = new SelectItem("refrigerantLeakagePerUse_Unit");
+    refrigerantLeakagePerUse_Unit.setValueMap("Kg");
+    refrigerantLeakagePerUse_Unit.setDefaultValue("Kg");
+    
+    IblFloatItem EF_Refrigerant = new IblFloatItem("EF_Refrigerant");    	
+    SelectItem EF_Refrigerant_Unit = new SelectItem("EF_Refrigerant_Unit");    
+    EF_Refrigerant_Unit.setValueMap("Kg CO2e/Kg");
+    EF_Refrigerant_Unit.setDefaultValue("Kg CO2e/Kg");
+
+    IblFloatItem electricityConsumedPerUse = new IblFloatItem("electricityConsumedPerUse");
+    SelectItem_Energy_Unit electricityConsumedPerUse_Unit = new SelectItem_Energy_Unit("electricityConsumedPerUse_Unit");
+    IblFloatItem EF_Electricity = new IblFloatItem("EF_Electricity");    	
+    SelectItem_Energy_EFUnit EF_Electricity_Unit = new SelectItem_Energy_EFUnit("EF_Electricity_Unit");    
+							       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Lifetime Uses Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(productType);
+    formItemList.add(productName);    
+
+    formItemList.add(totalLifetimeExpectedUsesOfProduct);
+    formItemList.add(numberSoldInReportingPeriod);    
+    
+    formItemList.add(fuelType);            
+    formItemList.add(fuelConsumedPerUse);        
+    formItemList.add(fuelConsumedPerUse_Unit);    	
+    formItemList.add(EF_Fuel);    			    
+    formItemList.add(EF_Fuel_Unit);    		    
+    formItemList.add(electricityConsumedPerUse);    			
+    formItemList.add(electricityConsumedPerUse_Unit);
+    formItemList.add(EF_Electricity);    			    
+    formItemList.add(EF_Electricity_Unit);    		    
+    
+    formItemList.add(refrigerantType);    	
+    formItemList.add(refrigerantLeakagePerUse);    			
+    formItemList.add(refrigerantLeakagePerUse_Unit);
+    formItemList.add(EF_Refrigerant);    			    
+    formItemList.add(EF_Refrigerant_Unit);    		    
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getDirectUsePhaseEmissionsFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    StaticTextItem productType = new StaticTextItem("productType");
+    productType.setDefaultValue("Fuels and Feedstocks");
+    
+    TextItem productName = new TextItem("productName");    
+    IblFloatItem totalQuantityOfFuelOrFeedstockSold = new IblFloatItem("totalQuantityOfFuelOrFeedstockSold");    	
+    SelectItem_Energy_Unit totalQuantityOfFuelOrfeedstockSold_Unit = new SelectItem_Energy_Unit("totalQuantityOfFuelOrfeedstockSold_Unit");    	
+
+    IblFloatItem combustion_EF_ForFuelOrFeedstock = new IblFloatItem("combustion_EF_ForFuelOrFeedstock");    	
+    SelectItem_Energy_EFUnit combustion_EF_ForFuelOrFeedstock_Unit = new SelectItem_Energy_EFUnit("combustion_EF_ForFuelOrFeedstock_Unit");    	        
+							       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Combustion Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(productType);
+    formItemList.add(productName);    
+
+    formItemList.add(totalQuantityOfFuelOrFeedstockSold);
+    formItemList.add(totalQuantityOfFuelOrfeedstockSold_Unit);    
+    
+    formItemList.add(combustion_EF_ForFuelOrFeedstock);            
+    formItemList.add(combustion_EF_ForFuelOrFeedstock_Unit);        
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getDirectUsePhaseEmissionsFormFields_3() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    StaticTextItem productType = new StaticTextItem("productType");
+    productType.setDefaultValue("Product containing GHGs that are emitted during use");
+    
+    TextItem productName = new TextItem("productName");    
+    TextItem GHG_Name = new TextItem("GHG_Name");    
+    
+    IblFloatItem numberSoldInReportingPeriod = new IblFloatItem("numberSoldInReportingPeriod");    	
+    IblFloatItem GHG_PerProduct = new IblFloatItem("GHG_PerProduct");    	
+    
+    IblFloatItem percentOfGHGReleasedDuringLifetimeUseOfProduct = new IblFloatItem("percentOfGHGReleasedDuringLifetimeUseOfProduct");    	
+    IblFloatItem GWP_GHG = new IblFloatItem("GWP_GHG");    	
+    							       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","GHG released Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(productType);
+    formItemList.add(productName);    
+    formItemList.add(GHG_Name);    
+    
+    formItemList.add(numberSoldInReportingPeriod);
+    formItemList.add(GHG_PerProduct);        
+    formItemList.add(percentOfGHGReleasedDuringLifetimeUseOfProduct);            
+    formItemList.add(GWP_GHG);        
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getInDirectUsePhaseEmissionsFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    
+    StaticTextItem productType = new StaticTextItem("productType");
+    productType.setDefaultValue("Products that indirectly consume energy (fuels or electricity) during use");
+    
+    TextItem productName = new TextItem("productName");    
+    IblFloatItem totalLifetimeExpectedUsesOfProduct = new IblFloatItem("totalLifetimeExpectedUsesOfProduct");        
+    TextItem scenarioDescription = new TextItem("scenarioDescription");        
+    IblFloatItem percentOfTotalLifetimeUsesInThisScenario = new IblFloatItem("percentOfTotalLifetimeUsesInThisScenario");    	
+    IblFloatItem numberSoldInReportingPeriod = new IblFloatItem("numberSoldInReportingPeriod");    	
+    
+    SelectOtherItem fuelType = new SelectOtherItem("fuelType");       
+    fuelType.setValueMap("Anthracite Coal",
+                            "Bituminous Coal",
+                            "Distillate Fuel Oil (#1, 2 & 4)",
+                            "Kerosene",
+                            "Landfill Gas (50%CH4, 50%CO2)",
+                            "Lignite Coal",
+                            "LPG",
+                            "Natural Gas",
+                            "Propane",
+                            "Residual Fuel Oil  (#5 & 6)",
+                            "Sub-bituminous Coal",
+                            "Wood and Wood Waste");
+
+    fuelType.setDefaultValue("Anthracite Coal");
+    fuelType.setWidth("*");    
+    fuelType.setStartRow(Boolean.TRUE);
+    fuelType.setEndRow(Boolean.TRUE);
+    
+    IblFloatItem fuelConsumedPerUseInThisScenario = new IblFloatItem("fuelConsumedPerUseInThisScenario");
+    SelectItem_Energy_Unit fuelConsumedPerUseInThisScenario_Unit = new SelectItem_Energy_Unit("fuelConsumedPerUseInThisScenario_Unit");
+    IblFloatItem EF_Fuel = new IblFloatItem("EF_Fuel");    	
+    SelectItem_Energy_EFUnit EF_Fuel_Unit = new SelectItem_Energy_EFUnit("EF_Fuel_Unit");    
+
+    SelectOtherItem refrigerantType = new SelectOtherItem("refrigerantType");       
+    refrigerantType.setValueMap("C2F6", 
+                                "C4F10",
+                                "CF4", 
+                                "CO2", 
+                                "HFC-125",
+                                "HFC-134a",
+                                "HFC-143a",
+                                "HFC-152a",
+                                "HFC-227ea",
+                                "HFC-23",
+                                "HFC-236fa",
+                                "HFC-32",
+                                "SF6");
+    refrigerantType.setDefaultValue("C2F6");
+    refrigerantType.setWidth("*");    
+    refrigerantType.setStartRow(Boolean.TRUE);
+    refrigerantType.setEndRow(Boolean.TRUE);
+	
+    IblFloatItem refrigerantLeakagePerUseInThisScenario = new IblFloatItem("refrigerantLeakagePerUseInThisScenario");
+    SelectItem refrigerantLeakagePerUseInThisScenario_Unit = new SelectItem("refrigerantLeakagePerUseInThisScenario_Unit");
+    refrigerantLeakagePerUseInThisScenario_Unit.setValueMap("Kg");
+    refrigerantLeakagePerUseInThisScenario_Unit.setDefaultValue("Kg");
+    
+    IblFloatItem EF_Refrigerant = new IblFloatItem("EF_Refrigerant");    	
+    SelectItem EF_Refrigerant_Unit = new SelectItem("EF_Refrigerant_Unit");    
+    EF_Refrigerant_Unit.setValueMap("Kg CO2e/Kg");
+    EF_Refrigerant_Unit.setDefaultValue("Kg CO2e/Kg");
+
+    IblFloatItem electricityConsumedPerUseInThisScenario = new IblFloatItem("electricityConsumedPerUseInThisScenario");
+    SelectItem_Energy_Unit electricityConsumedPerUseInThisScenario_Unit = new SelectItem_Energy_Unit("electricityConsumedPerUseInThisScenario_Unit");
+    IblFloatItem EF_Electricity = new IblFloatItem("EF_Electricity");    	
+    SelectItem_Energy_EFUnit EF_Electricity_Unit = new SelectItem_Energy_EFUnit("EF_Electricity_Unit");    
+
+    IblFloatItem GHG_EmittedIndirectly = new IblFloatItem("GHG_EmittedIndirectly");
+    SelectItem GHG_EmittedIndirectly_Unit = new SelectItem("GHG_EmittedIndirectly_Unit");
+    GHG_EmittedIndirectly_Unit.setValueMap("Kg");
+    GHG_EmittedIndirectly_Unit.setDefaultValue("Kg");
+
+    TextItem GHG_Name = new TextItem("GHG_Name");    
+    IblFloatItem GWP_GHG = new IblFloatItem("GWP_GHG");    	
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Typical Use Phase Profile Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(productType);
+    formItemList.add(productName);    
+
+    formItemList.add(totalLifetimeExpectedUsesOfProduct);
+    formItemList.add(scenarioDescription);    
+    formItemList.add(percentOfTotalLifetimeUsesInThisScenario);    
+    formItemList.add(numberSoldInReportingPeriod);    
+    
+    formItemList.add(fuelType);            
+    formItemList.add(fuelConsumedPerUseInThisScenario);        
+    formItemList.add(fuelConsumedPerUseInThisScenario_Unit);    	
+    formItemList.add(EF_Fuel);    			    
+    formItemList.add(EF_Fuel_Unit);    		    
+    formItemList.add(electricityConsumedPerUseInThisScenario);    			
+    formItemList.add(electricityConsumedPerUseInThisScenario_Unit);
+    formItemList.add(EF_Electricity);    			    
+    formItemList.add(EF_Electricity_Unit);    		    
+    
+    formItemList.add(refrigerantType);    	
+    formItemList.add(refrigerantLeakagePerUseInThisScenario);    			
+    formItemList.add(refrigerantLeakagePerUseInThisScenario_Unit);
+    formItemList.add(EF_Refrigerant);    			    
+    formItemList.add(EF_Refrigerant_Unit);    		    
+
+    formItemList.add(GHG_EmittedIndirectly);    			    
+    formItemList.add(GHG_EmittedIndirectly_Unit);    		    
+    
+    formItemList.add(GHG_Name);    
+    formItemList.add(GWP_GHG);    
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getInDirectUsePhaseEmissionsFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    
+    StaticTextItem productType = new StaticTextItem("productType");
+    productType.setDefaultValue("Products that indirectly consume energy (fuels or electricity) during use");
+    
+    TextItem productName = new TextItem("productName");    
+    IblFloatItem functionalUnitsPerformedPerProduct = new IblFloatItem("functionalUnitsPerformedPerProduct");        
+    IblFloatItem numberSoldInReportingPeriod = new IblFloatItem("numberSoldInReportingPeriod");    	
+    SourceDescriptionItem scenarioDescription = new SourceDescriptionItem("scenarioDescription");        
+    IblFloatItem emissionsPerFunctionalUnitOfProduct = new IblFloatItem("emissionsPerFunctionalUnitOfProduct");            
+    StaticTextItem emissionsPerFunctionalUnitOfProduct_Unit = new StaticTextItem("emissionsPerFunctionalUnitOfProduct_Unit");    
+    emissionsPerFunctionalUnitOfProduct_Unit.setDefaultValue("Kg CO2e");
+    IblFloatItem totalLifetimeEmissions = new IblFloatItem("totalLifetimeEmissions");    	
+    StaticTextItem totalLifetimeEmissions_Unit = new StaticTextItem("totalLifetimeEmissions_Unit");    
+    totalLifetimeEmissions_Unit.setDefaultValue("Kg CO2e");
+        
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Functional Unit Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(productType);
+    formItemList.add(productName);    
+    formItemList.add(scenarioDescription);    
+    
+    formItemList.add(functionalUnitsPerformedPerProduct);
+    formItemList.add(numberSoldInReportingPeriod);      
+    
+    formItemList.add(emissionsPerFunctionalUnitOfProduct);  
+    formItemList.add(emissionsPerFunctionalUnitOfProduct_Unit);    
+    formItemList.add(totalLifetimeEmissions);    
+    formItemList.add(totalLifetimeEmissions_Unit);    
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getEndOfLifeTreatmentOfSoldProductsFormFields() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    sourceDescriptionItem.setEndRow(Boolean.TRUE);
+    
+    TextItem soldProductName = new TextItem("soldProductName");
+
+    IblFloatItem massOfSoldProductsAfterConsumerUse = new IblFloatItem("massOfSoldProductsAfterConsumerUse");
+    massOfSoldProductsAfterConsumerUse.setStartRow(Boolean.TRUE);
+    
+    final SelectItem massOfSoldProductsAfterConsumerUse_Unit = new SelectItem("massOfSoldProductsAfterConsumerUse_Unit");
+    massOfSoldProductsAfterConsumerUse_Unit.setValueMap("Tonne","lb");
+    massOfSoldProductsAfterConsumerUse_Unit.setDefaultValue("Tonne");
+    massOfSoldProductsAfterConsumerUse_Unit.setWidth("*");    
+    
+    IblFloatItem percentOfWasteTreatedByWasteTreatmentMethod = new IblFloatItem("percentOfWasteTreatedByWasteTreatmentMethod");  
+    percentOfWasteTreatedByWasteTreatmentMethod.setEndRow(Boolean.TRUE);
+
+    SelectOtherItem wasteType = new SelectOtherItem("wasteType");       
+    wasteType.setValueMap("Plastic","Water Disposal");
+    wasteType.setDefaultValue("Plastic");
+    wasteType.setWidth("*");
+
+    SelectOtherItem wasteTreatmentType = new SelectOtherItem("wasteTreatmentType");       
+    wasteTreatmentType.setValueMap("Incinerated","Landfill","Wastewater");
+    wasteTreatmentType.setDefaultValue("Incinerated");
+    wasteTreatmentType.setWidth("*");
+        
+    IblFloatItem EF_WasteTreatmentMethod = new IblFloatItem("EF_WasteTreatmentMethod");  
+    final StaticTextItem EF_WasteTreatmentMethod_Unit = new StaticTextItem("EF_WasteTreatmentMethod_Unit");
+    EF_WasteTreatmentMethod_Unit.setDefaultValue("Kg CO2e/Tonne");
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Calculation Method");
+
+    massOfSoldProductsAfterConsumerUse_Unit.addChangedHandler(new ChangedHandler() {  
+        public void onChanged(ChangedEvent event) {  
+            if (massOfSoldProductsAfterConsumerUse_Unit.getValue().equals("Tonne")) {                    
+                EF_WasteTreatmentMethod_Unit.setValue("Kg CO2e/Tonne");                    
+            } else if (massOfSoldProductsAfterConsumerUse_Unit.getValue().equals("lb")){
+                EF_WasteTreatmentMethod_Unit.setValue("Kg CO2e/lb");                    
+            }    
+        }
+    });  
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(soldProductName);
+    formItemList.add(massOfSoldProductsAfterConsumerUse);    
+
+    formItemList.add(massOfSoldProductsAfterConsumerUse_Unit);            
+    formItemList.add(percentOfWasteTreatedByWasteTreatmentMethod);            
+    
+    formItemList.add(wasteType);        
+    formItemList.add(wasteTreatmentType);    
+
+    formItemList.add(EF_WasteTreatmentMethod);        
+    formItemList.add(EF_WasteTreatmentMethod_Unit);    	
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+public FormItem[] getFranchisesFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+	
+    TextItem franchiseName =  new TextItem("franchiseName");	
+    
+    IblFloatItem scope1EmissionsOfFranchise = new IblFloatItem("scope1EmissionsOfFranchise");
+    scope1EmissionsOfFranchise.setStartRow(Boolean.TRUE);
+    
+    StaticTextItem scope1EmissionsOfFranchise_Unit = new StaticTextItem("scope1EmissionsOfFranchise_Unit");
+    scope1EmissionsOfFranchise_Unit.setDefaultValue("Kg CO2e");
+    
+    IblFloatItem scope2EmissionsOfFranchise = new IblFloatItem("scope2EmissionsOfFranchise");
+    StaticTextItem scope2EmissionsOfFranchise_Unit = new StaticTextItem("scope2EmissionsOfFranchise_Unit");
+    scope2EmissionsOfFranchise_Unit.setDefaultValue("Kg CO2e");            
+    
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Franchise Specific Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(franchiseName);            
+    formItemList.add(scope1EmissionsOfFranchise);
+    formItemList.add(scope1EmissionsOfFranchise_Unit);    	
+    formItemList.add(scope2EmissionsOfFranchise);    			    
+    formItemList.add(scope2EmissionsOfFranchise_Unit);    		    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getFranchisesFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+    TextItem franchiseName =  new TextItem("franchiseName");	
+    
+    CheckboxItem flag_floorSpaceData = new CheckboxItem();  
+    flag_floorSpaceData.setName("flag_floorSpaceData");  
+    flag_floorSpaceData.setTitle("Floor space data us available?");  
+    flag_floorSpaceData.setRedrawOnChange(true);  
+    flag_floorSpaceData.setWidth(50);  
+    flag_floorSpaceData.setDefaultValue(false);    
+    flag_floorSpaceData.setColSpan(4);//EndRow(Boolean.TRUE);
+    
+    IblFloatItem floorSpace = new IblFloatItem("floorSpace");
+    StaticTextItem floorSpace_Unit = new StaticTextItem("floorSpace_Unit");
+    floorSpace_Unit.setDefaultValue("m2");
+
+    IblFloatItem average_EF = new IblFloatItem("average_EF");
+    StaticTextItem average_EF_Unit = new StaticTextItem("average_EF_Unit");
+    average_EF_Unit.setDefaultValue("Kg CO2e/m2/year");
+        
+    TextItem buildingOrAssetName =  new TextItem("buildingOrAssetName");
+    buildingOrAssetName.setVisible(Boolean.FALSE);
+    
+    IblFloatItem numberOfbuildingsOrAssetTypes = new IblFloatItem("numberOfbuildingsOrAssetTypes");  
+    numberOfbuildingsOrAssetTypes.setVisible(Boolean.FALSE);
+    
+    IblFloatItem averageEmissionsPerBuildingOrAssetType = new IblFloatItem("averageEmissionsPerBuildingOrAssetType");
+    averageEmissionsPerBuildingOrAssetType.setVisible(Boolean.FALSE);
+    averageEmissionsPerBuildingOrAssetType.setStartRow(Boolean.TRUE);
+    
+    TextItem averageEmissionsPerBuildingOrAssetType_Unit = new TextItem("averageEmissionsPerBuildingOrAssetType_Unit");
+    averageEmissionsPerBuildingOrAssetType_Unit.setVisible(Boolean.FALSE);
+        
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Average Data Method");
+
+    floorSpace.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    floorSpace_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    average_EF.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    average_EF_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return (Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    
+    buildingOrAssetName.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });      
+    numberOfbuildingsOrAssetTypes.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    averageEmissionsPerBuildingOrAssetType.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });  
+    averageEmissionsPerBuildingOrAssetType_Unit.setShowIfCondition(new FormItemIfFunction() {  
+        public boolean execute(FormItem item, Object value, DynamicForm form) {  
+            return !(Boolean)form.getValue("flag_floorSpaceData");  
+        }  
+    });      
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(franchiseName);       
+    formItemList.add(flag_floorSpaceData);
+    formItemList.add(floorSpace);    	
+    formItemList.add(floorSpace_Unit);    			     		    
+    formItemList.add(average_EF);    			     		    
+    formItemList.add(average_EF_Unit);    	
+    formItemList.add(buildingOrAssetName);
+    formItemList.add(numberOfbuildingsOrAssetTypes);
+    formItemList.add(averageEmissionsPerBuildingOrAssetType);
+    formItemList.add(averageEmissionsPerBuildingOrAssetType_Unit);    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+
+
+public FormItem[] getInvestmentsFormFields_1() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+
+    final SelectItem investmentType = new SelectItem("investmentType");       
+    investmentType.setValueMap("Equity",
+                               "Debt with know use of proceeds",
+                               "Project Finance",
+                               "Debt without known use of proceeds",
+                               "Managed investments and client services",
+                               "Other investment category");
+    investmentType.setDefaultValue("Equity");
+    investmentType.setWidth("*");
+
+    IblFloatItem scope1Emissions = new IblFloatItem("scope1Emissions");
+    scope1Emissions.setStartRow(Boolean.TRUE);    
+    StaticTextItem scope1Emissions_Unit = new StaticTextItem("scope1Emissions_Unit");
+    scope1Emissions_Unit.setDefaultValue("Kg CO2e");
+    
+    IblFloatItem scope2Emissions = new IblFloatItem("scope2Emissions");
+    StaticTextItem scope2Emissions_Unit = new StaticTextItem("scope2Emissions_Unit");
+    scope2Emissions_Unit.setDefaultValue("Kg CO2e");            
+    
+    IblFloatItem percentShareOfInvestment = new IblFloatItem("percentShareOfInvestment");
+
+    IblFloatItem anticipatedLifetimeScope1Emissions = new IblFloatItem("anticipatedLifetimeScope1Emissions");
+    anticipatedLifetimeScope1Emissions.setStartRow(Boolean.TRUE);    
+    StaticTextItem anticipatedLifetimeScope1Emissions_Unit = new StaticTextItem("anticipatedLifetimeScope1Emissions_Unit");
+    anticipatedLifetimeScope1Emissions_Unit.setDefaultValue("Kg CO2e");
+    
+    IblFloatItem anticipatedLifetimeScope2Emissions = new IblFloatItem("anticipatedLifetimeScope2Emissions");
+    StaticTextItem anticipatedLifetimeScope2Emissions_Unit = new StaticTextItem("anticipatedLifetimeScope2Emissions_Unit");
+    anticipatedLifetimeScope2Emissions_Unit.setDefaultValue("Kg CO2e");            
+       
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Investment Specific Method");
+
+// Change Handlers    
+    investmentType.addChangedHandler(new ChangedHandler() {  
+            public void onChanged(ChangedEvent event) {  
+                
+                if((Boolean) investmentType.getValue().equals("Project Finance")){  
+                    event.getForm().getItem("anticipatedLifetimeScope1Emissions").show();
+                    event.getForm().getItem("anticipatedLifetimeScope1Emissions_Unit").show();
+                    event.getForm().getItem("anticipatedLifetimeScope2Emissions").show();
+                    event.getForm().getItem("anticipatedLifetimeScope2Emissions_Unit").show();                    
+                } else {                    
+                    event.getForm().getItem("anticipatedLifetimeScope1Emissions").hide();
+                    event.getForm().getItem("anticipatedLifetimeScope1Emissions_Unit").hide();
+                    event.getForm().getItem("anticipatedLifetimeScope2Emissions").hide();
+                    event.getForm().getItem("anticipatedLifetimeScope2Emissions_Unit").hide();                    
+                }
+            }  
+    });  
+        
+    anticipatedLifetimeScope1Emissions.setVisible(Boolean.FALSE);
+    anticipatedLifetimeScope1Emissions_Unit.setVisible(Boolean.FALSE);
+    anticipatedLifetimeScope2Emissions.setVisible(Boolean.FALSE);
+    anticipatedLifetimeScope2Emissions_Unit.setVisible(Boolean.FALSE);
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(investmentType);
+    
+    formItemList.add(scope1Emissions);      
+    formItemList.add(scope1Emissions_Unit);      
+    formItemList.add(scope2Emissions);    
+    formItemList.add(scope2Emissions_Unit);      
+    
+    formItemList.add(percentShareOfInvestment);        
+    
+    formItemList.add(anticipatedLifetimeScope1Emissions);    	    
+    formItemList.add(anticipatedLifetimeScope1Emissions_Unit);    	
+    formItemList.add(anticipatedLifetimeScope2Emissions);    		
+    formItemList.add(anticipatedLifetimeScope2Emissions_Unit);    	
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
+    FormItem[] formItemArray = new FormItem[formItemList.size()];
+    formItemList.toArray(formItemArray);
+    return formItemArray;
+
+}
+public FormItem[] getInvestmentsFormFields_2() {
+
+//-- setValidators for the forms for common types.
+    initializeValidators();
+	
+    SourceDescriptionItem sourceDescriptionItem = new SourceDescriptionItem("sourceDescription");       
+
+    SelectItem investmentType = new SelectItem("investmentType");       
+    investmentType.setValueMap("Equity",
+                               "Debt with know use of proceeds",
+                               "Project Finance",
+                               "Debt without known use of proceeds",
+                               "Managed investments and client services",
+                               "Other investment category");
+    investmentType.setDefaultValue("Equity");
+    investmentType.setWidth("*");
+    
+    SelectOtherItem investmentSector = new SelectOtherItem("investmentSector");       
+    investmentSector.setValueMap("Food and Drink",
+                               "Telecommunication",
+                               "Pharmaceutical",
+                               "Energy Generation");
+    investmentSector.setDefaultValue("Food and Drink");
+    investmentSector.setWidth("*");
+
+    IblFloatItem investmentAmount = new IblFloatItem("investmentAmount");
+    investmentAmount.setStartRow(Boolean.TRUE);    
+    
+    StaticTextItem investmentAmount_Unit = new StaticTextItem("investmentAmount_Unit");
+    investmentAmount_Unit.setDefaultValue("US Dollar");
+    
+    IblFloatItem EF_SectorSpecific = new IblFloatItem("EF_SectorSpecific");
+    StaticTextItem EF_SectorSpecific_Unit = new StaticTextItem("EF_SectorSpecific_Unit");
+    EF_SectorSpecific_Unit.setDefaultValue("Kg CO2e/$");            
+           
+    IblTextAreaItem userNotesOnDataItem = new IblTextAreaItem("userNotesOnData");        
+    IblDateItem dataBeginDateItem = new IblDateItem("dataBeginDate", currentInventoryBeginDateMin,currentInventoryEndDateMax, validateDateRange);
+    dataBeginDateItem.setStartRow(Boolean.TRUE);
+    IblDateItem dataEndDateItem = new IblDateItem("dataEndDate", currentInventoryBeginDateMin, currentInventoryEndDateMax, validateDateRange);        
+    TextItem_MethodType methodTypeItem = new TextItem_MethodType("methodType","Economic Data Method");
+    
+    final List<FormItem> formItemList = new ArrayList<FormItem>();
+    
+    formItemList.add(sourceDescriptionItem);        
+    formItemList.add(investmentType);
+    formItemList.add(investmentSector);    
+    
+    formItemList.add(investmentAmount);    
+    formItemList.add(investmentAmount_Unit);      
+         
+    formItemList.add(EF_SectorSpecific);    	    
+    formItemList.add(EF_SectorSpecific_Unit);    	
+    
+    formItemList.add(dataBeginDateItem);
+    formItemList.add(dataEndDateItem);
+    formItemList.add(userNotesOnDataItem);    
+    formItemList.add(methodTypeItem);
+    
     FormItem[] formItemArray = new FormItem[formItemList.size()];
     formItemList.toArray(formItemArray);
     return formItemArray;

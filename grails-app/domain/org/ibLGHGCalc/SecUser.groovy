@@ -29,8 +29,8 @@ class SecUser {
                 firstName (nullable:true)
                 lastName(nullable:true)
                 phoneNumber(nullable:true)
-                organizationName(nullable:true)
-                email(nullable:true)
+                organizationName(nullable:true)                
+                email(nullable:true)                
 	}
 
 	static mapping = {
